@@ -1,6 +1,6 @@
 # Decision Log
 
-No product decisions yet. `/plan` should add entries when the user makes product or architecture decisions.
+No product decisions yet. `/plan-loop` should add entries when the user makes product or architecture decisions.
 
 ## Pending decisions (need evidence or counsel)
 

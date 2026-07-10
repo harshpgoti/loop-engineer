@@ -62,7 +62,7 @@ def describe_memory_mode(memory_mode: str, workspace: Path) -> str:
     return (
         f"Local memory: product state lives in `{workspace}` — a hidden "
         f"`.loop-engineer/` folder inside your product folder, kept out of your "
-        f"product code. Loop auto-detects it when you return and run /plan or /loop-engine."
+        f"product code. Loop auto-detects it when you return and run /plan-loop or /loop-engine."
     )
 
 

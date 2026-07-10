@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Initialize product-specific planning files from templates.
 
-Agents can call this during `/plan` after gathering the user's product inputs.
+Agents can call this during `/plan-loop` after gathering the user's product inputs.
 It is intentionally conservative: it refuses to overwrite initialized files
 unless `--force` is supplied.
 """
@@ -53,7 +53,7 @@ def append_session_log(workspace: Path, product_name: str, step_file: Path) -> N
             f"## {date.today().isoformat()} — Product initialized\n\n"
             f"- Product: {product_name}\n"
             f"- Created/updated: `{step_file.relative_to(workspace)}`\n"
-            "- Next: run `/plan` to validate assumptions or `/product-develop` after gates pass.\n"
+            "- Next: run `/plan-loop` to validate assumptions or `/product-develop` after gates pass.\n"
         )
 
 

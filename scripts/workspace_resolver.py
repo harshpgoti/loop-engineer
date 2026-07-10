@@ -21,7 +21,7 @@ LOCAL_MARKER_FILES = (
     "memories/USER.md",
 )
 TOOL_MARKER_FILES = (
-    "commands/plan.md",
+    "commands/plan-loop.md",
     "scripts/setup_loop_engine.py",
     "scripts/loop_cli.py",
 )

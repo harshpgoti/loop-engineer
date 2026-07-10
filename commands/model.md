@@ -65,4 +65,4 @@ Cursor, Claude Code, and Codex use the IDE's own inference — no API key in Loo
 
 ## Handoff
 
-After setup, continue with `/plan`, `/product-develop`, or `/loop-engine`. Model config persists across tools via LOOP_HOME.
+After setup, continue with `/plan-loop`, `/product-develop`, or `/loop-engine`. Model config persists across tools via LOOP_HOME.

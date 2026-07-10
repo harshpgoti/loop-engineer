@@ -1,6 +1,6 @@
 ---
 name: session-recall
-description: Recalls relevant past loop sessions from state.db into plan/SESSION_RECALL.md at session start. Use when the user types /session-recall or at the start of /plan, /product-develop, or /loop-engine.
+description: Recalls relevant past loop sessions from state.db into plan/SESSION_RECALL.md at session start. Use when the user types /session-recall or at the start of /plan-loop, /product-develop, or /loop-engine.
 ---
 
 # Session Recall

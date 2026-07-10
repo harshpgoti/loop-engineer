@@ -1,6 +1,6 @@
 # Deployment Planning Questions
 
-Use during `/plan` to capture deployment choices early.
+Use during `/plan-loop` to capture deployment choices early.
 
 ## Ask During Planning
 
@@ -18,7 +18,7 @@ Use during `/plan` to capture deployment choices early.
 
 ## Reuse Rule
 
-If the user already answered in `DECISIONS.md`, resolved `DOUBTS.md`, or an earlier `/plan` session:
+If the user already answered in `DECISIONS.md`, resolved `DOUBTS.md`, or an earlier `/plan-loop` session:
 
 1. Copy the same answer into `plan/main_plan.md` → **Deployment & Infrastructure**
 2. Inform the user which decisions were reused

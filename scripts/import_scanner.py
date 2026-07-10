@@ -8,7 +8,7 @@ filename + content-signal scorer — no LLM call. Routing:
   behavior rules / persona / prompt -> appended to memories/SOUL.md
   project memory / notes / logs     -> appended to memories/MEMORY.md
   procedures / how-tos / runbooks   -> skills/imported/<slug>.md (frontmatter added)
-  plans / roadmaps / PRDs / specs   -> plan/imported/<name> (for /plan to absorb)
+  plans / roadmaps / PRDs / specs   -> plan/imported/<name> (for /plan-loop to absorb)
   secrets / keys                    -> never copied; warned
   binary / huge / unclassifiable    -> skipped or staged in .loop/import-review/
 
@@ -238,7 +238,7 @@ def run_scan_import(
         elif category == "plan":
             results.append(
                 _stage_copy(workspace, "plan/imported", rel, path, dry_run)
-                + f" [plan: {reason} — absorb via /plan]"
+                + f" [plan: {reason} — absorb via /plan-loop]"
             )
         else:
             results.append(

@@ -37,10 +37,10 @@ loop session-end --command /loop-engine --summary "<progress>"
 
 | State | Delegate to |
 |-------|-------------|
-| Uninitialized / init gates blocked | `commands/plan.md` full flow |
-| Idea scope unknown | `loop plan scale --write` |
-| Scale **platform**, ultraplan incomplete | `skills/ultraplan/SKILL.md` / `loop plan ultraplan next` |
-| Missing step plan or feature spec | `commands/plan.md` (steps 14–16) |
+| Uninitialized / init gates blocked | `commands/plan-loop.md` full flow |
+| Idea scope unknown | `loop plan-loop scale --write` |
+| Scale **platform**, ultraplan incomplete | `skills/ultraplan/SKILL.md` / `loop plan-loop ultraplan next` |
+| Missing step plan or feature spec | `commands/plan-loop.md` (steps 14–16) |
 | Spec needs clarify/checklist | `/spec-clarify` → `/spec-checklist` |
 | Missing tasks | `skills/task-compiler/SKILL.md` |
 | Product is/includes an AI agent | `skills/agent-builder/SKILL.md` (`loop auto-agent-skills --write` first) |
@@ -64,8 +64,8 @@ SESSION-START → MANIFEST → RECALL → AUTO-SKILLS → AUTO-AGENT-SKILLS
 ## Decision Logic
 
 0. Run `loop session-start`; read manifest and listed files.
-1. If Step 1 gates blocked → execute `skills/plan/SKILL.md` / `commands/plan.md`.
-2. Run `loop plan scale --write` when product idea may be platform-scale.
+1. If Step 1 gates blocked → execute `skills/plan-loop/SKILL.md` / `commands/plan-loop.md`.
+2. Run `loop plan-loop scale --write` when product idea may be platform-scale.
 3. If scale is **platform** and ultraplan incomplete → `skills/ultraplan/SKILL.md` (one step per session).
 4. If no active feature or spec incomplete → feature workflow (`feature-new`, `spec-clarify`, `spec-checklist`).
 3. If tasks missing → `task-compiler`.

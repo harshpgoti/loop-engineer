@@ -1,6 +1,6 @@
 # Agent builder
 
-Loop Engineer can plan and build **any** product, including one that is, or includes, an AI agent — a chatbot, autonomous workflow, tool-using assistant, multi-agent system, or dynamic/branching automation. This capability is auto-detected during `/plan` and `/product-develop`, and can be run directly with `/agent-builder`.
+Loop Engineer can plan and build **any** product, including one that is, or includes, an AI agent — a chatbot, autonomous workflow, tool-using assistant, multi-agent system, or dynamic/branching automation. This capability is auto-detected during `/plan-loop` and `/product-develop`, and can be run directly with `/agent-builder`.
 
 It is separate from Loop Engineer's own operational skills (`skills/` at repo root, used to run the loop itself). This is about the agent the **user** is building, scaffolded into the product workspace under `agent/`.
 
@@ -67,7 +67,7 @@ Non-obvious agent-design claims (an eval methodology, a safety pattern, a memory
 
 | Command | Behavior |
 |---------|----------|
-| `/plan` | Runs `loop auto-agent-skills --write` early; reads `skills/agent-builder/SKILL.md` and `skills/research-search/SKILL.md` when signals present |
+| `/plan-loop` | Runs `loop auto-agent-skills --write` early; reads `skills/agent-builder/SKILL.md` and `skills/research-search/SKILL.md` when signals present |
 | `/product-develop` | Reads `plan/AUTO_AGENT_SKILLS.md` alongside `plan/AUTO_SKILLS.md`; runs `agent-builder` for the agent-loop development domain |
 | `/loop-engine` | Routes to `skills/agent-builder/SKILL.md` when the product is/includes an AI agent |
 | `/agent-builder` | Runs the full workflow directly |

@@ -13,7 +13,7 @@ If the user says `/spec-checklist`, execute this file and `skills/spec-checklist
 
 ## Wired From
 
-- `/plan` after `/spec-clarify`, before `feature-plan.md` and task-compiler
+- `/plan-loop` after `/spec-clarify`, before `feature-plan.md` and task-compiler
 
 ## Stop Condition
 

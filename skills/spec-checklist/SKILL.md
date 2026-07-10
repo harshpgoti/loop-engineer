@@ -1,6 +1,6 @@
 ---
 name: spec-checklist
-description: Validates active feature spec quality before feature-plan and task compile. Use when the user types /spec-checklist during /plan.
+description: Validates active feature spec quality before feature-plan and task compile. Use when the user types /spec-checklist during /plan-loop.
 ---
 
 # Spec Checklist

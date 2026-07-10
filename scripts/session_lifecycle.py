@@ -212,7 +212,7 @@ def session_start(
     auto_agent_names = [name for name, _ in agent_picks]
 
     plan_bootstrap = None
-    if text.strip() and command and any(c in (command or "") for c in ("/plan", "/loop-engine", "plan", "loop-engine")):
+    if text.strip() and command and any(c in (command or "") for c in ("/plan-loop", "/loop-engine", "plan", "loop-engine")):
         try:
             from plan_idea import bootstrap_plan
 

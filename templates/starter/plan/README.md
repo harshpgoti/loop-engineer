@@ -8,7 +8,7 @@ This folder contains product-specific step plans.
 
 No product-specific steps yet.
 
-First `/plan` should create:
+First `/plan-loop` should create:
 
 ```text
 step_01_<slug>.md

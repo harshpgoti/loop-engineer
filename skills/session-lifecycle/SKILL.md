@@ -44,7 +44,7 @@ User approves staged memory: `loop pending approve --all`
 
 ## Agent rules (all tools)
 
-1. **First action** when user runs `/plan`, `/product-develop`, `/loop-engine`, or any product work: `loop session-start`
+1. **First action** when user runs `/plan-loop`, `/product-develop`, `/loop-engine`, or any product work: `loop session-start`
 2. **Read** `plan/SESSION_MANIFEST.md` and every file it lists
 3. **Last action** before ending the turn/session: update `HANDOFF.md` + `memories/MEMORY.md`, then `loop session-end`
 4. Do not skip because the tool changed — memory lives in the workspace, not the chat

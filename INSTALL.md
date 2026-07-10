@@ -37,7 +37,7 @@ Local product folders get the same split, nested one level deeper: `<product-fol
 | **Global** (installer default) | `~/.loop-engineer/data/` | Just run the installer |
 | **Local** | `<product-folder>/.loop-engineer/` | See below |
 
-**Auto-detection:** When you work from a local product folder that already has a `.loop-engineer/` data dir, `/plan` and `/loop-engine` use it automatically. Otherwise they use global `~/.loop-engineer/data/`.
+**Auto-detection:** When you work from a local product folder that already has a `.loop-engineer/` data dir, `/plan-loop` and `/loop-engine` use it automatically. Otherwise they use global `~/.loop-engineer/data/`.
 
 **Local setup in your product folder:**
 
@@ -79,7 +79,7 @@ Imports `MEMORY.md`, `USER.md`, `SOUL.md`, and `skills/` from `--source`. If the
 
 ### After install
 
-Open your agent in `~/.loop-engineer/app/` and run `/plan`.
+Open your agent in `~/.loop-engineer/app/` and run `/plan-loop`.
 
 ```bash
 loop doctor

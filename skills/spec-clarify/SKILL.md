@@ -1,6 +1,6 @@
 ---
 name: spec-clarify
-description: Structured clarification pass on the active feature spec. Use when the user types /spec-clarify or before locking feature-plan.md during /plan.
+description: Structured clarification pass on the active feature spec. Use when the user types /spec-clarify or before locking feature-plan.md during /plan-loop.
 ---
 
 # Spec Clarify

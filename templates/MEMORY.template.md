@@ -6,16 +6,16 @@ This is the human-mind file for the product loop. Every agent must update it aut
 
 **Now:** Fresh loop template. Product is not initialized yet.
 
-**Direction:** Unknown until `/plan` gathers product context.
+**Direction:** Unknown until `/plan-loop` gathers product context.
 
-**First step:** Unknown until `/plan` creates `plan/step_01_<slug>.md`.
+**First step:** Unknown until `/plan-loop` creates `plan/step_01_<slug>.md`.
 
-**Current mode:** Ready for first-run `/plan`.
+**Current mode:** Ready for first-run `/plan-loop`.
 
 ## What We Did
 
 - Created reusable loop command contracts:
-  - `commands/plan.md`
+  - `commands/plan-loop.md`
   - `commands/product-develop.md`
   - `commands/loop-engine.md`
 - Created canonical cross-tool skill pack in `skills/`.
@@ -32,12 +32,12 @@ This is the human-mind file for the product loop. Every agent must update it aut
 
 ## What We Are Doing
 
-- Waiting for the user to run `/plan`.
-- On `/plan`, initialize product-specific data automatically.
+- Waiting for the user to run `/plan-loop`.
+- On `/plan-loop`, initialize product-specific data automatically.
 
 ## What Comes Next
 
-1. Run `/plan`.
+1. Run `/plan-loop`.
 2. Ask product initialization questions if needed.
 3. Create or update `plan/main_plan.md`.
 4. Create `plan/step_01_<slug>.md`.

@@ -97,8 +97,8 @@ def detect_drift(workspace: Path) -> tuple[list[str], list[str]]:
     if memory_gate and compact_gate and memory_gate != compact_gate:
         drift.append(f"Active gate mismatch: current state `{memory_gate}` vs COMPACT `{compact_gate}`.")
 
-    if "blocked" in gates.lower() and handoff_cmd == "/plan":
-        drift.append("Gates show blocked status but HANDOFF points to `/plan`.")
+    if "blocked" in gates.lower() and handoff_cmd == "/plan-loop":
+        drift.append("Gates show blocked status but HANDOFF points to `/plan-loop`.")
 
     if "status: blocked" in tasks.lower() and handoff_cmd == "/product-develop":
         drift.append("Blocked tasks exist; confirm HANDOFF is routing to the correct unblock work.")

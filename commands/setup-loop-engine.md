@@ -13,7 +13,7 @@ Register where product memory lives and seed missing starter files.
 | **Global** (default) | `~/.loop-engineer/data/` | `loop setup` — no extra flags |
 | **Local** | `<product-folder>/.loop-engineer/` | `loop setup --use-cwd` or `loop setup --memory-mode local --workspace H:/POC/QEAutoAI` |
 
-**Auto-detection:** After local setup, when you return to that folder and run `/plan` or `/loop-engine`, loop data is detected automatically. No need to pass flags again.
+**Auto-detection:** After local setup, when you return to that folder and run `/plan-loop` or `/loop-engine`, loop data is detected automatically. No need to pass flags again.
 
 ## Ask the user
 
@@ -71,6 +71,6 @@ on an existing workspace, real content is protected unless `--overwrite` is pass
 
 1. Workspace path and memory mode
 2. Files created / skipped
-3. Next command: `/plan`
+3. Next command: `/plan-loop`
 
 See `docs/DATA_LAYOUT.md`.

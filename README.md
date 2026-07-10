@@ -6,7 +6,7 @@
 
 | Loop | Skill / command | Purpose |
 |------|-----------------|--------|
-| **Step 1 — Planning** | `/plan` or skill `skills/plan` | Initialize product → brainstorm → fact-check → PRD → architecture → task breakdown |
+| **Step 1 — Planning** | `/plan-loop` or skill `skills/plan-loop` | Initialize product → brainstorm → fact-check → PRD → architecture → task breakdown |
 | **Step 2 — Build** | `/product-develop` or skill `skills/product-develop` | Implement → review → QA → security/compliance → CI/CD → deploy |
 | **All-in-one** | `/loop-engine` or skill `skills/loop-engine` | Route between planning, task compilation, development, QA, and release gates |
 
@@ -28,7 +28,7 @@ irm https://raw.githubusercontent.com/harshpgoti/loop-engineer/main/install.ps1 
 curl -fsSL https://raw.githubusercontent.com/harshpgoti/loop-engineer/main/install.sh | bash
 ```
 
-Then open your agent in `%USERPROFILE%\.loop-engineer\app` (Windows) or `~/.loop-engineer/app` (macOS/Linux) and run `/plan`.
+Then open your agent in `%USERPROFILE%\.loop-engineer\app` (Windows) or `~/.loop-engineer/app` (macOS/Linux) and run `/plan-loop`.
 
 Full install options: [`INSTALL.md`](INSTALL.md).
 
@@ -50,12 +50,12 @@ Use:
 
 ```text
 /setup-loop-engine
-/plan
+/plan-loop
 /product-develop
 /loop-engine
 ```
 
-Agents should interpret these commands by reading `commands/` and `skills/`. On first run, `/plan` initializes the user's product data automatically into `plan/main_plan.md`, `plan/`, `memories/MEMORY.md`, `DOUBTS.md`, and `TASKS.yml` — all inside the workspace data root, never inside the tool repo.
+Agents should interpret these commands by reading `commands/` and `skills/`. On first run, `/plan-loop` initializes the user's product data automatically into `plan/main_plan.md`, `plan/`, `memories/MEMORY.md`, `DOUBTS.md`, and `TASKS.yml` — all inside the workspace data root, never inside the tool repo.
 
 In central-tool setup, those product files are written to the registered product workspace, not into `loop-engineer/`.
 
@@ -113,11 +113,11 @@ loop setup --use-cwd --source /path/to/other-tool --scan   # different structure
 loop model setup              # optional: pick the LLM provider for API-hosted inference
 ```
 
-### 1. Plan — `/plan`
+### 1. Plan — `/plan-loop`
 
 ```text
-/plan
-/plan an AI receptionist for dental clinics that answers calls and books appointments
+/plan-loop
+/plan-loop an AI receptionist for dental clinics that answers calls and books appointments
 ```
 
 Initializes the product on first run (asks name, target user, problem, first step, deployment targets), then: grill → product council → fact-check → PRD → architecture → feature spec → task compiler. Auto-detects platform-vs-convenient scale and routes `/ultraplan` when needed.
@@ -142,7 +142,7 @@ The primary entry point: routes between planning and development based on gates 
 ### Product & planning helpers
 
 ```text
-/agent-builder        # design/scaffold an AI agent as the product — auto-activates in /plan + /product-develop
+/agent-builder        # design/scaffold an AI agent as the product — auto-activates in /plan-loop + /product-develop
 /research-search      # search arXiv / Research Square / SSRN, e.g. loop research "multi-agent evaluation"
 /model                # AI provider config, e.g. loop model anthropic:<model-id>, loop model doctor
 /feature-new          # new feature spec folder, e.g. loop feature new "auth login" --step plan/step_01.md
@@ -199,7 +199,7 @@ Canonical skills are in `skills/`; adapter files must stay thin.
 
 ## First-Run Behavior
 
-When someone downloads this repo and runs `/plan`, the agent must:
+When someone downloads this repo and runs `/plan-loop`, the agent must:
 
 1. Detect whether `plan/main_plan.md` is still uninitialized.
 2. Ask for product name, target user, problem, constraints, and first product step.
@@ -226,7 +226,7 @@ python scripts/validate_template.py
 
 See [`STARTUP_LOOP_ENGINEERING_PLAYBOOK.md`](STARTUP_LOOP_ENGINEERING_PLAYBOOK.md) for architecture, stack, CI gates, and compliance baseline.
 
-See [`docs/PROCESS.md`](docs/PROCESS.md) for the `/plan`, `/product-develop`, and `/loop-engine` process architecture.
+See [`docs/PROCESS.md`](docs/PROCESS.md) for the `/plan-loop`, `/product-develop`, and `/loop-engine` process architecture.
 
 ## Quality Checks
 

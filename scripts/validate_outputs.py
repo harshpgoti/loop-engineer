@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate product-loop outputs after /plan or /product-develop.
+"""Validate product-loop outputs after /plan-loop or /product-develop.
 
 This is intentionally lightweight. It checks structure, not quality of prose.
 """

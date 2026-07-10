@@ -234,11 +234,11 @@ def main() -> int:
         subprocess.run([sys.executable, str(detect_script)], cwd=ROOT, check=False)
 
     if memory_mode == "local":
-        print("\nWhen you return to this folder, /plan and /loop-engine auto-use local data here.")
+        print("\nWhen you return to this folder, /plan-loop and /loop-engine auto-use local data here.")
     else:
         print("\nGlobal data lives in ~/.loop-engineer/data/. Local product folders override when detected.")
 
-    print("\nNext command: /plan")
+    print("\nNext command: /plan-loop")
     return 0
 
 

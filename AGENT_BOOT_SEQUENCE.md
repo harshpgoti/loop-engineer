@@ -5,7 +5,7 @@ Normal use should be command-driven with **always-on lifecycle**:
 ```bash
 loop session-start --command /loop-engine --tool "<tool>"
 # read plan/SESSION_MANIFEST.md
-/plan | /product-develop | /loop-engine
+/plan-loop | /product-develop | /loop-engine
 loop session-end
 ```
 
@@ -24,7 +24,7 @@ LOOP ENGINEERING RULES:
 
 INITIAL STATE:
 - Product may be uninitialized.
-- If `plan/main_plan.md` says UNINITIALIZED, `/plan` must initialize it.
+- If `plan/main_plan.md` says UNINITIALIZED, `/plan-loop` must initialize it.
 - Product-specific data belongs in `plan/main_plan.md`, `plan/`, `TASKS.yml`, `DECISIONS.md`, and `EVIDENCE_LOG.md`.
 
 READ FIRST (in order):
@@ -47,7 +47,7 @@ READ FIRST (in order):
 16. .ai/SESSION_LOG.md
 
 ROUTE BY COMMAND (each runs full cycle — see commands/*.md):
-- `/plan` -> session-start → plan → feature spec → task-compiler → session-end
+- `/plan-loop` -> session-start → plan → feature spec → task-compiler → session-end
 - `/product-develop` -> session-start → auto-skills → build → converge → prod-gap → session-end
 - `/loop-engine` -> session-start → route plan OR develop (or both) → session-end
 - no command -> execute HANDOFF.md next action only

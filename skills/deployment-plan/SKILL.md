@@ -1,6 +1,6 @@
 ---
 name: deployment-plan
-description: Writes or refreshes DEPLOYMENT_PLAN.md at loop closeout, reusing prior cloud, LLM, and deployment decisions from plan/main_plan.md, DECISIONS.md, and DOUBTS.md. Use when /plan, /product-develop, or /loop-engine completes, or when deployment planning is needed.
+description: Writes or refreshes DEPLOYMENT_PLAN.md at loop closeout, reusing prior cloud, LLM, and deployment decisions from plan/main_plan.md, DECISIONS.md, and DOUBTS.md. Use when /plan-loop, /product-develop, or /loop-engine completes, or when deployment planning is needed.
 ---
 
 # Deployment Plan
@@ -11,7 +11,7 @@ Produce a durable deployment plan when planning or development loops complete. R
 
 ## When To Run
 
-- At closeout of `/plan` once deployment choices are captured or marked TBD
+- At closeout of `/plan-loop` once deployment choices are captured or marked TBD
 - At closeout of `/product-develop`
 - At closeout of `/loop-engine`
 - After `/release-check` when preparing production launch

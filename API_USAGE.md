@@ -40,7 +40,7 @@ Send these files in the user message or retrieval context:
 ## Prompt Template
 
 ```text
-Command: /plan
+Command: /plan-loop
 
 Context files:
 [paste or retrieve MEMORY.md]

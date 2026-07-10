@@ -90,7 +90,7 @@ def converge(workspace: Path) -> tuple[Path | None, list[str]]:
     suggestions: list[str] = []
 
     if not artifacts["spec"].exists():
-        gaps.append("Missing spec.md — run `/feature-new` or complete spec during `/plan`.")
+        gaps.append("Missing spec.md — run `/feature-new` or complete spec during `/plan-loop`.")
     if not artifacts["tasks"].exists():
         gaps.append("Missing tasks.md — run `skills/task-compiler/SKILL.md` after feature-plan.")
     if artifacts["spec"].exists() and not artifacts["clarifications"].exists():

@@ -4,7 +4,7 @@ See [`docs/DATA_LAYOUT.md`](DATA_LAYOUT.md) for the full layout.
 
 ## Auto-detection (default behavior)
 
-When you run `/plan`, `/loop-engine`, or any loop script:
+When you run `/plan-loop`, `/loop-engine`, or any loop script:
 
 1. **Local `.loop-engineer/` folder detected** in cwd or a parent → use `<that-folder>/.loop-engineer/`
 2. **No local data** → use global `~/.loop-engineer/data/`

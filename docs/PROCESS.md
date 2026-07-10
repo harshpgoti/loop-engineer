@@ -2,7 +2,7 @@
 
 Loop Engineering OS has three command loops.
 
-## `/plan`
+## `/plan-loop`
 
 ```text
 detect init
@@ -20,7 +20,7 @@ detect init
 
 Key skills:
 
-- `skills/plan/SKILL.md`
+- `skills/plan-loop/SKILL.md`
 - `skills/product-grill/SKILL.md`
 - `skills/product-council/SKILL.md`
 - `skills/task-compiler/SKILL.md`
@@ -87,7 +87,7 @@ When called from `/product-develop` or `/loop-engine`, P0/P1 technical blockers 
 ## `/deployment-plan`
 
 ```text
-read decisions/doubts/plan
+read decisions/doubts/plan-loop
 -> reuse known cloud/LLM/deployment answers
 -> identify open deployment questions
 -> write DEPLOYMENT_PLAN.md

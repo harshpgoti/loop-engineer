@@ -37,7 +37,7 @@ loop recall --query "deployment AWS"
 
 ## When To Run
 
-- At the start of `/plan`, `/product-develop`, and `/loop-engine`
+- At the start of `/plan-loop`, `/product-develop`, and `/loop-engine`
 - Before asking the user a question that may already be answered in past sessions
 - After long gaps between sessions
 

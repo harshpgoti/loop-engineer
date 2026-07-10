@@ -44,4 +44,4 @@ Before acting, read:
 
 ## Product
 
-Product details come from `plan/main_plan.md` and `plan/`. If uninitialized, run `/plan`.
+Product details come from `plan/main_plan.md` and `plan/`. If uninitialized, run `/plan-loop`.

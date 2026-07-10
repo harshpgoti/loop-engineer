@@ -18,7 +18,7 @@ Design patterns used in this OS:
 
 ## Two-Step Loop
 
-### Step 1 — Discovery (`/plan`)
+### Step 1 — Discovery (`/plan-loop`)
 
 Initialize product → brainstorm → evidence → interviews → score → PRD → ADR → tasks
 
@@ -38,7 +38,7 @@ Release: staging deploy, smoke, rollback drill, audit log check.
 
 ## Risk And Compliance Baseline
 
-Industry-neutral template. Replace during `/plan` with product-specific requirements.
+Industry-neutral template. Replace during `/plan-loop` with product-specific requirements.
 
 - Do not store secrets in git.
 - Do not put sensitive data in logs, fixtures, screenshots, or prompts.
@@ -52,7 +52,7 @@ Use primary sources and standards for product-specific evidence. Use arXiv and R
 
 ## AI agent as the product
 
-If the product itself is, or includes, an AI agent (chatbot, workflow automation, multi-agent system), `skills/agent-builder/SKILL.md` auto-activates during `/plan` and `/product-develop` — see `docs/AGENT_BUILDER.md`. It scaffolds `agent/AGENT_ARCHITECTURE.md`, `agent/skills/`, `agent/tools/`, `agent/evals/` and wires in `skills/model-providers/SKILL.md` for the model choice.
+If the product itself is, or includes, an AI agent (chatbot, workflow automation, multi-agent system), `skills/agent-builder/SKILL.md` auto-activates during `/plan-loop` and `/product-develop` — see `docs/AGENT_BUILDER.md`. It scaffolds `agent/AGENT_ARCHITECTURE.md`, `agent/skills/`, `agent/tools/`, `agent/evals/` and wires in `skills/model-providers/SKILL.md` for the model choice.
 
 ## Current Tasks
 

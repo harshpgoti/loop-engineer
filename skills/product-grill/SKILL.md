@@ -1,6 +1,6 @@
 ---
 name: product-grill
-description: Challenges product assumptions, asks hard user questions, records unresolved doubts, and prevents weak strategy from becoming product debt. Use during /plan, pivots, ICP decisions, pricing, compliance, and architecture choices.
+description: Challenges product assumptions, asks hard user questions, records unresolved doubts, and prevents weak strategy from becoming product debt. Use during /plan-loop, pivots, ICP decisions, pricing, compliance, and architecture choices.
 ---
 
 # Product Grill

@@ -9,7 +9,7 @@
 | Asset | Location | Status |
 |-------|----------|--------|
 | Loop OS | this repo | **Active** — commands, skills, adapters, gates |
-| Portable commands | `commands/` | **Active** — `/plan`, `/product-develop`, `/loop-engine` |
+| Portable commands | `commands/` | **Active** — `/plan-loop`, `/product-develop`, `/loop-engine` |
 | Canonical skills | `skills/` | **Active** — shared by all tools |
 | Tool adapters | `ADAPTERS.md`, `CLAUDE.md`, `CODEX.md`, `OPENCODE.md`, `GROK.md`, `API_USAGE.md` | **Active** |
 | Human-mind memory | `memories/MEMORY.md` | **Active** |
@@ -28,8 +28,8 @@
 ## Blockers
 
 1. Product is not initialized.
-2. `/product-develop` is blocked until `/plan` creates a usable plan.
+2. `/product-develop` is blocked until `/plan-loop` creates a usable plan.
 
 ## Next agent action
 
-Run `/plan`.
+Run `/plan-loop`.

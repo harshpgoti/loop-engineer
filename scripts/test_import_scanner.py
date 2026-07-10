@@ -120,7 +120,7 @@ class TestRouting(ScannerSandbox):
         (self.source / "roadmap.md").write_text("Roadmap: MVP milestone 1, sprint plan, acceptance criteria.", encoding="utf-8")
         results = sc.run_scan_import(self.workspace, self.source)
         self.assertTrue((self.workspace / "plan" / "imported" / "roadmap.md").exists())
-        self.assertTrue(any("/plan" in r for r in results))
+        self.assertTrue(any("/plan-loop" in r for r in results))
 
     def test_unknown_staged_for_review(self) -> None:
         (self.source / "misc.md").write_text("lorem ipsum dolor sit amet", encoding="utf-8")

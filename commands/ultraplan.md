@@ -9,16 +9,16 @@ If scale is `platform` in `plan/PLAN_SCALE.md`, or the user describes multiple a
 ## Scripts
 
 ```bash
-loop plan scale --write
-loop plan modules "Agent A" "Portal B" --types agent product
-loop plan decompose
-loop plan ultraplan next
-loop plan ultraplan status
+loop plan-loop scale --write
+loop plan-loop modules "Agent A" "Portal B" --types agent product
+loop plan-loop decompose
+loop plan-loop ultraplan next
+loop plan-loop ultraplan status
 ```
 
 ## Wired From
 
-- `/plan` when `plan/PLAN_SCALE.md` says `platform`
+- `/plan-loop` when `plan/PLAN_SCALE.md` says `platform`
 - `/loop-engine` planning branch when ultraplan incomplete
 
 ## Output

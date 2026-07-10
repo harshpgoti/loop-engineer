@@ -1,6 +1,6 @@
 ---
 name: plan
-description: Runs product planning: initialize a fresh product plan, brainstorm, grill, validate evidence, draft PRD/architecture/ADRs, capture deployment targets early, and prepare implementation tasks. Use when the user types /plan or asks to prepare product development.
+description: Runs product planning: initialize a fresh product plan, brainstorm, grill, validate evidence, draft PRD/architecture/ADRs, capture deployment targets early, and prepare implementation tasks. Use when the user types /plan-loop or asks to prepare product development.
 ---
 
 # Plan
@@ -11,7 +11,7 @@ Turn a product idea into a validated, buildable plan. On a fresh clone, initiali
 
 ## Command
 
-`/plan`
+`/plan-loop`
 
 ## Read First
 
@@ -53,7 +53,7 @@ SESSION-START -> SCALE DETECT -> [CONVENIENT: STEP + FEATURE] | [PLATFORM: MAP -
 
 ## Instructions
 
-0. Run `loop session-start --command /plan --text "<user idea>"` (or `loop plan "<idea>"`) and read `plan/PLAN_BOOTSTRAP.md`.
+0. Run `loop session-start --command /plan-loop --text "<user idea>"` (or `loop plan-loop "<idea>"`) and read `plan/PLAN_BOOTSTRAP.md`.
 1. `session-start` auto-detects agent-development signals — if `plan/AUTO_AGENT_SKILLS.md` was written, read it and `skills/agent-builder/SKILL.md` before drafting architecture.
 3. If **`platform`**: follow bootstrap next step — `skills/ultraplan/SKILL.md` (one step per session). Do not shallow-plan all modules.
 4. If **`convenient`**: follow steps below (single step + feature spec).
@@ -83,7 +83,7 @@ SESSION-START -> SCALE DETECT -> [CONVENIENT: STEP + FEATURE] | [PLATFORM: MAP -
 15. Update `memories/MEMORY.md`, `DOUBTS.md`, `HANDOFF.md`, and `.ai/SESSION_LOG.md`.
 16. Run `memory-review` at closeout with `--stage` by default (`loop memory review --stage`).
 17. Run `compact-loop` when planning is long, many files changed, the user may switch tools, or the context is getting heavy.
-18. Run `loop session-end --command /plan` (mandatory closeout).
+18. Run `loop session-end --command /plan-loop` (mandatory closeout).
 
 ## Optional Initializer
 

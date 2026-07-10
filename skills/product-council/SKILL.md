@@ -1,6 +1,6 @@
 ---
 name: product-council
-description: Runs a lightweight senior product council across strategy, product, architecture, engineering, design, QA, security, and release perspectives. Use during /plan, major pivots, PRD review, architecture review, and before development gates.
+description: Runs a lightweight senior product council across strategy, product, architecture, engineering, design, QA, security, and release perspectives. Use during /plan-loop, major pivots, PRD review, architecture review, and before development gates.
 ---
 
 # Product Council

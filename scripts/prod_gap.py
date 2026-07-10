@@ -90,7 +90,7 @@ def analyze(workspace: Path) -> str:
         p0.append("Product is not initialized in `main_plan.md`.")
         non_technical.append("Product name, target user, problem, first step, and constraints are still missing.")
         human_required.append("User must provide product initialization inputs or approve defaults.")
-        recommended.append("Run `/plan` to initialize the product plan.")
+        recommended.append("Run `/plan-loop` to initialize the product plan.")
 
     if "open" in doubts.lower():
         p1.append("There are unresolved questions in `DOUBTS.md`.")
@@ -102,7 +102,7 @@ def analyze(workspace: Path) -> str:
         p1.append("Product-critical evidence is missing or not yet collected.")
         non_technical.append("Add sourced evidence to `EVIDENCE_LOG.md` for major product assumptions.")
         agent_solvable.append("Agent can research and draft evidence entries if sources are available.")
-        recommended.append("Run `/plan` product research / fact-check pass.")
+        recommended.append("Run `/plan-loop` product research / fact-check pass.")
 
     if "No product decisions yet" in decisions:
         p1.append("No product or architecture decisions are recorded.")
@@ -124,7 +124,7 @@ def analyze(workspace: Path) -> str:
         p0.append("Product is initialized but no `plan/step_*.md` file exists.")
         technical.append("The first product step needs a step plan before development can proceed.")
         agent_solvable.append("Agent can create the first step plan from `main_plan.md` if product direction is clear.")
-        recommended.append("Run `/plan` to create the first step plan.")
+        recommended.append("Run `/plan-loop` to create the first step plan.")
 
     if not (workspace / "docs" / "TEST_PLAN.md").exists():
         p1.append("Test plan document is missing.")

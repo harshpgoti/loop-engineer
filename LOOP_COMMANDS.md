@@ -4,7 +4,7 @@ Use these directly in any agent that can access the repo:
 
 ```text
 /setup-loop-engine
-/plan
+/plan-loop
 /product-develop
 /loop-engine
 /prod-gap
@@ -25,7 +25,7 @@ Use these directly in any agent that can access the repo:
 /spec-clarify
 /spec-checklist
 /feature-converge
-/plan <idea>
+/plan-loop <idea>
 /loop-engine <idea>
 /ultraplan
 /model
@@ -38,7 +38,7 @@ CLI:
 ```bash
 loop setup
 loop doctor
-loop plan "your full product idea here"
+loop plan-loop "your full product idea here"
 loop model setup
 loop model models anthropic
 loop model anthropic:<model-id>
@@ -64,7 +64,7 @@ The agent must route the command through `commands/*.md` and update `memories/ME
 | Command | Runs | Use when |
 |---------|------|----------|
 | `/setup-loop-engine` | `commands/setup-loop-engine.md` | First-time setup and product workspace registration |
-| `/plan` | `commands/plan.md` | Brainstorming, validation, grilling, PRD, architecture |
+| `/plan-loop` | `commands/plan-loop.md` | Brainstorming, validation, grilling, PRD, architecture |
 | `/product-develop` | `commands/product-develop.md` | Build frontend/backend/db/agents/QA/security/CI/CD |
 | `/loop-engine` | `commands/loop-engine.md` | All-in-one loop that chooses plan or build based on gates |
 | `/prod-gap` | `commands/prod-gap.md` | Analyze product requirements/progress and write `plan/PROD-GAP.md` |
@@ -94,7 +94,7 @@ The agent must route the command through `commands/*.md` and update `memories/ME
 
 | Alias | Command |
 |-------|---------|
-| `/startup-discovery-loop` | `/plan` |
+| `/startup-discovery-loop` | `/plan-loop` |
 | `/startup-build-loop` | `/product-develop` |
 | `/develop-product` | `/product-develop` |
 | `/all-in-one` | `/loop-engine` |
@@ -106,8 +106,8 @@ If using an API without filesystem access, send the contents of the relevant `co
 ```python
 import anthropic  # or openai
 
-system = open("commands/plan.md").read()
-user = "/plan"
+system = open("commands/plan-loop.md").read()
+user = "/plan-loop"
 # call API with system + user content
 ```
 

@@ -142,5 +142,5 @@ Installed.
   CLI:          loop
 
 Open your agent in: $APP
-Then run: /plan
+Then run: /plan-loop
 EOF

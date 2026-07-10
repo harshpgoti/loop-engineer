@@ -3,7 +3,7 @@
 ## Fixed loops (Cursor)
 
 ```text
-/loop 2h /plan — Step 1 task from HANDOFF.md
+/loop 2h /plan-loop — Step 1 task from HANDOFF.md
 /loop 1h /product-develop — Step 2 task from HANDOFF.md (after G-ARCH-01)
 /loop 30m Check GitHub Actions + update HANDOFF if red
 /loop 4h /compact-loop — refresh COMPACT.md during long sessions
@@ -26,7 +26,7 @@ Agent picks delay based on work:
 
 1. Commit or stash WIP.
 2. Update `HANDOFF.md` with exact file paths and next command.
-3. In the new tool, type `/plan`, `/product-develop`, or `/loop-engine`.
+3. In the new tool, type `/plan-loop`, `/product-develop`, or `/loop-engine`.
 4. The adapter should read `AGENTS.md`, `skills/`, memory files, and `HANDOFF.md` automatically.
 
 ## Optional sandboxed runs

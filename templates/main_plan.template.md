@@ -16,7 +16,7 @@ Status: **INITIALIZED**
 
 ## Deployment & Infrastructure
 
-Captured during `/plan`. Reused by `/deployment-plan` unless the user changes it.
+Captured during `/plan-loop`. Reused by `/deployment-plan` unless the user changes it.
 
 | Item | Choice |
 |------|--------|
@@ -50,7 +50,7 @@ Captured during `/plan`. Reused by `/deployment-plan` unless the user changes it
 | Platform map | `plan/PRODUCT_MAP.md` when scale is platform |
 | Ultraplan tracker | `plan/ULTRAPLAN_STATUS.md` when scale is platform |
 
-Run `loop plan scale --write` after capturing the user's idea.
+Run `loop plan-loop scale --write` after capturing the user's idea.
 
 ## Operating Principles
 
@@ -68,7 +68,7 @@ Run `loop plan scale --write` after capturing the user's idea.
 | Product repo | {{PRODUCT_REPO_STRATEGY}} |
 | Customer/user evidence | {{EVIDENCE_STATUS}} |
 | Sensitive data policy | {{SENSITIVE_DATA_POLICY}} |
-| Next command | `/plan` |
+| Next command | `/plan-loop` |
 
 ## Open Strategy Questions
 

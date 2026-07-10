@@ -1,7 +1,7 @@
 # Customer Discovery Interview Script
 
 **Duration:** 15 minutes  
-**Target:** The user/persona defined in `plan/main_plan.md` after `/plan`.
+**Target:** The user/persona defined in `plan/main_plan.md` after `/plan-loop`.
 
 ## Intro (1 min)
 

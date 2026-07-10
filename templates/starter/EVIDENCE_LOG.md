@@ -24,4 +24,4 @@ No product evidence yet.
 ## Research queue
 
 - [ ] Define product before research.
-- [ ] After `/plan`, add product-specific market, user, competitor, technical, and regulatory research questions.
+- [ ] After `/plan-loop`, add product-specific market, user, competitor, technical, and regulatory research questions.

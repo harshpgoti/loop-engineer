@@ -64,7 +64,7 @@ def find_human_blockers(doubts_text: str, prod_gap_text: str) -> list[str]:
 
 def recommend_next_command(main_plan: str, current_state: str, gates: str, tasks: str) -> str:
     if "Status: **UNINITIALIZED**" in main_plan:
-        return "/plan"
+        return "/plan-loop"
     if "blocked" in gates.lower():
         if "status: blocked" in tasks.lower():
             return "/product-develop"

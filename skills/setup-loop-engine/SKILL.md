@@ -14,7 +14,7 @@ description: First-time setup with global (~/.loop-engineer/data/) or local (<pr
 
 ## Auto-detection
 
-After local setup, `/plan` and `/loop-engine` auto-use the product folder when loop data exists there.
+After local setup, `/plan-loop` and `/loop-engine` auto-use the product folder when loop data exists there.
 
 ## Commands
 

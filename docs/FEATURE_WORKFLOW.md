@@ -4,7 +4,7 @@ Built-in spec-driven development for one feature at a time. This is Loop Enginee
 
 ## When to use
 
-- **`/plan`:** After a step plan exists, create the active feature spec.
+- **`/plan-loop`:** After a step plan exists, create the active feature spec.
 - **`/product-develop`:** Implement from active feature `tasks.md`.
 - **Closeout:** Drift check via `/feature-converge` (auto on `loop session-end` for product-develop).
 
@@ -35,7 +35,7 @@ plan/features/001-auth-login/
 ## Flow
 
 ```text
-/plan → step plan → /feature-new → spec.md
+/plan-loop → step plan → /feature-new → spec.md
      → /spec-clarify → /spec-checklist → feature-plan.md
      → task-compiler → tasks.md + TASKS.yml
 /product-develop → implement tasks → /feature-converge → session-end

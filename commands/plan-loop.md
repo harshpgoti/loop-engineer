@@ -1,23 +1,23 @@
-# /plan
+# /plan-loop
 
 Run Step 1: initialize product planning, validation, grilling, evidence, PRD, architecture, and development instructions.
 
 ## How To Interpret
 
-If the user says `/plan`, `/plan <idea>`, `/startup-discovery-loop`, `plan`, or describes a product idea, execute this file directly. Do not ask for `AGENT_BOOT_SEQUENCE.md`.
+If the user says `/plan-loop`, `/plan-loop <idea>`, `/startup-discovery-loop`, `plan`, or describes a product idea, execute this file directly. Do not ask for `AGENT_BOOT_SEQUENCE.md`.
 
 **User types only the idea.** Loop Engineer auto-detects scale, decomposes modules, and routes ultraplan — no manual scale/decompose commands.
 
 ## One command (required first step)
 
 ```bash
-loop session-start --command /plan --tool "<tool>" --text "<user's full product idea>"
-loop plan "<user's full product idea>"
+loop session-start --command /plan-loop --tool "<tool>" --text "<user's full product idea>"
+loop plan-loop "<user's full product idea>"
 ```
 
 Both run the same auto-bootstrap → read **`plan/PLAN_BOOTSTRAP.md`** before other plan reads.
 
-Advanced (agent-only, not for users): `loop plan scale`, `loop plan decompose`, `loop plan ultraplan next`.
+Advanced (agent-only, not for users): `loop plan-loop scale`, `loop plan-loop decompose`, `loop plan-loop ultraplan next`.
 
 ## Required Reads
 
@@ -29,7 +29,7 @@ Read command/skill files from the tool app (`~/.loop-engineer/app/` or your clon
 4. `memories/MEMORY.md`
 5. `CONTEXT.md`
 6. `DOUBTS.md`
-7. `skills/plan/SKILL.md`
+7. `skills/plan-loop/SKILL.md`
 8. `skills/ultraplan/SKILL.md`
 9. `skills/session-lifecycle/SKILL.md`
 9. `skills/feature-workflow/SKILL.md`
@@ -65,7 +65,7 @@ SESSION-START → RECALL → PLAN → GRILL → EVIDENCE → PRD → ARCHITECTUR
 
 | Step | Feature | Command / script |
 |------|---------|------------------|
-| Start | Session lifecycle | `loop session-start --command /plan --text "<idea>"` |
+| Start | Session lifecycle | `loop session-start --command /plan-loop --text "<idea>"` |
 | Bootstrap | **Auto plan from idea** | `plan/PLAN_BOOTSTRAP.md` (scale + map + ultraplan route) |
 | Bootstrap | Recall + manifest | `plan/SESSION_MANIFEST.md`, `SESSION_RECALL.md` |
 | Setup | Model provider (API inference) | `loop model setup` → `plan/MODEL_STATUS.md` |
@@ -76,12 +76,12 @@ SESSION-START → RECALL → PLAN → GRILL → EVIDENCE → PRD → ARCHITECTUR
 | Plan | Deployment | `deployment_plan.py --source plan` |
 | Plan | Validate | `validate_outputs.py` |
 | End | Memory + compact | `memory review --stage`, `/compact-loop` if long |
-| End | Session lifecycle | `loop session-end --command /plan` |
+| End | Session lifecycle | `loop session-end --command /plan-loop` |
 
 ## Always-on lifecycle (first and last step)
 
 ```bash
-loop session-start --command /plan --tool "<tool>"
+loop session-start --command /plan-loop --tool "<tool>"
 ```
 
 Read `plan/SESSION_MANIFEST.md` before other required reads.
@@ -89,7 +89,7 @@ Read `plan/SESSION_MANIFEST.md` before other required reads.
 At closeout (after memory/handoff updates):
 
 ```bash
-loop session-end --command /plan --summary "<progress>"
+loop session-end --command /plan-loop --summary "<progress>"
 ```
 
 ```text
@@ -100,9 +100,9 @@ RECALL → DETECT INIT → ASK/INFER (PRODUCT + DEPLOYMENT) → GRILL → COUNCI
 
 0. **Session start + auto-bootstrap** (pass the user's idea as `--text`):
    ```bash
-   loop session-start --command /plan --tool "<tool>" --text "<user product idea>"
+   loop session-start --command /plan-loop --tool "<tool>" --text "<user product idea>"
    ```
-   Or: `loop plan "<user product idea>"`
+   Or: `loop plan-loop "<user product idea>"`
    Read `plan/PLAN_BOOTSTRAP.md` then `plan/SESSION_MANIFEST.md`. Do **not** ask the user to run scale/decompose/ultraplan manually.
 1. **Detect initialization.** If `plan/main_plan.md` says `Status: **UNINITIALIZED**`, initialize the user's product plan.
 2. **Ask for required product inputs:** product name, target user, problem, first product step, constraints, sensitive data, preferred stack.
@@ -170,10 +170,10 @@ Already bootstrapped: `PRODUCT_MAP.md`, step stubs, `plan/steps/NN-slug/` folder
    python scripts/memory_curator.py --stage
    loop memory review --stage
    ```
-24. **Run `/compact-loop` when planning is long, many files changed, the user may switch tools, or the context is getting heavy.** At minimum, ensure `COMPACT.md` is current before ending a large `/plan` session.
+24. **Run `/compact-loop` when planning is long, many files changed, the user may switch tools, or the context is getting heavy.** At minimum, ensure `COMPACT.md` is current before ending a large `/plan-loop` session.
 25. **Session end** (mandatory — runs memory-review staging):
     ```bash
-    loop session-end --command /plan --summary "<progress>"
+    loop session-end --command /plan-loop --summary "<progress>"
     ```
 
 ## Output
@@ -192,7 +192,7 @@ Return:
 10. Gate status
 11. Compact status (`COMPACT.md` updated or why not needed)
 12. Memory review status (`plan/MEMORY_REVIEW.md`, pending writes if staged)
-13. Next command: `/plan`, `/ultraplan`, `/product-develop`, or `/loop-engine`
+13. Next command: `/plan-loop`, `/ultraplan`, `/product-develop`, or `/loop-engine`
 
 ## Stop Conditions
 

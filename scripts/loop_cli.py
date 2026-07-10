@@ -298,8 +298,8 @@ def cmd_plan(args: argparse.Namespace) -> int:
     tokens: list[str] = getattr(args, "tokens", None) or []
 
     if not tokens:
-        print('Usage: loop plan "<product idea>"', file=sys.stderr)
-        print("   or: loop plan scale|modules|decompose|ultraplan ...", file=sys.stderr)
+        print('Usage: loop plan-loop "<product idea>"', file=sys.stderr)
+        print("   or: loop plan-loop scale|modules|decompose|ultraplan ...", file=sys.stderr)
         return 2
 
     head = tokens[0]
@@ -349,7 +349,7 @@ def cmd_plan(args: argparse.Namespace) -> int:
 
     if head == "ultraplan":
         if len(tokens) < 2 or tokens[1] not in ("status", "next"):
-            print("usage: loop plan ultraplan status|next", file=sys.stderr)
+            print("usage: loop plan-loop ultraplan status|next", file=sys.stderr)
             return 2
         return run_script("ultraplan_harness.py", [tokens[1], *extra])
 
@@ -499,8 +499,8 @@ def build_parser() -> argparse.ArgumentParser:
     feature_sub.add_parser("converge", help="Drift check for active feature.").set_defaults(func=cmd_feature)
 
     plan = sub.add_parser(
-        "plan",
-        help='Auto-plan from idea: loop plan "your product idea" (scale + ultraplan automatic).',
+        "plan-loop",
+        help='Auto-plan from idea: loop plan-loop "your product idea" (scale + ultraplan automatic).',
     )
     plan.add_argument(
         "tokens",

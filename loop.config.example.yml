@@ -8,7 +8,7 @@ loop_engine: .
 product_workspace: ../product
 
 commands:
-  plan: commands/plan.md
+  plan: commands/plan-loop.md
   product_develop: commands/product-develop.md
   loop_engine: commands/loop-engine.md
   compact_loop: commands/compact-loop.md

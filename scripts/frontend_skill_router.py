@@ -225,7 +225,7 @@ def pick_skills(context: str, max_skills: int = 3) -> list[tuple[str, str]]:
 
     results: list[tuple[str, str]] = []
     for name, score in ranked[:max_skills]:
-        reason = f"matched task/plan signals (score {score})"
+        reason = f"matched task/plan-loop signals (score {score})"
         if locked == name:
             reason = f"locked by DECISIONS.md ({reason})"
         results.append((name, reason))

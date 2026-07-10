@@ -302,7 +302,7 @@ def deployment_table_markdown(values: dict[str, str]) -> str:
     lines = [
         "## Deployment & Infrastructure",
         "",
-        "Captured during `/plan`. Reused by `/deployment-plan` unless the user changes it.",
+        "Captured during `/plan-loop`. Reused by `/deployment-plan` unless the user changes it.",
         "",
         "| Item | Choice |",
         "|------|--------|",
@@ -321,7 +321,7 @@ def append_decisions(workspace: Path, decisions: dict[str, str]) -> None:
     if not path.exists():
         path.write_text("# Decision Log\n\n", encoding="utf-8")
 
-    lines = [f"\n## {date.today().isoformat()} — Deployment decisions from /plan\n"]
+    lines = [f"\n## {date.today().isoformat()} — Deployment decisions from /plan-loop\n"]
     for label, value in decisions.items():
         lines.append(f"- **{label}:** {value}\n")
     with path.open("a", encoding="utf-8") as handle:
@@ -329,7 +329,7 @@ def append_decisions(workspace: Path, decisions: dict[str, str]) -> None:
 
 
 def planning_questions_markdown() -> str:
-    lines = ["## Deployment Questions To Capture During /plan", ""]
+    lines = ["## Deployment Questions To Capture During /plan-loop", ""]
     for key in PLANNING_QUESTION_KEYS:
         topic = topic_by_key(key)
         if topic:

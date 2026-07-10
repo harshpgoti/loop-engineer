@@ -28,7 +28,7 @@ loop feature list
 
 ## Wired From
 
-- `/plan` step 14–15 (after step plan, before task-compiler)
+- `/plan-loop` step 14–15 (after step plan, before task-compiler)
 - `/loop-engine` when entering planning for a new module
 
 ## Output

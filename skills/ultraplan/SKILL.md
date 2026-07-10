@@ -1,6 +1,6 @@
 ---
 name: ultraplan
-description: Deep per-step planning for platform-scale products with multiple sub-products or AI agents. Use during /plan when plan/PLAN_SCALE.md is platform, or when the user types /ultraplan.
+description: Deep per-step planning for platform-scale products with multiple sub-products or AI agents. Use during /plan-loop when plan/PLAN_SCALE.md is platform, or when the user types /ultraplan.
 ---
 
 # Ultraplan
@@ -16,7 +16,7 @@ When the user's idea is **platform-scale** (multiple sub-products, agents, or ma
 | `convenient` | Standard `plan/step_XX.md` + feature spec — skip ultraplan |
 | `platform` | `PRODUCT_MAP.md` + `plan/steps/NN-slug/` ultraplan pack per step |
 
-Detect scale: automatic via `loop plan "<idea>"` → `plan/PLAN_SCALE.md`.
+Detect scale: automatic via `loop plan-loop "<idea>"` → `plan/PLAN_SCALE.md`.
 
 ## Read First
 
@@ -30,28 +30,28 @@ Detect scale: automatic via `loop plan "<idea>"` → `plan/PLAN_SCALE.md`.
 
 ## Command
 
-`/ultraplan` — usually **automatic** via `loop plan "<idea>"` or session-start `--text`.
+`/ultraplan` — usually **automatic** via `loop plan-loop "<idea>"` or session-start `--text`.
 
 ## Auto-bootstrap (default)
 
-User says `/plan <idea>` or `/loop-engine <idea>`. Agent runs `loop session-start --text "<idea>"` or `loop plan "<idea>"`. Read `plan/PLAN_BOOTSTRAP.md` first.
+User says `/plan-loop <idea>` or `/loop-engine <idea>`. Agent runs `loop session-start --text "<idea>"` or `loop plan-loop "<idea>"`. Read `plan/PLAN_BOOTSTRAP.md` first.
 
 ## Platform bootstrap (automatic)
 
 When the user's message contains a product idea, bootstrap already ran. Verify `plan/PLAN_BOOTSTRAP.md`.
 
-If platform and modules missing from bootstrap, propose rows in `PRODUCT_MAP.md` and re-run `loop plan "<idea>"`.
+If platform and modules missing from bootstrap, propose rows in `PRODUCT_MAP.md` and re-run `loop plan-loop "<idea>"`.
 
 ## Deep-plan one step (one session)
 
-1. Run `loop plan ultraplan next` — pick the next incomplete step.
+1. Run `loop plan-loop ultraplan next` — pick the next incomplete step.
 2. Fill **every** file in `plan/steps/NN-slug/`:
    - `overview.md` — role in platform, metrics
    - `prd.md` — requirements, stories, NFRs
    - `architecture.md` — components, APIs, ADRs
    - `agents.md` — required for type `agent`; else N/A
    - `data-model.md`, `integrations.md`, `risks.md`, `acceptance.md`
-3. Run `loop plan ultraplan status` — refresh tracker.
+3. Run `loop plan-loop ultraplan status` — refresh tracker.
 4. Repeat until all steps complete.
 5. For the **active** step only: `loop feature new` → `/spec-clarify` → `/spec-checklist` → task-compiler.
 
@@ -78,5 +78,5 @@ Before marking a step ultraplan-complete:
 
 ## Wiring
 
-- **`/plan`:** After scale detect — branch to ultraplan for platform
+- **`/plan-loop`:** After scale detect — branch to ultraplan for platform
 - **`/loop-engine`:** Routes to ultraplan when `PLAN_SCALE.md` is platform and ultraplan incomplete

@@ -79,7 +79,7 @@ Adjust paths if `loop` is not on PATH (use full path to `~/.loop-engineer/bin/lo
 
 | Situation | Start | End |
 |-----------|-------|-----|
-| `/plan`, `/product-develop`, `/loop-engine` | Yes | Yes |
+| `/plan-loop`, `/product-develop`, `/loop-engine` | Yes | Yes |
 | Switching Cursor → Claude Code mid-product | Yes (refreshes manifest) | End previous tool first |
 | Quick question in product repo | Start if touching plan/code | End if you changed state files |
 

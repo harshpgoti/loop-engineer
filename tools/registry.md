@@ -9,12 +9,12 @@ naming or linking these externally again inline, so there is one place to update
 
 | Section | Meaning |
 |---------|---------|
-| **Loop Engineer defaults** | Built into `/plan`, `/product-develop`, `skills/`, and `~/.loop-engineer/data/` |
+| **Loop Engineer defaults** | Built into `/plan-loop`, `/product-develop`, `skills/`, and `~/.loop-engineer/data/` |
 | **Optional external extensions** | Third-party tools you may wire in when a gate or product need justifies it |
 | **Research paper sources** | Live sources `skills/research-search/SKILL.md` queries |
 | **Agent skill hub references** | External skill/plugin marketplaces `skills/agent-builder/SKILL.md` may consult, read-only |
 
-Do not add an external tool just because it is listed. Add it only when `/plan` or `GATES.yml` requires the capability.
+Do not add an external tool just because it is listed. Add it only when `/plan-loop` or `GATES.yml` requires the capability.
 
 ---
 
@@ -27,7 +27,7 @@ Do not add an external tool just because it is listed. Add it only when `/plan` 
 | AI agent development | Architecture, scaffolding, skill authoring | `skills/agent-builder`, `agent/` scaffold |
 | Model providers | API-hosted inference, any provider/model | `skills/model-providers`, `providers/registry.yml` |
 | Research grounding | Literature search for evidence-backed claims | `skills/research-search` |
-| Planning | PRD, ADRs, tasks, feature specs | `/plan`, `plan/main_plan.md`, `plan/`, `plan/features/` |
+| Planning | PRD, ADRs, tasks, feature specs | `/plan-loop`, `plan/main_plan.md`, `plan/`, `plan/features/` |
 | Build | Implementation + gates | `/product-develop`, `TASKS.yml`, `GATES.yml` |
 | Frontend motion / 3D | Built-in animation skills | `skills/frontend-animation`, `ui-motion`, `gsap-*`, `webgl-3d`, `react-3d` |
 | Review | Code + security review | `skills/code-reviewer`, `skills/security-compliance` |
@@ -98,4 +98,4 @@ Read-only research for `skills/agent-builder/SKILL.md` step 8 when designing a p
 - Keep named external tools/URLs in this file only — other skills/docs/commands should link here, not repeat the name/URL inline, so there is one place to update.
 - Prefer deterministic parsers and validators before RAG or LLM workflows.
 - Keep product memory in Loop Engineer paths; external tools are adapters, not replacements.
-- Update this file when `/plan` selects an integration and document the gate that required it.
+- Update this file when `/plan-loop` selects an integration and document the gate that required it.

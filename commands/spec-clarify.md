@@ -14,7 +14,7 @@ If the user says `/spec-clarify`, execute this file and `skills/spec-clarify/SKI
 
 ## Wired From
 
-- `/plan` after feature spec draft, before spec-checklist
+- `/plan-loop` after feature spec draft, before spec-checklist
 - `/product-develop` when blocked on ambiguous requirements
 
 ## Output

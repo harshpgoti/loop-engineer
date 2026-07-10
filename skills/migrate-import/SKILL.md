@@ -33,7 +33,7 @@ rules first, no LLM call) and routed:
 | behavior rules / persona / prompts | appended to `memories/SOUL.md` |
 | project memory / notes / logs | appended to `memories/MEMORY.md` |
 | how-tos / runbooks / procedures | `skills/imported/<slug>.md` (frontmatter added) |
-| plans / roadmaps / PRDs / specs | `plan/imported/` — absorb via `/plan` next session |
+| plans / roadmaps / PRDs / specs | `plan/imported/` — absorb via `/plan-loop` next session |
 | secrets / API keys | **never copied** — warned; re-enter via `loop model set-key` |
 | binary / unclassifiable | skipped / staged in `.loop/import-review/` for manual review |
 

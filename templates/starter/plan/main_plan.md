@@ -8,7 +8,7 @@ Reusable loop mechanics live in `skills/`, `commands/`, and adapter files. Produ
 
 ## First-Run Rule
 
-When `/plan` runs and this file is still uninitialized, the agent must:
+When `/plan-loop` runs and this file is still uninitialized, the agent must:
 
 1. Ask the user for product name, target user, problem, first step, constraints, desired build stack, and deployment targets (cloud provider, single vs multi-cloud, LLM provider/model).
 2. If the user is unavailable, write questions to `DOUBTS.md`.
@@ -52,7 +52,7 @@ TBD.
 
 ## Step Plan Index
 
-No product steps created yet. First `/plan` should create:
+No product steps created yet. First `/plan-loop` should create:
 
 ```text
 plan/step_01_<slug>.md
@@ -69,7 +69,7 @@ plan/step_01_<slug>.md
 
 ## Planning Workflow
 
-When `/plan` runs:
+When `/plan-loop` runs:
 
 1. Update this file for product-level strategy.
 2. Create/update `plan/step_XX_<module>.md` for module-level detail.
@@ -87,7 +87,7 @@ When `/plan` runs:
 | Product repo | TBD |
 | Customer/user evidence | None |
 | Sensitive data policy | TBD |
-| Next command | `/plan` |
+| Next command | `/plan-loop` |
 
 ## Development Workflow
 

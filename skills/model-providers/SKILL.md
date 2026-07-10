@@ -65,4 +65,4 @@ Auth is API-key / env-var / no-auth only. OAuth device/browser flows and AWS cre
 
 - `loop session-start` manifest lists active model.
 - `loop doctor` includes model checks.
-- `/plan`, `/loop-engine`: if no provider and user needs API inference, suggest `loop model setup` once.
+- `/plan-loop`, `/loop-engine`: if no provider and user needs API inference, suggest `loop model setup` once.

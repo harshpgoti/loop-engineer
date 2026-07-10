@@ -16,7 +16,7 @@ User memory loaded at session start alongside `memories/MEMORY.md`.
 
 ## Deployment Defaults
 
-Reuse these during `/plan` and `/deployment-plan` unless overridden for a product.
+Reuse these during `/plan-loop` and `/deployment-plan` unless overridden for a product.
 
 - **Cloud provider:** TBD
 - **Cloud strategy:** TBD

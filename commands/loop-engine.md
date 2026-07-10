@@ -8,7 +8,7 @@ Run the all-in-one product loop: Step 1 planning and Step 2 product development,
 
 If the user says `/loop-engine`, `/loop-engine <idea>`, `loop engine`, `all in one`, or describes a product idea, execute this file directly.
 
-**User types only the idea.** Auto-bootstrap runs on session-start with `--text` (same as `/plan`).
+**User types only the idea.** Auto-bootstrap runs on session-start with `--text` (same as `/plan-loop`).
 
 ```bash
 loop session-start --command /loop-engine --tool "<tool>" --text "<user product idea>"
@@ -29,7 +29,7 @@ Read command/skill files from the tool app. Product-state files come from the **
 7. `DOUBTS.md`
 8. `skills/loop-engine/SKILL.md`
 9. `skills/session-lifecycle/SKILL.md`
-10. `commands/plan.md` (when routing to planning)
+10. `commands/plan-loop.md` (when routing to planning)
 11. `commands/product-develop.md` (when routing to development)
 12. `skills/feature-workflow/SKILL.md`
 13. `skills/spec-clarify/SKILL.md`
@@ -86,8 +86,8 @@ SESSION-END
 | Bootstrap | Auto frontend skills | `AUTO_SKILLS.md` when motion/3D signals |
 | Setup | Model provider (API inference) | `loop model setup` → `plan/MODEL_STATUS.md` |
 | Route | Pick branch | See routing table below |
-| Plan branch | Scale + ultraplan | `loop plan scale`, `ultraplan`, `PRODUCT_MAP.md` |
-| Plan branch | Full `/plan` cycle | `commands/plan.md` |
+| Plan branch | Scale + ultraplan | `loop plan-loop scale`, `ultraplan`, `PRODUCT_MAP.md` |
+| Plan branch | Full `/plan-loop` cycle | `commands/plan-loop.md` |
 | Plan branch | Feature spec | `feature new` → `spec-clarify` → `spec-checklist` → `task-compiler` |
 | Develop branch | Full `/product-develop` cycle | `commands/product-develop.md` |
 | Develop branch | Build + review | `implementation-planner`, `code-reviewer`, `qa-validation`, `security-compliance` |
@@ -114,11 +114,11 @@ After session-start, pick **one branch** per session (or chain plan → develop 
 
 | Condition | Action |
 |-----------|--------|
-| `plan/main_plan.md` UNINITIALIZED or `G-INIT-01` blocked | Execute **`/plan` flow** (`commands/plan.md` steps 1–23) |
-| Evidence / PRD / architecture gates blocked | **`/plan` flow** + `product-council` |
-| After user describes product idea | Auto: `plan/PLAN_BOOTSTRAP.md` via session-start `--text` or `loop plan "<idea>"` |
+| `plan/main_plan.md` UNINITIALIZED or `G-INIT-01` blocked | Execute **`/plan-loop` flow** (`commands/plan-loop.md` steps 1–23) |
+| Evidence / PRD / architecture gates blocked | **`/plan-loop` flow** + `product-council` |
+| After user describes product idea | Auto: `plan/PLAN_BOOTSTRAP.md` via session-start `--text` or `loop plan-loop "<idea>"` |
 | Scale is **platform** | Follow bootstrap → **`skills/ultraplan/SKILL.md`** on next step |
-| Step plan missing for current module | **`/plan` flow** (step file + ultraplan pack if platform) |
+| Step plan missing for current module | **`/plan-loop` flow** (step file + ultraplan pack if platform) |
 | No active feature folder | `loop feature new "<title>" --step plan/step_XX.md` |
 | Open spec questions / ambiguous requirements | **`/spec-clarify`** |
 | Spec not checklist-passed | **`/spec-checklist`** — do not compile tasks until ready |
@@ -135,7 +135,7 @@ After session-start, pick **one branch** per session (or chain plan → develop 
 
 ## Execute planning branch
 
-When routing to plan, follow **`commands/plan.md`** in full:
+When routing to plan, follow **`commands/plan-loop.md`** in full:
 
 ```text
 scale detect → [convenient: step + feature spec] | [platform: PRODUCT_MAP → ultraplan/step → feature spec per step]
@@ -190,4 +190,4 @@ Return:
 9. Production gap status
 10. Deployment plan status
 11. Human-required blockers
-12. Next action: `/loop-engine`, `/plan`, or `/product-develop`
+12. Next action: `/loop-engine`, `/plan-loop`, or `/product-develop`

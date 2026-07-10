@@ -1,6 +1,6 @@
 # Test Plan
 
-This file is populated by `/plan` and `skills/task-compiler/SKILL.md` after a product is initialized.
+This file is populated by `/plan-loop` and `skills/task-compiler/SKILL.md` after a product is initialized.
 
 Until then, see:
 

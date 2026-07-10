@@ -5,21 +5,21 @@ When a user's idea is a **full platform** (multiple sub-products, AI agents, or 
 ## User command (all you need)
 
 ```bash
-loop plan "A platform with support triage agent, admin portal, and billing API"
+loop plan-loop "A platform with support triage agent, admin portal, and billing API"
 ```
 
 Or in chat:
 
 ```text
-/plan <full product idea>
+/plan-loop <full product idea>
 /loop-engine <full product idea>
 ```
 
 The agent runs:
 
 ```bash
-loop session-start --command /plan --text "<idea>"
-# equivalent: loop plan "<idea>"
+loop session-start --command /plan-loop --text "<idea>"
+# equivalent: loop plan-loop "<idea>"
 ```
 
 ## What runs automatically
@@ -30,7 +30,7 @@ loop session-start --command /plan --text "<idea>"
 4. **If platform:** extract modules from idea text → `PRODUCT_MAP.md` → step stubs → `plan/steps/NN-slug/` ultraplan folders
 5. **Ultraplan next step** named in bootstrap — agent fills deep docs **one step per session**
 
-No manual `loop plan scale`, `modules`, or `decompose` for users.
+No manual `loop plan-loop scale`, `modules`, or `decompose` for users.
 
 ## Per-step ultraplan pack
 
@@ -48,7 +48,7 @@ No manual `loop plan scale`, `modules`, or `decompose` for users.
 ## Workflow
 
 ```text
-User: /plan <idea>  OR  /loop-engine <idea>
+User: /plan-loop <idea>  OR  /loop-engine <idea>
   → auto bootstrap (PLAN_BOOTSTRAP.md)
   → [platform] ultraplan one step → feature spec → task-compiler
   → [convenient] standard step + feature spec
@@ -60,12 +60,12 @@ User: /plan <idea>  OR  /loop-engine <idea>
 Not for users — debugging or recovery only:
 
 ```bash
-loop plan scale --write --text "..."
-loop plan decompose
-loop plan ultraplan next
+loop plan-loop scale --write --text "..."
+loop plan-loop decompose
+loop plan-loop ultraplan next
 ```
 
 ## Skills
 
 - `skills/ultraplan/SKILL.md`
-- Wired in `commands/plan.md` and `commands/loop-engine.md`
+- Wired in `commands/plan-loop.md` and `commands/loop-engine.md`

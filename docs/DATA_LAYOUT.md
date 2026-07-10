@@ -58,13 +58,13 @@ my-product/
 
 ### Auto-detection
 
-When you run `/plan`, `/loop-engine`, or any loop command:
+When you run `/plan-loop`, `/loop-engine`, or any loop command:
 
 1. Loop checks the **current folder** (and parents) for a `.loop-engineer/` subfolder with local loop data (`memories/`, `.loop-workspace-version`, etc.)
 2. **If found** → uses `<that-folder>/.loop-engineer/` as the data root
 3. **If not** → uses global data in `~/.loop-engineer/data/`
 
-Example: set up `H:/POC/QEAutoAI` once with local mode, close the terminal, come back later — `/plan` automatically uses `H:/POC/QEAutoAI/.loop-engineer/` again, from anywhere inside that product folder (including subdirectories).
+Example: set up `H:/POC/QEAutoAI` once with local mode, close the terminal, come back later — `/plan-loop` automatically uses `H:/POC/QEAutoAI/.loop-engineer/` again, from anywhere inside that product folder (including subdirectories).
 
 ## Central tool + local product (multiple products)
 

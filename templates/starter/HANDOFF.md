@@ -9,15 +9,15 @@ This is a fresh loop OS template. Product data is not initialized.
 
 Primary commands:
 
-- `/plan`
+- `/plan-loop`
 - `/product-develop`
 - `/loop-engine`
 
-Do **not** scaffold a product repo until `/plan` initializes `plan/main_plan.md` and `plan/`.
+Do **not** scaffold a product repo until `/plan-loop` initializes `plan/main_plan.md` and `plan/`.
 
 ## Immediate Next Task
 
-Run `/plan` to initialize product-specific planning.
+Run `/plan-loop` to initialize product-specific planning.
 
 Deliverables:
 
@@ -37,7 +37,7 @@ Deliverables:
 
 ## Context For Agents
 
-- Use `/plan` for Step 1.
+- Use `/plan-loop` for Step 1.
 - Use `/product-develop` for Step 2.
 - Use `/loop-engine` for all-in-one gated operation.
 - Always update `memories/MEMORY.md`, `DOUBTS.md`, and this file automatically.

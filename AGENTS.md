@@ -7,7 +7,7 @@ Run a reusable product loop that helps any user plan, validate, build, test, sec
 ## Non-negotiables
 
 1. **Memory first** — Auto-detect local `.loop-engineer/` data in cwd; else read global `~/.loop-engineer/data/`. Then read `DOUBTS.md`, `plan/main_plan.md`, `TASKS.yml`, `GATES.yml`, `HANDOFF.md`.
-2. **First-run initialization** — If `plan/main_plan.md` is uninitialized, `/plan` must initialize product data automatically.
+2. **First-run initialization** — If `plan/main_plan.md` is uninitialized, `/plan-loop` must initialize product data automatically.
 3. **Evidence gate** — Product/architecture decisions require an entry in `EVIDENCE_LOG.md`.
 4. **Rules first, AI second** — Prefer deterministic parsers, validators, and rules before LLM calls. Frontend motion/3D: run `frontend_skill_router.py --write` and read `plan/AUTO_SKILLS.md`; do not ask the user to pick a library.
 5. **Human approval** — High-risk external actions require explicit user approval unless the product plan says otherwise.
@@ -33,7 +33,7 @@ loop session-end --summary "<progress>"
 | Step | Action |
 |------|--------|
 | **Start** | Recall → manifest → auto-skills → read manifest |
-| **Work** | Follow active command (`/plan`, `/product-develop`, etc.) |
+| **Work** | Follow active command (`/plan-loop`, `/product-develop`, etc.) |
 | **End** | Update handoff/memory → stage memory review → log `state.db` |
 
 Details: `docs/SESSION_LIFECYCLE.md` + `skills/session-lifecycle/SKILL.md`.
@@ -47,8 +47,8 @@ The user should be able to type these commands in Cursor, Codex, Claude Code, Gr
 | Command | Meaning | First file to read |
 |---------|---------|--------------------|
 | `/setup-loop-engine` | First-time setup: register product workspace and seed missing product-state files | `commands/setup-loop-engine.md` + `skills/setup-loop-engine/SKILL.md` |
-| `/plan` | Run Step 1: brainstorm, grill, fact-check, evidence, PRD, architecture, and task planning | `commands/plan.md` + `skills/plan/SKILL.md` |
-| `/startup-discovery-loop` | Alias for `/plan` | `commands/plan.md` + `skills/plan/SKILL.md` |
+| `/plan-loop` | Run Step 1: brainstorm, grill, fact-check, evidence, PRD, architecture, and task planning | `commands/plan-loop.md` + `skills/plan-loop/SKILL.md` |
+| `/startup-discovery-loop` | Alias for `/plan-loop` | `commands/plan-loop.md` + `skills/plan-loop/SKILL.md` |
 | `/product-develop` | Run Step 2: build product from the approved plan, with QA/security/compliance/CI/CD gates | `commands/product-develop.md` + `skills/product-develop/SKILL.md` |
 | `/loop-engine` | Run all-in-one loop: Step 1 planning, then Step 2 development when gates allow | `commands/loop-engine.md` + `skills/loop-engine/SKILL.md` |
 | `/prod-gap` | Analyze product requirements, current progress, implementation, and readiness gaps | `commands/prod-gap.md` + `skills/prod-gap/SKILL.md` |
@@ -71,7 +71,7 @@ The user should be able to type these commands in Cursor, Codex, Claude Code, Gr
 | `/ultraplan` | Deep per-step planning for platform-scale products | `commands/ultraplan.md` + `skills/ultraplan/SKILL.md` |
 | `/model` | Configure AI model provider for API-hosted inference | `commands/model.md` + `skills/model-providers/SKILL.md` |
 | `/frontend-animation` | Route to built-in GSAP, Motion.dev, and 3D core skills for frontend work | `commands/frontend-animation.md` + `skills/frontend-animation/SKILL.md` |
-| `/agent-builder` | Design/scaffold an AI agent (or agentic/dynamic workflow) as the product itself — auto-activates in `/plan` and `/product-develop` | `commands/agent-builder.md` + `skills/agent-builder/SKILL.md` |
+| `/agent-builder` | Design/scaffold an AI agent (or agentic/dynamic workflow) as the product itself — auto-activates in `/plan-loop` and `/product-develop` | `commands/agent-builder.md` + `skills/agent-builder/SKILL.md` |
 | `/research-search` | Search arXiv, Research Square, and SSRN to ground a claim in evidence | `commands/research-search.md` + `skills/research-search/SKILL.md` |
 
 If a tool does not support slash commands natively, interpret a plain user message containing one of the commands as a request to read the matching command file and execute it.
@@ -103,13 +103,13 @@ Reusable loop mechanics belong in `skills/` and `commands/`.
 
 ## Feature workflow (built-in)
 
-During `/plan`, detect scale (`loop plan scale --write`). **Convenient** → standard step + feature spec. **Platform** → `PRODUCT_MAP.md` + ultraplan pack per sub-product/agent (`skills/ultraplan/SKILL.md`).
+During `/plan-loop`, detect scale (`loop plan-loop scale --write`). **Convenient** → standard step + feature spec. **Platform** → `PRODUCT_MAP.md` + ultraplan pack per sub-product/agent (`skills/ultraplan/SKILL.md`).
 
 ```text
 /feature-new → /spec-clarify → /spec-checklist → feature-plan → task-compiler → /product-develop → /feature-converge
 ```
 
-Platform: `loop plan ultraplan next` before feature spec for each step.
+Platform: `loop plan-loop ultraplan next` before feature spec for each step.
 
 Details: `docs/FEATURE_WORKFLOW.md`, `docs/ULTRAPLAN.md` + `skills/feature-workflow/SKILL.md`.
 
@@ -151,7 +151,7 @@ Use these before major work:
 - **Global data** (`~/.loop-engineer/data/`): default memory when no local product folder is detected. Never mixed with `app/`.
 - **Local data** (`<product-folder>/.loop-engineer/`): memories/, state.db, plan/main_plan.md — **auto-detected** when you work from that folder. A single hidden folder, kept out of the product's own code.
 
-When you run `/plan`, `/loop-engine`, or any loop command, Loop checks the current folder (and parents) for a `.loop-engineer/` data dir. If found, it uses `<that-folder>/.loop-engineer/`; otherwise it uses `~/.loop-engineer/data/`.
+When you run `/plan-loop`, `/loop-engine`, or any loop command, Loop checks the current folder (and parents) for a `.loop-engineer/` data dir. If found, it uses `<that-folder>/.loop-engineer/`; otherwise it uses `~/.loop-engineer/data/`.
 
 See `docs/DATA_LAYOUT.md`.
 

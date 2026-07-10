@@ -49,7 +49,7 @@ Adapters for Cursor, Claude Code, Codex, OpenCode, Grok Build, and direct LLM AP
 | Command | Skill |
 |---------|-------|
 | `/setup-loop-engine` | `skills/setup-loop-engine/SKILL.md` |
-| `/plan` | `skills/plan/SKILL.md` |
+| `/plan-loop` | `skills/plan-loop/SKILL.md` |
 | `/product-develop` | `skills/product-develop/SKILL.md` |
 | `/loop-engine` | `skills/loop-engine/SKILL.md` |
 | `/prod-gap` | `skills/prod-gap/SKILL.md` |

@@ -1,6 +1,6 @@
 ---
 name: task-compiler
-description: Converts product plans, PRDs, ADRs, and step plans into buildable tasks, gates, acceptance criteria, test plans, and handoff-ready implementation slices. Use after /plan and before /product-develop.
+description: Converts product plans, PRDs, ADRs, and step plans into buildable tasks, gates, acceptance criteria, test plans, and handoff-ready implementation slices. Use after /plan-loop and before /product-develop.
 ---
 
 # Task Compiler

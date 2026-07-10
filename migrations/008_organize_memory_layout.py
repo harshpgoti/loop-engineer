@@ -1,4 +1,4 @@
-"""Migration 008: relocate memory/plan files to their canonical homes.
+"""Migration 008: relocate memory/plan-loop files to their canonical homes.
 
 - main_plan.md          -> plan/main_plan.md
 - root MEMORY.md        -> memories/MEMORY.md (or removed if an exact duplicate)

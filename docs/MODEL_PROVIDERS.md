@@ -127,6 +127,6 @@ Automation scripts should call `scripts/model_config.resolve_api_target()` for t
 | `loop model models` fails | Check key, base URL, provider docs for model id |
 | Local probe fails | Start Ollama/LM Studio/vLLM/etc.; confirm base URL |
 | Named custom provider `Unknown custom provider` | `loop model custom add <name> <base_url>` first, then select `custom:<name>:<model>` |
-| IDE agent | No key needed — use `/plan` in Cursor etc. |
+| IDE agent | No key needed — use `/plan-loop` in Cursor etc. |
 
 Run `loop doctor` for combined runtime + model health.

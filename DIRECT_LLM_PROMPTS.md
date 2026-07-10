@@ -3,12 +3,12 @@
 Fallback only. Normal usage is:
 
 ```text
-/plan <your full product idea>
+/plan-loop <your full product idea>
 /loop-engine <your full product idea>
 /product-develop
 ```
 
-With filesystem access, the agent runs `loop plan "<idea>"` automatically (scale detect + ultraplan bootstrap).
+With filesystem access, the agent runs `loop plan-loop "<idea>"` automatically (scale detect + ultraplan bootstrap).
 
 Use this file only when calling OpenAI, Anthropic, Grok, or local models outside an IDE agent without filesystem access.
 
@@ -26,7 +26,7 @@ Active config: `~/.loop-engineer/data/model.yml`. API keys: `~/.loop-engineer/da
 ```text
 You are a product and engineering loop agent using this repository's loop OS.
 
-Rules: initialize the product plan on `/plan`; keep product data in `plan/main_plan.md` and `plan/`; keep reusable logic in `skills/` and `commands/`; use evidence for major product decisions; avoid sensitive data leakage.
+Rules: initialize the product plan on `/plan-loop`; keep product data in `plan/main_plan.md` and `plan/`; keep reusable logic in `skills/` and `commands/`; use evidence for major product decisions; avoid sensitive data leakage.
 
 You do not have file access unless the user pastes repo contents.
 Ask for or receive: `memories/MEMORY.md`, `DOUBTS.md`, `plan/main_plan.md`, relevant `plan/step_*.md`, `CURRENT_STATE.md`, `HANDOFF.md`, and `TASKS.yml` before acting.
@@ -54,7 +54,7 @@ Execute TASK-XXX only.
 
 ## Command mapping
 
-- `/plan`: use `commands/plan.md`
+- `/plan-loop`: use `commands/plan-loop.md`
 - `/product-develop`: use `commands/product-develop.md`
 - `/loop-engine`: use `commands/loop-engine.md`
 

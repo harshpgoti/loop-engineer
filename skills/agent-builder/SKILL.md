@@ -1,6 +1,6 @@
 ---
 name: agent-builder
-description: Design and scaffold an AI agent (or agentic/dynamic workflow) as the product itself — architecture, tool/skill authoring convention, model provider, guardrails, and evals. Auto-activates during /plan and /product-develop when agent-development signals are present; also runs for /agent-builder directly.
+description: Design and scaffold an AI agent (or agentic/dynamic workflow) as the product itself — architecture, tool/skill authoring convention, model provider, guardrails, and evals. Auto-activates during /plan-loop and /product-develop when agent-development signals are present; also runs for /agent-builder directly.
 ---
 
 # Agent builder
@@ -24,7 +24,7 @@ Also runs directly on `/agent-builder`.
 
 ## Workflow
 
-1. Run `loop auto-agent-skills --write` (usually already done by `/plan` or `/product-develop`) and read `plan/AUTO_AGENT_SKILLS.md` for the detected agent shape.
+1. Run `loop auto-agent-skills --write` (usually already done by `/plan-loop` or `/product-develop`) and read `plan/AUTO_AGENT_SKILLS.md` for the detected agent shape.
 2. If `agent/AGENT_ARCHITECTURE.md` does not exist yet, run `loop agent scaffold` — creates `agent/AGENT_ARCHITECTURE.md`, `agent/skills/`, `agent/tools/`, `agent/evals/` from `templates/agent_architecture.template.md` and `templates/agent_skill.template.md`.
 3. Fill `agent/AGENT_ARCHITECTURE.md`: agent type (single/multi/workflow), trigger, tools, memory, guardrails, model provider, eval plan. Reuse anything already answered in `DECISIONS.md` — don't re-ask.
 4. Pick the model provider via `skills/model-providers/SKILL.md` (`loop model setup` / `loop model <provider>:<model>`) — record the choice in `agent/AGENT_ARCHITECTURE.md` and `DECISIONS.md`.

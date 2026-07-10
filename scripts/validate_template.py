@@ -26,7 +26,7 @@ REQUIRED_PATHS = [
     "GROK.md",
     "API_USAGE.md",
     "commands/setup-loop-engine.md",
-    "commands/plan.md",
+    "commands/plan-loop.md",
     "commands/product-develop.md",
     "commands/loop-engine.md",
     "commands/prod-gap.md",
@@ -50,7 +50,7 @@ REQUIRED_PATHS = [
     "commands/model.md",
     "commands/upgrade-loop-engineer.md",
     "skills/setup-loop-engine/SKILL.md",
-    "skills/plan/SKILL.md",
+    "skills/plan-loop/SKILL.md",
     "skills/product-develop/SKILL.md",
     "skills/loop-engine/SKILL.md",
     "skills/prod-gap/SKILL.md",
@@ -221,31 +221,31 @@ SKIP_DIRS = {".git", "__pycache__", "node_modules", ".venv", "venv", ".tmp"}
 FEATURE_WIRING = [
     ("AGENTS.md", "/feature-new"),
     ("AGENTS.md", "/feature-converge"),
-    ("commands/plan.md", "PLAN_BOOTSTRAP"),
-    ("commands/plan.md", "loop plan"),
+    ("commands/plan-loop.md", "PLAN_BOOTSTRAP"),
+    ("commands/plan-loop.md", "loop plan-loop"),
     ("commands/loop-engine.md", "PLAN_BOOTSTRAP"),
-    ("skills/plan/SKILL.md", "PLAN_BOOTSTRAP"),
-    ("commands/plan.md", "loop feature new"),
-    ("commands/plan.md", "loop session-end"),
+    ("skills/plan-loop/SKILL.md", "PLAN_BOOTSTRAP"),
+    ("commands/plan-loop.md", "loop feature new"),
+    ("commands/plan-loop.md", "loop session-end"),
     ("commands/product-develop.md", "feature converge"),
     ("commands/product-develop.md", "AUTO_SKILLS"),
     ("commands/product-develop.md", "loop session-end"),
     ("commands/loop-engine.md", "session-start"),
     ("commands/loop-engine.md", "feature-converge"),
-    ("commands/loop-engine.md", "commands/plan.md"),
+    ("commands/loop-engine.md", "commands/plan-loop.md"),
     ("commands/loop-engine.md", "commands/product-develop.md"),
     ("skills/loop-engine/SKILL.md", "feature-converge"),
     ("skills/loop-engine/SKILL.md", "session-start"),
     ("skills/task-compiler/SKILL.md", "tasks.md"),
     ("skills/product-develop/SKILL.md", "feature-converge"),
-    ("skills/plan/SKILL.md", "spec-clarify"),
+    ("skills/plan-loop/SKILL.md", "spec-clarify"),
     ("scripts/loop_cli.py", "feature"),
     ("scripts/loop_cli.py", "model"),
     ("scripts/memory_paths.py", "session_bootstrap_feature_paths"),
     ("scripts/session_lifecycle.py", "read_active_feature"),
 ]
 
-MAIN_LOOP_COMMANDS = ["commands/plan.md", "commands/product-develop.md", "commands/loop-engine.md"]
+MAIN_LOOP_COMMANDS = ["commands/plan-loop.md", "commands/product-develop.md", "commands/loop-engine.md"]
 
 MAIN_LOOP_FEATURES = [
     "session-start",
@@ -362,7 +362,7 @@ def check_feature_wiring(errors: list[str]) -> None:
 
 
 def check_main_loop_coverage(errors: list[str]) -> None:
-    """Ensure /plan, /product-develop, /loop-engine each reference core cycle features."""
+    """Ensure /plan-loop, /product-develop, /loop-engine each reference core cycle features."""
     combined = ""
     for rel in MAIN_LOOP_COMMANDS:
         path = ROOT / rel

@@ -34,6 +34,6 @@ SSRN actively blocks automated fetches (confirmed by repeated 403s across every 
 
 ## Wiring
 
-- `/plan` step 8 ("Validate claims with sources") uses this for research-grounded claims.
+- `/plan-loop` step 8 ("Validate claims with sources") uses this for research-grounded claims.
 - `skills/agent-builder/SKILL.md` step 7 uses this to ground non-obvious agent-architecture/eval/safety claims.
 - `/research-search` runs it directly.

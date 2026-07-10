@@ -1,6 +1,6 @@
 ---
 name: research-search
-description: Search arXiv, Research Square, and SSRN for published research to ground product, architecture, or agent-design claims in evidence. Use for /research-search, fact-checking during /plan, or literature grounding during agent-builder work.
+description: Search arXiv, Research Square, and SSRN for published research to ground product, architecture, or agent-design claims in evidence. Use for /research-search, fact-checking during /plan-loop, or literature grounding during agent-builder work.
 ---
 
 # Research search skill
@@ -9,7 +9,7 @@ Search public research-paper sources without vendoring a scraper or paying for a
 
 ## When to use
 
-- `/plan` step 8 ("Validate claims with sources") when a claim is research-grounded, not just a vendor doc or product page.
+- `/plan-loop` step 8 ("Validate claims with sources") when a claim is research-grounded, not just a vendor doc or product page.
 - `skills/agent-builder/SKILL.md` when justifying an agent architecture, evaluation method, or safety pattern with published work.
 - Any time the user asks to search arXiv, SSRN, or Research Square directly.
 
