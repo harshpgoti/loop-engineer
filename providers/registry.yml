@@ -1,0 +1,239 @@
+# Loop Engineer — model provider registry
+# Connection metadata only. The registry does NOT limit which models you can use.
+# Secrets: ~/.loop-engineer/data/secrets.env
+# Active model: ~/.loop-engineer/data/model.yml (any model id the provider accepts)
+#
+# default_model — fallback when user omits model: `loop model anthropic`
+# Discover models live: `loop model models anthropic`
+# Set any model:       `loop model anthropic:<model-id-from-provider>`
+
+providers:
+  openrouter:
+    label: OpenRouter
+    auth: api_key
+    env_key: OPENROUTER_API_KEY
+    api_mode: openai_chat
+    base_url: https://openrouter.ai/api/v1
+    default_model: anthropic/claude-sonnet-4
+    docs: https://openrouter.ai/docs
+
+  anthropic:
+    label: Anthropic
+    auth: api_key
+    env_key: ANTHROPIC_API_KEY
+    api_mode: anthropic_messages
+    base_url: https://api.anthropic.com/v1
+    default_model: claude-sonnet-4-20250514
+    docs: https://docs.anthropic.com
+
+  openai:
+    label: OpenAI
+    auth: api_key
+    env_key: OPENAI_API_KEY
+    api_mode: openai_chat
+    base_url: https://api.openai.com/v1
+    default_model: gpt-4o
+    docs: https://platform.openai.com/docs
+
+  gemini:
+    label: Google Gemini
+    auth: api_key
+    env_key: GOOGLE_API_KEY
+    env_key_alt: GEMINI_API_KEY
+    api_mode: openai_chat
+    base_url: https://generativelanguage.googleapis.com/v1beta/openai
+    default_model: gemini-2.0-flash
+    docs: https://ai.google.dev
+
+  deepseek:
+    label: DeepSeek
+    auth: api_key
+    env_key: DEEPSEEK_API_KEY
+    api_mode: openai_chat
+    base_url: https://api.deepseek.com/v1
+    default_model: deepseek-chat
+    docs: https://platform.deepseek.com
+
+  groq:
+    label: Groq
+    auth: api_key
+    env_key: GROQ_API_KEY
+    api_mode: openai_chat
+    base_url: https://api.groq.com/openai/v1
+    default_model: llama-3.3-70b-versatile
+    docs: https://console.groq.com/docs/openai
+
+  xai:
+    label: xAI (Grok)
+    auth: api_key
+    env_key: XAI_API_KEY
+    api_mode: openai_chat
+    base_url: https://api.x.ai/v1
+    default_model: grok-2-latest
+    note: xAI auto-enables prompt caching via the x-grok-conv-id header for multi-turn requests — no config needed.
+    docs: https://docs.x.ai
+
+  together:
+    label: Together AI
+    auth: api_key
+    env_key: TOGETHER_API_KEY
+    api_mode: openai_chat
+    base_url: https://api.together.ai/v1
+    default_model: meta-llama/Llama-3.3-70B-Instruct-Turbo
+    docs: https://docs.together.ai
+
+  perplexity:
+    label: Perplexity
+    auth: api_key
+    env_key: PERPLEXITY_API_KEY
+    api_mode: openai_chat
+    base_url: https://api.perplexity.ai
+    default_model: sonar
+    note: Unconfirmed — Perplexity's current docs describe /v1/sonar and /v1/agent endpoints rather than a plain /chat/completions path; loop model models may not resolve. Verify against https://docs.perplexity.ai before relying on this entry.
+    docs: https://docs.perplexity.ai
+
+  novita:
+    label: Novita AI
+    auth: api_key
+    env_key: NOVITA_API_KEY
+    api_mode: openai_chat
+    base_url: https://api.novita.ai/openai
+    default_model: meta-llama/llama-3.3-70b-instruct
+    docs: https://novita.ai/docs
+
+  nvidia:
+    label: NVIDIA NIM
+    auth: api_key
+    env_key: NVIDIA_API_KEY
+    api_mode: openai_chat
+    base_url: https://integrate.api.nvidia.com/v1
+    default_model: meta/llama-3.3-70b-instruct
+    docs: https://docs.nvidia.com/nim
+
+  huggingface:
+    label: Hugging Face Inference Providers
+    auth: api_key
+    env_key: HF_TOKEN
+    api_mode: openai_chat
+    base_url: https://router.huggingface.co/v1
+    default_model: ""
+    docs: https://huggingface.co/docs/inference-providers
+
+  qwen:
+    label: Alibaba Qwen (DashScope compatible mode)
+    auth: api_key
+    env_key: DASHSCOPE_API_KEY
+    api_mode: openai_chat
+    base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+    default_model: qwen-plus
+    note: This is the China (Beijing) endpoint. International/Singapore accounts typically use https://dashscope-intl.aliyuncs.com/compatible-mode/v1 instead — confirm which region your API key belongs to via loop model custom add if it differs.
+    docs: https://www.alibabacloud.com/help/en/model-studio
+
+  moonshot:
+    label: Moonshot (Kimi)
+    auth: api_key
+    env_key: KIMI_API_KEY
+    api_mode: openai_chat
+    base_url: https://api.moonshot.ai/v1
+    default_model: kimi-k2-0711-preview
+    docs: https://platform.kimi.ai/docs/api/chat
+
+  minimax:
+    label: MiniMax
+    auth: api_key
+    env_key: MINIMAX_API_KEY
+    api_mode: openai_chat
+    base_url: https://api.minimax.io/v1
+    default_model: MiniMax-M2
+    note: Unconfirmed — MiniMax's docs did not show a plain /v1/chat/completions path (only an /anthropic compatibility shim was confirmed). Verify the OpenAI-compatible path against https://platform.minimax.io before relying on this entry.
+    docs: https://platform.minimax.io/docs
+
+  glm:
+    label: Zhipu / z.ai GLM
+    auth: api_key
+    env_key: ZAI_API_KEY
+    api_mode: openai_chat
+    base_url: https://api.z.ai/api/paas/v4
+    default_model: glm-4.6
+    docs: https://docs.z.ai
+
+  ollama:
+    label: Ollama (local)
+    auth: none
+    api_mode: openai_chat
+    base_url: http://127.0.0.1:11434/v1
+    default_model: qwen2.5-coder
+    context_min: 64000
+    note: Context length must be set server-side (OLLAMA_CONTEXT_LENGTH env var or Modelfile) — the OpenAI-compatible API cannot override it. Ollama Cloud (ollama.com) is not listed separately here — it documents only its native /api/chat and /api/tags routes, not an OpenAI-compatible /v1 surface; use a named custom provider if you confirm one exists on your plan.
+    docs: https://docs.ollama.com
+
+  lmstudio:
+    label: LM Studio (local)
+    auth: optional_key
+    env_key: LM_API_KEY
+    api_mode: openai_chat
+    base_url: http://127.0.0.1:1234/v1
+    default_model: ""
+    context_min: 64000
+    docs: https://lmstudio.ai
+
+  vllm:
+    label: vLLM (self-hosted)
+    auth: optional_key
+    env_key: VLLM_API_KEY
+    api_mode: openai_chat
+    base_url: http://127.0.0.1:8000/v1
+    default_model: ""
+    context_min: 64000
+    note: Start the server with --enable-auto-tool-choice --tool-call-parser <parser-name> for tool calling to work — parser name depends on the model family, see vLLM docs.
+    docs: https://docs.vllm.ai
+
+  sglang:
+    label: SGLang (self-hosted)
+    auth: optional_key
+    env_key: SGLANG_API_KEY
+    api_mode: openai_chat
+    base_url: http://127.0.0.1:30000/v1
+    default_model: ""
+    context_min: 64000
+    docs: https://docs.sglang.io
+
+  llamacpp:
+    label: llama.cpp / llama-server (self-hosted)
+    auth: none
+    api_mode: openai_chat
+    base_url: http://127.0.0.1:8080/v1
+    default_model: ""
+    context_min: 64000
+    docs: https://github.com/ggml-org/llama.cpp
+
+  jan:
+    label: Jan (self-hosted desktop)
+    auth: none
+    api_mode: openai_chat
+    base_url: http://127.0.0.1:1337/v1
+    default_model: ""
+    context_min: 64000
+    docs: https://jan.ai
+
+  custom:
+    label: Custom OpenAI-compatible endpoint
+    auth: optional_key
+    env_key: CUSTOM_API_KEY
+    api_mode: openai_chat
+    base_url: ""
+    default_model: ""
+    context_min: 64000
+    note: For more than one custom endpoint use named entries — see `loop model custom add <name> <base_url>` and select with custom:<name>:<model>.
+
+ide_providers:
+  cursor:
+    label: Cursor (IDE-hosted)
+    auth: ide
+    note: Use Cursor agent with loop commands; no external inference key.
+  claude-code:
+    label: Claude Code (IDE-hosted)
+    auth: ide
+  codex:
+    label: OpenAI Codex CLI (IDE-hosted)
+    auth: ide

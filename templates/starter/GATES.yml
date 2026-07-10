@@ -1,0 +1,142 @@
+# Gates
+
+Gates are **hard stops**. Agents must not advance without evidence logged or checks passing.
+
+```yaml
+gates:
+  G-TEMPLATE-01:
+    name: Template publishable
+    phase: template
+    criteria:
+      - python scripts/validate_template.py passes
+      - no product-specific data is committed
+      - plan/main_plan.md remains UNINITIALIZED
+    status: blocked
+
+  G-INIT-01:
+    name: Product initialized
+    phase: init
+    criteria:
+      - plan/main_plan.md is not UNINITIALIZED
+      - product name, target user, problem, and first step are defined
+      - plan/step_01_<slug>.md exists
+      - DOUBTS.md has unresolved questions or confirms none
+    status: blocked
+
+  G-DISCOVERY-01:
+    name: User/customer discovery minimum
+    phase: plan
+    criteria:
+      - target user and buyer are identified
+      - discovery method is defined
+      - key assumptions are logged
+    status: blocked
+
+  G-DISCOVERY-02:
+    name: Fact-check product-critical claims
+    phase: plan
+    criteria:
+      - product-critical market, user, technical, or regulatory claims are sourced
+      - unsupported assumptions are marked as assumptions or rejected
+    status: blocked
+
+  G-ARCH-01:
+    name: Architecture ready
+    phase: plan
+    criteria:
+      - first step PRD exists
+      - architecture decisions are logged in DECISIONS.md
+      - product repo strategy is decided
+    status: blocked
+
+  G-COUNCIL-01:
+    name: Product council and task compilation complete
+    phase: plan
+    criteria:
+      - product council verdict is recorded
+      - tasks are compiled into TASKS.yml
+      - acceptance criteria and test plan exist or are explicitly deferred
+    status: blocked
+
+  G-SENSITIVE-DATA:
+    name: Sensitive data processing
+    phase: compliance
+    criteria:
+      - sensitive data categories are identified
+      - logging, fixtures, prompts, and storage rules are defined
+      - required legal/compliance review is documented if needed
+    status: blocked
+    note: Use synthetic data until this gate passes.
+
+  G-PLATFORM-01:
+    name: Platform core
+    phase: step2
+    criteria:
+      - auth + org RBAC + audit_events
+      - file upload encrypted
+      - llm gateway with schema validation
+    status: blocked
+
+  G-MODULE-01:
+    name: First product step
+    phase: step2
+    criteria:
+      - first step implemented
+      - acceptance criteria pass
+      - relevant tests pass
+    status: blocked
+
+  G-UI-01:
+    name: Product UI
+    phase: step2
+    criteria:
+      - core product screens are implemented
+      - key user flow has a smoke test
+      - playwright smoke pass
+    status: blocked
+
+  G-QA-01:
+    name: QA bar
+    phase: step2
+    criteria:
+      - backend pytest green
+      - frontend vitest + playwright green
+      - contract tests on API schemas
+    status: blocked
+
+  G-SECURITY-01:
+    name: Security scans
+    phase: step2
+    criteria:
+      - gitleaks, bandit, semgrep, trivy clean or waived with ticket
+      - IDOR/tenant isolation tests pass
+    status: blocked
+
+  G-COMPLIANCE-01:
+    name: Risk/compliance packet draft
+    phase: step2
+    criteria:
+      - product-specific risk checklist completed
+      - data flow diagram if data is collected
+      - counsel-needed items listed if applicable
+    status: blocked
+
+  G-RELEASE-01:
+    name: Staging deploy
+    phase: step2
+    criteria:
+      - CI green on main
+      - staging deploy + smoke
+      - rollback tested
+    status: blocked
+
+  G-PILOT-01:
+    name: Pilot ready
+    phase: step2
+    criteria:
+      - synthetic E2E demo
+      - onboarding doc
+      - ROI dashboard with demo data
+      - design partner identified
+    status: blocked
+```

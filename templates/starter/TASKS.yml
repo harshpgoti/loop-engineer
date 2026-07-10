@@ -1,0 +1,118 @@
+version: 1
+project: Loop Engineering OS
+updated: 2026-06-30
+
+tasks:
+  - id: TASK-001
+    title: Initialize product plan
+    phase: init
+    gate: G-INIT-01
+    status: in_progress
+    priority: P0
+    owner: user+agent
+    acceptance:
+      - plan/main_plan.md has product name, user, problem, first step, constraints
+      - plan/step_01_<slug>.md exists
+      - DOUBTS.md updated with unresolved questions
+
+  - id: TASK-002
+    title: Fact-check product assumptions
+    phase: plan
+    gate: G-DISCOVERY-02
+    status: pending
+    priority: P0
+    acceptance:
+      - EVIDENCE_LOG.md has sourced entries for product-critical claims
+
+  - id: TASK-003
+    title: Draft risk and compliance checklist
+    phase: plan
+    gate: G-COMPLIANCE-01
+    status: pending
+    priority: P1
+    acceptance:
+      - Sensitive data categories identified
+      - Compliance/security gates updated
+
+  - id: TASK-004
+    title: Draft PRD and architecture plan for first product step
+    phase: plan
+    gate: G-ARCH-01
+    status: pending
+    priority: P0
+    acceptance:
+      - Active step file includes PRD, acceptance criteria, architecture, and build tasks
+
+  - id: TASK-004B
+    title: Run product council and compile tasks
+    phase: plan
+    gate: G-COUNCIL-01
+    status: pending
+    priority: P0
+    blocked_by: [TASK-004]
+    acceptance:
+      - Product council verdict recorded in HANDOFF.md or DECISIONS.md
+      - TASKS.yml has buildable tasks
+      - docs/ACCEPTANCE_CRITERIA.md and docs/TEST_PLAN.md exist when useful
+
+  - id: TASK-005
+    title: Create or connect product repo
+    phase: step2
+    gate: G-ARCH-01
+    status: blocked
+    priority: P0
+    blocked_by:
+      - TASK-004
+      - G-INIT-01
+    acceptance:
+      - Product repo strategy recorded in DECISIONS.md
+      - Linked in CURRENT_STATE.md
+
+  - id: TASK-006
+    title: Build first product foundation
+    phase: step2
+    gate: G-PLATFORM-01
+    status: blocked
+    priority: P0
+    blocked_by: [TASK-005]
+
+  - id: TASK-007
+    title: Implement first product step
+    phase: step2
+    gate: G-MODULE-01
+    status: blocked
+    priority: P0
+    blocked_by: [TASK-006]
+
+  - id: TASK-008
+    title: Build product UI
+    phase: step2
+    gate: G-UI-01
+    status: blocked
+    priority: P1
+    blocked_by: [TASK-007]
+
+  - id: TASK-009
+    title: Security scans and risk/compliance packet
+    phase: step2
+    gate: G-SECURITY-01
+    status: blocked
+    priority: P1
+    blocked_by: [TASK-007]
+
+  - id: TASK-010
+    title: Staging deploy and pilot/user onboarding
+    phase: step2
+    gate: G-PILOT-01
+    status: blocked
+    priority: P2
+    blocked_by: [TASK-008, TASK-009]
+
+  - id: TEMPLATE-001
+    title: Validate template before publishing
+    phase: template
+    gate: G-TEMPLATE-01
+    status: pending
+    priority: P0
+    acceptance:
+      - python scripts/validate_template.py passes

@@ -1,0 +1,19 @@
+# Copy to loop.local.yml and customize locally.
+# Do not commit loop.local.yml.
+#
+# Optional: set LOOP_HOME in the environment to use ~/.loop-engine/registry/workspaces.json
+# instead of tool-local .loop-workspaces.json (global registry under ~/.loop-engineer).
+
+loop_engine: .
+product_workspace: ../product
+
+commands:
+  plan: commands/plan.md
+  product_develop: commands/product-develop.md
+  loop_engine: commands/loop-engine.md
+  compact_loop: commands/compact-loop.md
+  upgrade_loop_engineer: commands/upgrade-loop-engineer.md
+
+skills: skills
+templates: templates
+scripts: scripts

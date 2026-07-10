@@ -1,0 +1,34 @@
+# Local config (never commit)
+loop.local.yml
+
+# Legacy local workspace registry — new installs use ~/.loop-engineer/data/registry/
+.loop-workspaces.json
+
+# This repo's own dev-session data (standard local layout: <folder>/.loop-engineer/)
+/.loop-engineer/
+
+# Workspace runtime data — lives in a data root, never in the tool repo.
+# (templates/starter/.loop-workspace-version is the tracked seed; only the
+# root-level runtime copy is ignored.)
+memories/
+state.db
+.loop/
+/.loop-workspace-version
+
+# Upgrade backups written into a target workspace
+.loop-upgrade-backup/
+
+# Scratch / smoke-test directories
+.tmp/
+/.smoke_*/
+/.demo_*/
+/.example_*/
+/.rescan_*/
+/.legacy_*/
+/.fa_ws/
+/.rn_ws/
+/.final_check/
+
+# Python
+__pycache__/
+*.pyc
