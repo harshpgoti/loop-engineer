@@ -59,6 +59,11 @@ if [[ "$USE_CWD" -eq 1 ]]; then
   fi
 fi
 
+if [[ -n "$MEMORY_MODE" && "$MEMORY_MODE" != "local" && "$MEMORY_MODE" != "global" ]]; then
+  echo "Invalid --memory-mode '$MEMORY_MODE'. Valid values: local, global." >&2
+  exit 1
+fi
+
 if [[ -z "$MEMORY_MODE" ]]; then
   if [[ -n "$WORKSPACE" ]]; then MEMORY_MODE="local"; else MEMORY_MODE="global"; fi
 fi

@@ -2,9 +2,13 @@
 
 ## One-liner install (GitHub)
 
+**Windows:**
+
 ```powershell
 irm https://raw.githubusercontent.com/harshpgoti/loop-engineer/main/install.ps1 | iex
 ```
+
+**Mac / Linux:**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/harshpgoti/loop-engineer/main/install.sh | bash
@@ -37,10 +41,14 @@ Local product folders get the same split, nested one level deeper: `<product-fol
 
 **Local setup in your product folder:**
 
+**Windows:**
+
 ```powershell
 cd H:\POC\QEAutoAI
 & ([scriptblock]::Create((irm https://raw.githubusercontent.com/harshpgoti/loop-engineer/main/install.ps1))) -UseCwd
 ```
+
+**Mac / Linux:**
 
 ```bash
 cd ~/projects/my-app

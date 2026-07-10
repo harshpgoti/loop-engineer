@@ -8,7 +8,6 @@ param(
     [switch]$NoPath,
     [string]$Workspace,
     [string]$Name = "global",
-    [ValidateSet("local", "global")]
     [string]$MemoryMode,
     [switch]$UseCwd,
     [string]$Ref = $(if ($env:LOOP_ENGINE_REF) { $env:LOOP_ENGINE_REF } else { "main" })
@@ -27,6 +26,10 @@ if ($UseCwd) {
     if ($Name -eq "global") {
         $Name = Split-Path -Leaf $Workspace
     }
+}
+
+if ($MemoryMode -and $MemoryMode -notin @("local", "global")) {
+    throw "Invalid -MemoryMode '$MemoryMode'. Valid values: local, global."
 }
 
 if (-not $MemoryMode) {
