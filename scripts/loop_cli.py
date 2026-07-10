@@ -14,7 +14,7 @@ SCRIPTS = ROOT / "scripts"
 
 def run_script(script: str, args: list[str]) -> int:
     cmd = [sys.executable, str(SCRIPTS / script), *args]
-    result = subprocess.run(cmd, cwd=ROOT, check=False)
+    result = subprocess.run(cmd, check=False)
     return int(result.returncode)
 
 
