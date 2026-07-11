@@ -15,8 +15,8 @@ Use this file only when calling OpenAI, Anthropic, Grok, or local models outside
 **First:** configure the provider once on a machine with repo access:
 
 ```bash
-loop model setup
-loop model doctor
+loop manage-model setup
+loop manage-model doctor
 ```
 
 Active config: `~/.loop-engineer/data/model.yml`. API keys: `~/.loop-engineer/data/secrets.env`. See `docs/MODEL_PROVIDERS.md`.

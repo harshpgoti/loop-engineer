@@ -173,7 +173,7 @@ def set_active(
         if not entry:
             raise ValueError(
                 f"Unknown custom provider `{custom_name}` - run: "
-                f"loop model custom add {custom_name} <base_url>"
+                f"loop manage-model custom add {custom_name} <base_url>"
             )
         model = model or ""
     else:

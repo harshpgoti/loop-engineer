@@ -182,7 +182,7 @@ def render_manifest(
                     "",
                     "## Model provider",
                     "",
-                    "- Not configured - run `loop model setup` for API-hosted inference outside IDE agents.",
+                    "- Not configured - run `loop manage-model setup` for API-hosted inference outside IDE agents.",
                 ]
             )
     except Exception:

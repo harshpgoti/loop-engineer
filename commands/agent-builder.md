@@ -21,7 +21,7 @@ If the user says `/agent-builder`, `build an agent`, `build an ai agent`, `devel
 ```bash
 loop auto-agent-skills --write          # detect agent-development signals -> plan/AUTO_AGENT_SKILLS.md
 loop agent scaffold                     # create agent/AGENT_ARCHITECTURE.md, agent/skills/, agent/tools/, agent/evals/
-loop model setup                        # pick the agent's model provider
+loop manage-model setup                        # pick the agent's model provider
 loop research "<topic>"                 # ground a design choice in published work
 ```
 

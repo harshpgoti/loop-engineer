@@ -11,7 +11,7 @@ Use during `/plan-loop` to capture deployment choices early.
 - **Database hosting:** Where will the primary database be hosted?
 - **LLM provider:** Which LLM provider will the product use?
 - **LLM model(s):** Which LLM model(s) should production use?
-- **Embedding provider/model:** Which embedding provider/model should production use?
+- **Embedding provider/manage-model:** Which embedding provider/manage-model should production use?
 - **Agent runtime:** Where will agent loops run in production?
 - **CI/CD platform:** Which CI/CD platform should deploy production?
 - **Secrets management:** How should production secrets be managed?

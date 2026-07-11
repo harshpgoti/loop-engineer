@@ -10,7 +10,7 @@ Reusable loop mechanics live in `skills/`, `commands/`, and adapter files. Produ
 
 When `/plan-loop` runs and this file is still uninitialized, the agent must:
 
-1. Ask the user for product name, target user, problem, first step, constraints, desired build stack, and deployment targets (cloud provider, single vs multi-cloud, LLM provider/model).
+1. Ask the user for product name, target user, problem, first step, constraints, desired build stack, and deployment targets (cloud provider, single vs multi-cloud, LLM provider/manage-model).
 2. If the user is unavailable, write questions to `DOUBTS.md`.
 3. Replace this template with the user's product plan.
 4. Use `templates/main_plan.template.md` and `templates/step_plan.template.md` as structure.
@@ -41,7 +41,7 @@ When `/plan-loop` runs and this file is still uninitialized, the agent must:
 | Database hosting | TBD |
 | LLM provider | TBD |
 | LLM model(s) | TBD |
-| Embedding provider/model | TBD |
+| Embedding provider/manage-model | TBD |
 | Agent runtime | TBD |
 | CI/CD platform | TBD |
 | Secrets management | TBD |

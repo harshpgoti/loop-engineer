@@ -52,7 +52,7 @@ def check_provider_key(
         return True, f"{env_key} in secrets.env"
     if auth == "optional_key":
         return True, f"{env_key} optional (not set)"
-    return False, f"missing {env_key} - run: loop model set-key {env_key}"
+    return False, f"missing {env_key} - run: loop manage-model set-key {env_key}"
 
 
 def probe_openai_compatible(base_url: str, headers: dict[str, str], timeout: int = 8) -> tuple[bool, str]:
@@ -80,7 +80,7 @@ def doctor_active(root: Path | None = None) -> list[tuple[str, bool, str]]:
     pid = active.get("provider", "")
     results: list[tuple[str, bool, str]] = []
     if not pid:
-        results.append(("active", False, "no provider selected - run: loop model setup"))
+        results.append(("active", False, "no provider selected - run: loop manage-model setup"))
         return results
     custom_name = active.get("custom_name", "")
     ok, msg = check_provider_key(pid, root, custom_name)

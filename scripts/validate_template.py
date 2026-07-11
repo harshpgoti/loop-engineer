@@ -47,7 +47,7 @@ REQUIRED_PATHS = [
     "commands/spec-checklist.md",
     "commands/feature-converge.md",
     "commands/ultraplan-loop.md",
-    "commands/model.md",
+    "commands/manage-model.md",
     "commands/upgrade-loop-engineer.md",
     "skills/setup-loop-engine/SKILL.md",
     "skills/plan-loop/SKILL.md",
@@ -261,7 +261,7 @@ MAIN_LOOP_FEATURES = [
     "feature converge",
     "prod-gap",
     "memory review",
-    "loop model",
+    "loop manage-model",
     "MODEL_STATUS",
 ]
 TEXT_SUFFIXES = {

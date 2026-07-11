@@ -69,7 +69,7 @@ Adapters for Cursor, Claude Code, Codex, OpenCode, Grok Build, and direct LLM AP
 | `/upgrade-loop-engineer` | `skills/upgrade-loop-engineer/SKILL.md` |
 | `/agent-builder` | `skills/agent-builder/SKILL.md` |
 | `/research-search` | `skills/research-search/SKILL.md` |
-| `/model` | `skills/model-providers/SKILL.md` |
+| `/manage-model` | `skills/model-providers/SKILL.md` |
 
 ## Adapter Rule
 

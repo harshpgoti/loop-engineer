@@ -110,7 +110,7 @@ loop setup                    # same thing from the terminal (global data: ~/.lo
 loop setup --use-cwd --name my-app                  # local data: ./my-app/.loop-engineer/
 loop setup --use-cwd --source /path/to/other-tool          # import MEMORY/USER/skills from another AI tool
 loop setup --use-cwd --source /path/to/other-tool --scan   # different structure? classify every file by content
-loop model setup              # optional: pick the LLM provider for API-hosted inference
+loop manage-model setup              # optional: pick the LLM provider for API-hosted inference
 ```
 
 ### 1. Plan - `/plan-loop`
@@ -144,7 +144,7 @@ The primary entry point: routes between planning and development based on gates 
 ```text
 /agent-builder        # design/scaffold an AI agent as the product - auto-activates in /plan-loop + /product-develop
 /research-search      # search arXiv / Research Square / SSRN, e.g. loop research "multi-agent evaluation"
-/model                # AI provider config, e.g. loop model anthropic:<model-id>, loop model doctor
+/manage-model                # AI provider config, e.g. loop manage-model anthropic:<model-id>, loop manage-model doctor
 /feature-new          # new feature spec folder, e.g. loop feature new "auth login" --step plan/step_01.md
 /spec-clarify         # structured clarification on the active feature spec
 /spec-checklist       # spec quality gate before feature-plan
@@ -203,7 +203,7 @@ When someone downloads this repo and runs `/plan-loop`, the agent must:
 
 1. Detect whether `plan/main_plan.md` is still uninitialized.
 2. Ask for product name, target user, problem, constraints, and first product step.
-3. Ask for deployment targets during planning: cloud provider, single vs multi-cloud, LLM provider/model, and related infrastructure choices.
+3. Ask for deployment targets during planning: cloud provider, single vs multi-cloud, LLM provider/manage-model, and related infrastructure choices.
 4. If the user is unavailable, record questions in `DOUBTS.md`.
 5. Create or update `plan/step_01_<slug>.md`.
 6. Update `memories/MEMORY.md`, `TASKS.yml`, `GATES.yml`, `HANDOFF.md`, and `.ai/SESSION_LOG.md`.

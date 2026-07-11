@@ -220,7 +220,7 @@ def run_scan_import(
         text = raw.decode("utf-8", errors="ignore")
 
         if looks_secret(path, text):
-            results.append(f"NOT copied (looks like secrets - re-enter keys via `loop model set-key`): {rel}")
+            results.append(f"NOT copied (looks like secrets - re-enter keys via `loop manage-model set-key`): {rel}")
             continue
 
         category, reason = classify(path, text)

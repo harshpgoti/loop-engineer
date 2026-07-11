@@ -28,7 +28,7 @@ Use these directly in any agent that can access the repo:
 /plan-loop <idea>
 /loop-engine <idea>
 /ultraplan-loop
-/model
+/manage-model
 /agent-builder
 /research-search
 ```
@@ -39,10 +39,10 @@ CLI:
 loop setup
 loop doctor
 loop plan-loop "your full product idea here"
-loop model setup
-loop model models anthropic
-loop model anthropic:<model-id>
-loop model doctor
+loop manage-model setup
+loop manage-model models anthropic
+loop manage-model anthropic:<model-id>
+loop manage-model doctor
 loop research "your topic"
 loop agent scaffold
 loop session-start --command /loop-engine --tool cursor --text "your idea"
@@ -85,7 +85,7 @@ The agent must route the command through `commands/*.md` and update `memories/ME
 | `/spec-checklist` | `commands/spec-checklist.md` | Spec quality gate before feature-plan |
 | `/feature-converge` | `commands/feature-converge.md` | Drift check after implementation |
 | `/ultraplan-loop` | `commands/ultraplan-loop.md` | Deep planning per step when scale is platform |
-| `/model` | `commands/model.md` | Configure AI model provider for API-hosted inference |
+| `/manage-model` | `commands/manage-model.md` | Configure AI model provider for API-hosted inference |
 | `/agent-builder` | `commands/agent-builder.md` | Design/scaffold an AI agent (or agentic/dynamic workflow) as the product |
 | `/research-search` | `commands/research-search.md` | Search arXiv, Research Square, and SSRN to ground a claim |
 | `/upgrade-loop-engineer` | `commands/upgrade-loop-engineer.md` | Safe tool update without overwriting product data |

@@ -25,7 +25,7 @@ Do not add an external tool just because it is listed. Add it only when `/plan-l
 | Memory | Durable product state | `memories/`, `state.db`, `~/.loop-engineer/data/`, `<product-folder>/.loop-engineer/` |
 | Skills | Procedural instructions | `skills/` + product `skills/` |
 | AI agent development | Architecture, scaffolding, skill authoring | `skills/agent-builder`, `agent/` scaffold |
-| Model providers | API-hosted inference, any provider/model | `skills/model-providers`, `providers/registry.yml` |
+| Model providers | API-hosted inference, any provider/manage-model | `skills/model-providers`, `providers/registry.yml` |
 | Research grounding | Literature search for evidence-backed claims | `skills/research-search` |
 | Planning | PRD, ADRs, tasks, feature specs | `/plan-loop`, `plan/main_plan.md`, `plan/`, `plan/features/` |
 | Build | Implementation + gates | `/product-develop`, `TASKS.yml`, `GATES.yml` |

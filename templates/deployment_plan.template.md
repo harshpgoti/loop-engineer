@@ -29,7 +29,7 @@ These items were already discussed or recorded. The loop reused them for this de
 |------|-------|--------|
 | LLM provider | {{LLM_PROVIDER}} | {{LLM_PROVIDER_SOURCE}} |
 | LLM model(s) | {{LLM_MODELS}} | {{LLM_MODELS_SOURCE}} |
-| Embedding provider/model | {{EMBEDDING_MODEL}} | {{EMBEDDING_MODEL_SOURCE}} |
+| Embedding provider/manage-model | {{EMBEDDING_MODEL}} | {{EMBEDDING_MODEL_SOURCE}} |
 | Agent runtime | {{AGENT_RUNTIME}} | {{AGENT_RUNTIME_SOURCE}} |
 
 ## Environments

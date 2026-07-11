@@ -116,7 +116,7 @@ def fetch_provider_models(provider_id: str, root: Path | None = None) -> tuple[b
 
     if api_mode == "anthropic_messages":
         if auth == "api_key" and not token:
-            return False, [], f"missing {meta.get('env_key')} - run: loop model set-key {meta.get('env_key')}"
+            return False, [], f"missing {meta.get('env_key')} - run: loop manage-model set-key {meta.get('env_key')}"
         headers = {
             "anthropic-version": "2023-06-01",
             "x-api-key": token,
@@ -134,7 +134,7 @@ def fetch_provider_models(provider_id: str, root: Path | None = None) -> tuple[b
     if token:
         headers["Authorization"] = f"Bearer {token}"
     elif auth == "api_key":
-        return False, [], f"missing {meta.get('env_key')} - run: loop model set-key {meta.get('env_key')}"
+        return False, [], f"missing {meta.get('env_key')} - run: loop manage-model set-key {meta.get('env_key')}"
 
     url = base_url.rstrip("/") + "/models"
     ok, payload, err = _http_get_json(url, headers)

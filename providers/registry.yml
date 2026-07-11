@@ -3,9 +3,9 @@
 # Secrets: ~/.loop-engineer/data/secrets.env
 # Active model: ~/.loop-engineer/data/model.yml (any model id the provider accepts)
 #
-# default_model - fallback when user omits model: `loop model anthropic`
-# Discover models live: `loop model models anthropic`
-# Set any model:       `loop model anthropic:<model-id-from-provider>`
+# default_model - fallback when user omits model: `loop manage-model anthropic`
+# Discover models live: `loop manage-model models anthropic`
+# Set any model:       `loop manage-model anthropic:<model-id-from-provider>`
 
 providers:
   openrouter:
@@ -89,7 +89,7 @@ providers:
     api_mode: openai_chat
     base_url: https://api.perplexity.ai
     default_model: sonar
-    note: Unconfirmed - Perplexity's current docs describe /v1/sonar and /v1/agent endpoints rather than a plain /chat/completions path; loop model models may not resolve. Verify against https://docs.perplexity.ai before relying on this entry.
+    note: Unconfirmed - Perplexity's current docs describe /v1/sonar and /v1/agent endpoints rather than a plain /chat/completions path; loop manage-model models may not resolve. Verify against https://docs.perplexity.ai before relying on this entry.
     docs: https://docs.perplexity.ai
 
   novita:
@@ -126,7 +126,7 @@ providers:
     api_mode: openai_chat
     base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
     default_model: qwen-plus
-    note: This is the China (Beijing) endpoint. International/Singapore accounts typically use https://dashscope-intl.aliyuncs.com/compatible-mode/v1 instead - confirm which region your API key belongs to via loop model custom add if it differs.
+    note: This is the China (Beijing) endpoint. International/Singapore accounts typically use https://dashscope-intl.aliyuncs.com/compatible-mode/v1 instead - confirm which region your API key belongs to via loop manage-model custom add if it differs.
     docs: https://www.alibabacloud.com/help/en/model-studio
 
   moonshot:
@@ -224,7 +224,7 @@ providers:
     base_url: ""
     default_model: ""
     context_min: 64000
-    note: For more than one custom endpoint use named entries - see `loop model custom add <name> <base_url>` and select with custom:<name>:<model>.
+    note: For more than one custom endpoint use named entries - see `loop manage-model custom add <name> <base_url>` and select with custom:<name>:<model>.
 
 ide_providers:
   cursor:

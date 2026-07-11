@@ -537,8 +537,8 @@ def build_parser() -> argparse.ArgumentParser:
     plan.set_defaults(func=cmd_plan)
 
     model = sub.add_parser(
-        "model",
-        help="Configure AI model provider - keys in ~/.loop-engineer/data/secrets.env (loop model setup).",
+        "manage-model",
+        help="Configure AI model provider - keys in ~/.loop-engineer/data/secrets.env (loop manage-model setup).",
     )
     model.add_argument(
         "tokens",

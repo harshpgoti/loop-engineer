@@ -158,7 +158,7 @@ def check_model_provider(errors: list[str], warnings: list[str], passes: list[st
     cfg = load_config()
     active = cfg.get("active") or {}
     if not active.get("provider"):
-        warnings.append("No model provider selected - run `loop model setup` for API-hosted inference.")
+        warnings.append("No model provider selected - run `loop manage-model setup` for API-hosted inference.")
     else:
         passes.append(f"Active model: {active.get('provider')} - {active.get('model', '')}")
 

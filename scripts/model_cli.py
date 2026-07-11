@@ -64,7 +64,7 @@ def _sync_workspace_status(workspace: Path, provider_id: str, model: str) -> Non
 | Secrets | `~/.loop-engineer/data/secrets.env` |
 | Updated | {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')} |
 
-Use `loop model doctor` to verify connectivity.
+Use `loop manage-model doctor` to verify connectivity.
 """
     path.write_text(body, encoding="utf-8")
 
@@ -106,7 +106,7 @@ def _print_model_preview(provider_id: str, *, search: str = "", limit: int = PRE
     for mid in show:
         print(f"  {mid}")
     if len(filtered) > limit:
-        print(f"  ... {len(filtered) - limit} more - use: loop model models {provider_id} --search <term>")
+        print(f"  ... {len(filtered) - limit} more - use: loop manage-model models {provider_id} --search <term>")
     print("\nUse any id above, or any model id the provider publishes.")
 
 
@@ -121,7 +121,7 @@ def cmd_status(_: argparse.Namespace) -> int:
             flag = "OK" if ok else "FAIL"
             print(f"  [{flag}] {name}: {msg}")
     else:
-        print("No provider selected. Run: loop model setup")
+        print("No provider selected. Run: loop manage-model setup")
     fallback = cfg.get("fallback") or []
     if fallback:
         print("Fallback chain:")
@@ -149,8 +149,8 @@ def cmd_list(args: argparse.Namespace) -> int:
         if meta.get("docs"):
             print(f"  docs: {meta.get('docs')}")
         pid = meta["id"]
-        print(f"\n  loop model models {pid}   # live list from provider API")
-        print(f"  loop model {pid}:<any-model-id>")
+        print(f"\n  loop manage-model models {pid}   # live list from provider API")
+        print(f"  loop manage-model {pid}:<any-model-id>")
         return 0
     print("API providers (registry = connection only; any provider model id works):")
     for pid in list_provider_ids():
@@ -159,8 +159,8 @@ def cmd_list(args: argparse.Namespace) -> int:
             f"  {pid:14} {meta.get('label', pid):32} "
             f"fallback={meta.get('default_model', '') or '(none)'}"
         )
-    print("\nLive model catalog:     loop model models <provider>")
-    print("Set any model:          loop model anthropic:<model-id>")
+    print("\nLive model catalog:     loop manage-model models <provider>")
+    print("Set any model:          loop manage-model anthropic:<model-id>")
     print("\nIDE providers (no API key):")
     for pid, meta in reg.items():
         if isinstance(meta, dict) and meta.get("auth") == "ide":
@@ -174,7 +174,7 @@ def cmd_models(args: argparse.Namespace) -> int:
         cfg = load_config()
         provider_id = (cfg.get("active") or {}).get("provider", "")
     if not provider_id:
-        print("Usage: loop model models <provider>  (or set active provider first)", file=sys.stderr)
+        print("Usage: loop manage-model models <provider>  (or set active provider first)", file=sys.stderr)
         return 1
     ok, models, msg = fetch_provider_models(provider_id)
     if not ok:
@@ -238,7 +238,7 @@ def cmd_setup(args: argparse.Namespace) -> int:
                     _write_secret(env_key, val)
                     print(f"Saved to {secrets_env_path()}")
             else:
-                print("Run: loop model set-key", env_key, file=sys.stderr)
+                print("Run: loop manage-model set-key", env_key, file=sys.stderr)
                 return 1
     if meta["id"] == "custom" and not args.non_interactive:
         base = input("Base URL (OpenAI-compatible): ").strip()
@@ -298,9 +298,9 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 def cmd_custom_add(args: argparse.Namespace) -> int:
     entry = add_custom_provider(args.name, args.base_url, args.key_env or "")
     print(f"Added custom provider `{entry['name']}` -> {entry['base_url']}")
-    print(f"Select it with: loop model custom:{entry['name']}:<model-id>")
+    print(f"Select it with: loop manage-model custom:{entry['name']}:<model-id>")
     if args.key_env:
-        print(f"Set its key with: loop model set-key {args.key_env}")
+        print(f"Set its key with: loop manage-model set-key {args.key_env}")
     return 0
 
 
@@ -308,7 +308,7 @@ def cmd_custom_list(_: argparse.Namespace) -> int:
     cfg = load_config()
     providers = cfg.get("custom_providers") or []
     if not providers:
-        print("No named custom providers. Add one with: loop model custom add <name> <base_url>")
+        print("No named custom providers. Add one with: loop manage-model custom add <name> <base_url>")
         return 0
     for entry in providers:
         key = entry.get("env_key", "") or "(no key)"
@@ -337,7 +337,7 @@ def cmd_fallback_list(_: argparse.Namespace) -> int:
     cfg = load_config()
     fallback = cfg.get("fallback") or []
     if not fallback:
-        print("No fallback providers configured. Add one with: loop model fallback add <provider:model>")
+        print("No fallback providers configured. Add one with: loop manage-model fallback add <provider:model>")
         return 0
     for i, fb in enumerate(fallback, 1):
         print(f"  {i}. {fb.get('provider')}:{fb.get('model')}")

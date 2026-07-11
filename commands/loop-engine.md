@@ -84,7 +84,7 @@ SESSION-END
 | Start | Session lifecycle | `loop session-start --command /loop-engine` |
 | Bootstrap | Manifest + recall | `SESSION_MANIFEST.md`, `SESSION_RECALL.md` |
 | Bootstrap | Auto frontend skills | `AUTO_SKILLS.md` when motion/3D signals |
-| Setup | Model provider (API inference) | `loop model setup` → `plan/MODEL_STATUS.md` |
+| Setup | Model provider (API inference) | `loop manage-model setup` → `plan/MODEL_STATUS.md` |
 | Route | Pick branch | See routing table below |
 | Plan branch | Scale + ultraplan | `loop plan-loop scale`, `ultraplan`, `PRODUCT_MAP.md` |
 | Plan branch | Full `/plan-loop` cycle | `commands/plan-loop.md` |
