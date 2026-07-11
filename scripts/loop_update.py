@@ -28,6 +28,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Update Loop Engineer app without touching product memory.")
     parser.add_argument("--workspace", default=None)
     parser.add_argument("--skip-validate", action="store_true")
+    parser.add_argument(
+        "--skip-native-commands",
+        action="store_true",
+        help="Do not refresh native slash-command wrappers for agent CLIs (claude, cursor, codex, opencode).",
+    )
     args = parser.parse_args()
 
     ensure_loop_home()
@@ -52,6 +57,13 @@ def main() -> int:
     migrate = runtime / "scripts" / "migrate_workspace.py"
     if migrate.exists() and workspace.exists():
         code, out = run([sys.executable, str(migrate), "--workspace", str(workspace)], runtime)
+        print(out)
+
+    gen = runtime / "scripts" / "generate_agent_commands.py"
+    if not args.skip_native_commands and gen.exists():
+        print("\nRefreshing native slash commands for agent CLIs...")
+        # app-root defaults to `runtime`, so wrappers re-point at the updated app.
+        code, out = run([sys.executable, str(gen), "--tool", "all", "--scope", "user"], runtime)
         print(out)
 
     print("\nProduct memory was not overwritten.")

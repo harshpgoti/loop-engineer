@@ -42,7 +42,12 @@ def cmd_setup(args: argparse.Namespace) -> int:
 
 
 def cmd_update(args: argparse.Namespace) -> int:
-    return run_script("loop_update.py", [])
+    extra: list[str] = []
+    if getattr(args, "skip_validate", False):
+        extra.append("--skip-validate")
+    if getattr(args, "skip_native_commands", False):
+        extra.append("--skip-native-commands")
+    return run_script("loop_update.py", extra)
 
 
 def cmd_doctor(args: argparse.Namespace) -> int:
@@ -426,7 +431,10 @@ def build_parser() -> argparse.ArgumentParser:
     setup.add_argument("--scan", action="store_true", help="With --source: classify arbitrary files by content and route them.")
     setup.add_argument("--skip-native-commands", action="store_true", help="Do not generate native agent slash-command wrappers.")
     setup.set_defaults(func=cmd_setup)
-    sub.add_parser("update", help="Update loop-engineer runtime safely.").set_defaults(func=cmd_update)
+    update = sub.add_parser("update", help="Update loop-engineer runtime safely (also refreshes native slash commands).")
+    update.add_argument("--skip-validate", action="store_true", help="Skip template validation after pull.")
+    update.add_argument("--skip-native-commands", action="store_true", help="Do not refresh native agent slash-command wrappers.")
+    update.set_defaults(func=cmd_update)
     sub.add_parser("doctor", help="Health-check runtime and product workspace.").set_defaults(func=cmd_doctor)
     sub.add_parser("status", help="Quick workspace snapshot.").set_defaults(func=cmd_status)
     sub.add_parser("sync", help="Reconcile memory/handoff/task drift.").set_defaults(func=cmd_sync)
