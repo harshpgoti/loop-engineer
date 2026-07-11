@@ -1,4 +1,4 @@
-# Product Map — {{PRODUCT_NAME}}
+# Product Map - {{PRODUCT_NAME}}
 
 **Updated:** {{DATE}}
 
@@ -11,13 +11,13 @@ One row per **sub-product**, **AI agent**, or major platform module. Each row be
 
 ## Types
 
-- `agent` — autonomous AI agent or copilot module
-- `product` — user-facing sub-product or app
-- `service` — backend service or API domain
-- `module` — shared capability (auth, billing, etc.)
+- `agent` - autonomous AI agent or copilot module
+- `product` - user-facing sub-product or app
+- `service` - backend service or API domain
+- `module` - shared capability (auth, billing, etc.)
 
 ## Rules
 
-- Keep **one wedge per step** — do not merge unrelated sub-products.
+- Keep **one wedge per step** - do not merge unrelated sub-products.
 - Link dependencies in **Depends on** (step IDs).
-- Do not duplicate full PRD text here — details go in `plan/steps/NN-slug/`.
+- Do not duplicate full PRD text here - details go in `plan/steps/NN-slug/`.

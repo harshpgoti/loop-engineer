@@ -4,9 +4,9 @@ Built-in motion/3D skills are **auto-selected** during `/product-develop`. This 
 
 ## How To Interpret
 
-User mentions animation, GSAP, Motion.dev, scroll effects, Three.js, WebGL — or types `/frontend-animation`.
+User mentions animation, GSAP, Motion.dev, scroll effects, Three.js, WebGL - or types `/frontend-animation`.
 
-## Agent steps (automatic — user does nothing)
+## Agent steps (automatic - user does nothing)
 
 1. Run `python scripts/frontend_skill_router.py --write` with the user's message as `--text` if helpful.
 2. Read `plan/AUTO_SKILLS.md`.

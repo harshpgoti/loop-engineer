@@ -23,12 +23,12 @@ Buildable slices live in `plan/features/NNN-slug/`. See `docs/FEATURE_WORKFLOW.m
 
 When the product has multiple sub-products or agents:
 
-- `plan/PLAN_SCALE.md` — `convenient` vs `platform`
-- `plan/PRODUCT_MAP.md` — module index
-- `plan/steps/NN-slug/` — deep ultraplan pack per step
-- `plan/ULTRAPLAN_STATUS.md` — progress tracker
+- `plan/PLAN_SCALE.md` - `convenient` vs `platform`
+- `plan/PRODUCT_MAP.md` - module index
+- `plan/steps/NN-slug/` - deep ultraplan pack per step
+- `plan/ULTRAPLAN_STATUS.md` - progress tracker
 
-See `docs/ULTRAPLAN.md` and `skills/ultraplan/SKILL.md`.
+See `docs/ULTRAPLAN.md` and `skills/plan-loop/phases/ultraplan.md`.
 
 Active pointer: `.loop/active-feature.json`
 

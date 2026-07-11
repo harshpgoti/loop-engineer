@@ -1,4 +1,4 @@
-# PRD — Step {{STEP_ID}}: {{STEP_TITLE}}
+# PRD - Step {{STEP_ID}}: {{STEP_TITLE}}
 
 **Updated:** {{DATE}}
 

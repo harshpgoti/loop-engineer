@@ -50,7 +50,7 @@ def append_session_log(workspace: Path, product_name: str, step_file: Path) -> N
     with log_path.open("a", encoding="utf-8") as handle:
         handle.write(
             "\n"
-            f"## {date.today().isoformat()} — Product initialized\n\n"
+            f"## {date.today().isoformat()} - Product initialized\n\n"
             f"- Product: {product_name}\n"
             f"- Created/updated: `{step_file.relative_to(workspace)}`\n"
             "- Next: run `/plan-loop` to validate assumptions or `/product-develop` after gates pass.\n"

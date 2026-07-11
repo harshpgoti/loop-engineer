@@ -1,6 +1,6 @@
 # /session-start
 
-Always-on memory bootstrap — run **before** any loop work in any tool.
+Always-on memory bootstrap - run **before** any loop work in any tool.
 
 ## Agent (mandatory)
 
@@ -21,4 +21,4 @@ Use `--tool` hint when known: `cursor`, `claude`, `codex`, `opencode`, `grok`, `
 
 ## Wired into
 
-`/plan-loop`, `/product-develop`, `/loop-engine`, and ad-hoc product work — always run this first.
+`/plan-loop`, `/product-develop`, `/loop-engine`, and ad-hoc product work - always run this first.

@@ -2,7 +2,7 @@
 file into the right Loop Engineer home by content classification.
 
 Rules first, AI second (AGENTS.md rule 4): classification is a deterministic
-filename + content-signal scorer — no LLM call. Routing:
+filename + content-signal scorer - no LLM call. Routing:
 
   user profile / preferences        -> appended to memories/USER.md
   behavior rules / persona / prompt -> appended to memories/SOUL.md
@@ -13,7 +13,7 @@ filename + content-signal scorer — no LLM call. Routing:
   binary / huge / unclassifiable    -> skipped or staged in .loop/import-review/
 
 Appends carry an "Imported from <relpath>" marker so re-running the scan is
-idempotent — already-imported files are skipped.
+idempotent - already-imported files are skipped.
 """
 
 from __future__ import annotations
@@ -81,7 +81,7 @@ CATEGORY_SIGNALS: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
 
 TIE_BREAK = ("user", "soul", "skill", "plan", "memory")
 
-# Exact-name files the classic importer already handles — skipped when the
+# Exact-name files the classic importer already handles - skipped when the
 # scanner runs alongside it (loop setup --source --scan).
 KNOWN_EXACT_NAMES = {"MEMORY.md", "USER.md", "SOUL.md", "AGENTS.md"}
 
@@ -162,7 +162,7 @@ def _write_skill(workspace: Path, rel: str, path: Path, text: str, dry_run: bool
     dest.parent.mkdir(parents=True, exist_ok=True)
     if not has_skill_frontmatter(text):
         first_line = next((l.strip().lstrip("# ") for l in text.splitlines() if l.strip()), path.stem)
-        text = f"---\nname: {_slugify(path.stem)}\ndescription: Imported from {rel} — {first_line[:120]}\n---\n\n{text}"
+        text = f"---\nname: {_slugify(path.stem)}\ndescription: Imported from {rel} - {first_line[:120]}\n---\n\n{text}"
     dest.write_text(text, encoding="utf-8")
     return f"imported skill: {rel} -> {dest.relative_to(workspace).as_posix()}"
 
@@ -220,7 +220,7 @@ def run_scan_import(
         text = raw.decode("utf-8", errors="ignore")
 
         if looks_secret(path, text):
-            results.append(f"NOT copied (looks like secrets — re-enter keys via `loop model set-key`): {rel}")
+            results.append(f"NOT copied (looks like secrets - re-enter keys via `loop model set-key`): {rel}")
             continue
 
         category, reason = classify(path, text)
@@ -238,12 +238,12 @@ def run_scan_import(
         elif category == "plan":
             results.append(
                 _stage_copy(workspace, "plan/imported", rel, path, dry_run)
-                + f" [plan: {reason} — absorb via /plan-loop]"
+                + f" [plan: {reason} - absorb via /plan-loop]"
             )
         else:
             results.append(
                 _stage_copy(workspace, ".loop/import-review", rel, path, dry_run)
-                + " [unclassified — review manually]"
+                + " [unclassified - review manually]"
             )
 
     if not results:

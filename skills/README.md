@@ -22,7 +22,7 @@ Adapters for Cursor, Claude Code, Codex, OpenCode, Grok Build, and direct LLM AP
 | `session-recall` | Past session search (included in session-start) |
 | `memory-review` | Memory curation (included in session-end) |
 | `compact-loop` | Compact long-running context into `COMPACT.md` |
-| `frontend-animation` | Single core skill for all frontend motion/3D/design — topic references (Motion, GSAP, Three.js, R3F, web design) auto-routed via `plan/AUTO_SKILLS.md` |
+| `frontend-animation` | Single core skill for all frontend motion/3D/design - topic references (Motion, GSAP, Three.js, R3F, web design) auto-routed via `plan/AUTO_SKILLS.md` |
 | `feature-workflow` | Feature spec folders under `plan/features/` |
 | `spec-clarify` | Structured clarification on active feature |
 | `spec-checklist` | Spec quality gate before feature-plan |
@@ -61,10 +61,10 @@ Adapters for Cursor, Claude Code, Codex, OpenCode, Grok Build, and direct LLM AP
 | `/compact-loop` | `skills/compact-loop/SKILL.md` |
 | `/frontend-animation` | `skills/frontend-animation/SKILL.md` |
 | `/feature-new` | `skills/feature-workflow/SKILL.md` |
-| `/spec-clarify` | `skills/spec-clarify/SKILL.md` |
-| `/spec-checklist` | `skills/spec-checklist/SKILL.md` |
+| `/spec-clarify` | `skills/plan-loop/phases/spec-clarify.md` |
+| `/spec-checklist` | `skills/plan-loop/phases/spec-checklist.md` |
 | `/feature-converge` | `skills/feature-converge/SKILL.md` |
-| `/ultraplan` | `skills/ultraplan/SKILL.md` |
+| `/ultraplan-loop` | `skills/plan-loop/phases/ultraplan.md` |
 | `/migrate-import` | `skills/migrate-import/SKILL.md` |
 | `/upgrade-loop-engineer` | `skills/upgrade-loop-engineer/SKILL.md` |
 | `/agent-builder` | `skills/agent-builder/SKILL.md` |

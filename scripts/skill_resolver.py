@@ -66,7 +66,7 @@ def validate_user_skills(workspace: Path) -> list[str]:
 def bootstrap_skill_paths(workspace: Path) -> list[str]:
     lines = ["## Skill Resolution Order", "", "1. Product workspace `skills/` (highest priority)", "2. Tool canonical `loop-engineer/skills/`", ""]
     for item in list_skills(workspace):
-        lines.append(f"- `{item['name']}` — {item['source']} — `{item['path']}`")
+        lines.append(f"- `{item['name']}` - {item['source']} - `{item['path']}`")
     auto = workspace / "plan" / "AUTO_SKILLS.md"
     if auto.exists():
         lines.extend(["", "## Auto-selected frontend skills", "", f"Read `{auto.relative_to(workspace).as_posix()}` (from `frontend_skill_router.py`)."])

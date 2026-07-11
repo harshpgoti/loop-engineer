@@ -133,7 +133,7 @@ def main() -> int:
     with log_path.open("a", encoding="utf-8") as handle:
         handle.write(
             "\n"
-            f"## {date.today().isoformat()} — Release check\n\n"
+            f"## {date.today().isoformat()} - Release check\n\n"
             f"- Updated `{output.name}`.\n"
         )
 

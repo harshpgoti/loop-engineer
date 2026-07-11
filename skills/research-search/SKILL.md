@@ -17,9 +17,9 @@ Search public research-paper sources without vendoring a scraper or paying for a
 
 | Source | Method | Coverage |
 |--------|--------|----------|
-| arXiv | Official Atom API (`export.arxiv.org/api/query`) — no key | CS/physics/math/stats preprints |
-| Research Square | Crossref REST API filtered to DOI prefix `10.21203` — no key | Multidisciplinary preprints |
-| SSRN | **No public API.** `papers.ssrn.com` returns HTTP 403 to every automated fetch attempted. `ssrn_search_url()` only builds a best-effort browser URL — open it yourself or fetch with a tool that has browser-grade access. Do not attempt to bypass its bot protection. | Social science, law, economics preprints |
+| arXiv | Official Atom API (`export.arxiv.org/api/query`) - no key | CS/physics/math/stats preprints |
+| Research Square | Crossref REST API filtered to DOI prefix `10.21203` - no key | Multidisciplinary preprints |
+| SSRN | **No public API.** `papers.ssrn.com` returns HTTP 403 to every automated fetch attempted. `ssrn_search_url()` only builds a best-effort browser URL - open it yourself or fetch with a tool that has browser-grade access. Do not attempt to bypass its bot protection. | Social science, law, economics preprints |
 
 ## Commands
 
@@ -36,12 +36,12 @@ Importable: `scripts/research_search.py` exposes `search(query, sources=None, li
 
 ## Rules
 
-- Cite the returned `url` (arXiv abstract page or DOI link) in `EVIDENCE_LOG.md` — never just the search query.
+- Cite the returned `url` (arXiv abstract page or DOI link) in `EVIDENCE_LOG.md` - never just the search query.
 - Treat SSRN results as unverified until a human opens the link; do not report SSRN paper titles you have not actually seen.
 - Prefer arXiv/Research Square for anything with a DOI or arXiv ID; only fall back to a general web search when neither source has coverage.
-- This is a read-only literature lookup, not a citation-formatting or PDF-fetching tool — fetch the actual PDF/abstract with `WebFetch` only if the content itself is needed.
+- This is a read-only literature lookup, not a citation-formatting or PDF-fetching tool - fetch the actual PDF/abstract with `WebFetch` only if the content itself is needed.
 
 ## Output
 
 - Per-source result count and list of papers (title, authors, published date, url).
-- Non-zero exit if any requested source's fetch failed (network/HTTP error) — check the printed message.
+- Non-zero exit if any requested source's fetch failed (network/HTTP error) - check the printed message.

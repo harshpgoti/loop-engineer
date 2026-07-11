@@ -22,8 +22,8 @@ Quality gate before locking `feature-plan.md`. Run `/spec-checklist`.
 
 ## Verdict
 
-- [ ] **Ready for feature-plan** — all must items checked
-- [ ] **Needs clarify** — run `/spec-clarify` first
+- [ ] **Ready for feature-plan** - all must items checked
+- [ ] **Needs clarify** - run `/spec-clarify` first
 
 ## Notes
 

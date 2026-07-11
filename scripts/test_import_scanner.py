@@ -1,4 +1,4 @@
-"""Tests for import_scanner.py — content classification + routing + idempotence.
+"""Tests for import_scanner.py - content classification + routing + idempotence.
 
 Run: python scripts/test_import_scanner.py
 """

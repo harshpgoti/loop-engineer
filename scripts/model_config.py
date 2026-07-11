@@ -9,7 +9,7 @@ from model_paths import model_config_path
 from model_registry import get_provider, resolve_model
 
 
-DEFAULT_CONFIG = """# Loop Engineer model config — ~/.loop-engineer/data/model.yml
+DEFAULT_CONFIG = """# Loop Engineer model config - ~/.loop-engineer/data/model.yml
 version: 1
 active:
   provider: ""
@@ -172,7 +172,7 @@ def set_active(
         entry = get_custom_provider(custom_name, cfg)
         if not entry:
             raise ValueError(
-                f"Unknown custom provider `{custom_name}` — run: "
+                f"Unknown custom provider `{custom_name}` - run: "
                 f"loop model custom add {custom_name} <base_url>"
             )
         model = model or ""

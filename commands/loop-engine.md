@@ -2,7 +2,7 @@
 
 Run the all-in-one product loop: Step 1 planning and Step 2 product development, with gates deciding when to move from planning to build.
 
-**This is the primary entry point.** It must run every built-in capability — nothing is optional or skipped unless a gate blocks it.
+**This is the primary entry point.** It must run every built-in capability - nothing is optional or skipped unless a gate blocks it.
 
 ## How To Interpret
 
@@ -20,7 +20,7 @@ Read `plan/PLAN_BOOTSTRAP.md` first when present.
 
 Read command/skill files from the tool app. Product-state files come from the **active workspace** (local `.loop-engineer/` auto-detected from cwd, else `~/.loop-engineer/data/`).
 
-1. `plan/SESSION_MANIFEST.md` (after session-start — **read first**)
+1. `plan/SESSION_MANIFEST.md` (after session-start - **read first**)
 2. `AGENTS.md`
 3. `memories/SOUL.md`
 4. `memories/USER.md`
@@ -32,12 +32,12 @@ Read command/skill files from the tool app. Product-state files come from the **
 10. `commands/plan-loop.md` (when routing to planning)
 11. `commands/product-develop.md` (when routing to development)
 12. `skills/feature-workflow/SKILL.md`
-13. `skills/spec-clarify/SKILL.md`
-14. `skills/spec-checklist/SKILL.md`
+13. `skills/plan-loop/phases/spec-clarify.md`
+14. `skills/plan-loop/phases/spec-checklist.md`
 15. `skills/feature-converge/SKILL.md`
-16. `skills/task-compiler/SKILL.md`
-17. `skills/product-council/SKILL.md`
-18. `skills/product-grill/SKILL.md`
+16. `skills/plan-loop/phases/task-compiler.md`
+17. `skills/plan-loop/phases/council.md`
+18. `skills/plan-loop/phases/grill.md`
 19. `skills/implementation-planner/SKILL.md`
 20. `skills/code-reviewer/SKILL.md`
 21. `skills/qa-validation/SKILL.md`
@@ -77,7 +77,7 @@ SESSION-START
 SESSION-END
 ```
 
-## Cycle checklist (all features — primary entry)
+## Cycle checklist (all features - primary entry)
 
 | Step | Feature | When |
 |------|---------|------|
@@ -114,21 +114,21 @@ After session-start, pick **one branch** per session (or chain plan → develop 
 
 | Condition | Action |
 |-----------|--------|
-| `plan/main_plan.md` UNINITIALIZED or `G-INIT-01` blocked | Execute **`/plan-loop` flow** (`commands/plan-loop.md` steps 1–23) |
+| `plan/main_plan.md` UNINITIALIZED or `G-INIT-01` blocked | Execute **`/plan-loop` flow** (`commands/plan-loop.md` steps 1-23) |
 | Evidence / PRD / architecture gates blocked | **`/plan-loop` flow** + `product-council` |
 | After user describes product idea | Auto: `plan/PLAN_BOOTSTRAP.md` via session-start `--text` or `loop plan-loop "<idea>"` |
-| Scale is **platform** | Follow bootstrap → **`skills/ultraplan/SKILL.md`** on next step |
+| Scale is **platform** | Follow bootstrap → **`skills/plan-loop/phases/ultraplan.md`** on next step |
 | Step plan missing for current module | **`/plan-loop` flow** (step file + ultraplan pack if platform) |
 | No active feature folder | `loop feature new "<title>" --step plan/step_XX.md` |
 | Open spec questions / ambiguous requirements | **`/spec-clarify`** |
-| Spec not checklist-passed | **`/spec-checklist`** — do not compile tasks until ready |
+| Spec not checklist-passed | **`/spec-checklist`** - do not compile tasks until ready |
 | No `tasks.md` or `TASKS.yml` empty | **`task-compiler`** |
 | Build gates pass, tasks ready | Execute **`/product-develop` flow** (`commands/product-develop.md`) |
 | Requirements blocked mid-build | **`/spec-clarify`** then resume develop |
 | Frontend motion/3D in task | Read `plan/AUTO_SKILLS.md` + matched skills |
 | After dev slice or before session-end on develop | **`loop feature converge`** + **`/prod-gap`** |
 | P0/P1 technical blockers from prod-gap | Route back to **`/product-develop`** |
-| Human-required blockers | `DOUBTS.md` + `HANDOFF.md` — ask user |
+| Human-required blockers | `DOUBTS.md` + `HANDOFF.md` - ask user |
 | Meaningful work unit complete | **`/deployment-plan`** |
 | Long session / tool switch | **`/compact-loop`** |
 | Every closeout | **`loop session-end`** (includes memory-review staging; converge on develop) |

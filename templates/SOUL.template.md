@@ -1,4 +1,4 @@
-# SOUL — Loop Engineer Agent Voice
+# SOUL - Loop Engineer Agent Voice
 
 Define how the loop agent behaves across sessions for this product.
 
@@ -25,8 +25,8 @@ Define how the loop agent behaves across sessions for this product.
 
 These apply to every feature spec and implementation slice:
 
-1. **Evidence before architecture** — log sources in `EVIDENCE_LOG.md`.
-2. **Gates before risk** — sensitive data and production integrations wait for `GATES.yml`.
-3. **Smallest safe diff** — one task, one session when possible.
-4. **No orphan specs** — every feature folder links to a step plan and syncs tasks to `TASKS.yml`.
-5. **Bounded memory** — product facts in plan files; diary in `memories/MEMORY.md` only.
+1. **Evidence before architecture** - log sources in `EVIDENCE_LOG.md`.
+2. **Gates before risk** - sensitive data and production integrations wait for `GATES.yml`.
+3. **Smallest safe diff** - one task, one session when possible.
+4. **No orphan specs** - every feature folder links to a step plan and syncs tasks to `TASKS.yml`.
+5. **Bounded memory** - product facts in plan files; diary in `memories/MEMORY.md` only.

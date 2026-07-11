@@ -10,7 +10,7 @@ Register where product memory lives and seed missing starter files.
 
 | Mode | Location | Setup |
 |------|----------|--------|
-| **Global** (default) | `~/.loop-engineer/data/` | `loop setup` — no extra flags |
+| **Global** (default) | `~/.loop-engineer/data/` | `loop setup` - no extra flags |
 | **Local** | `<product-folder>/.loop-engineer/` | `loop setup --use-cwd` or `loop setup --memory-mode local --workspace H:/POC/QEAutoAI` |
 
 **Auto-detection:** After local setup, when you return to that folder and run `/plan-loop` or `/loop-engine`, loop data is detected automatically. No need to pass flags again.
@@ -19,8 +19,8 @@ Register where product memory lives and seed missing starter files.
 
 > Where should product memory live?
 >
-> 1. **Local** — in your product folder (multiple products, separate memory each)
-> 2. **Global** — in `~/.loop-engineer/data/` (default)
+> 1. **Local** - in your product folder (multiple products, separate memory each)
+> 2. **Global** - in `~/.loop-engineer/data/` (default)
 
 ## Scripts
 

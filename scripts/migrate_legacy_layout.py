@@ -9,7 +9,7 @@ Old local layout:   <product-folder>/{memories,state.db,main_plan.md,...}
 New local layout:   <product-folder>/.loop-engineer/{memories,state.db,main_plan.md,...}
 
 Safe by construction: only moves an explicit allowlist of Loop-Engineer-owned
-paths. Dry-run by default — pass --apply to actually move files. Never
+paths. Dry-run by default - pass --apply to actually move files. Never
 overwrites an existing target.
 """
 
@@ -55,7 +55,7 @@ SAFE_ENTRIES = (
     "registry",
 )
 
-# Common product-folder names too — only bulk-moved for the global home
+# Common product-folder names too - only bulk-moved for the global home
 # (which is exclusively Loop Engineer's own directory, nothing else lives
 # there). For a local product folder, these are flagged instead of moved,
 # since a real product very plausibly has its own docs/ or skills/.
@@ -102,7 +102,7 @@ def migrate_global(apply: bool = False) -> list[str]:
     target = data_home()
     results: list[str] = []
     if not is_legacy_global(root):
-        results.append(f"No legacy flat layout found at {root} — nothing to do.")
+        results.append(f"No legacy flat layout found at {root} - nothing to do.")
         return results
     for name in SAFE_ENTRIES + GLOBAL_ONLY_ENTRIES:
         src = root / name
@@ -116,7 +116,7 @@ def migrate_local(product_folder: Path, apply: bool = False) -> list[str]:
     target = local_data_dir(product_folder)
     results: list[str] = []
     if not is_legacy_local(product_folder):
-        results.append(f"No legacy flat layout found at {product_folder} — nothing to do.")
+        results.append(f"No legacy flat layout found at {product_folder} - nothing to do.")
         return results
     for name in SAFE_ENTRIES:
         src = product_folder / name

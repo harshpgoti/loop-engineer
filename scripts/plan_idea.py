@@ -67,30 +67,37 @@ def render_bootstrap(
             lines.append(f"- Extracted {len(modules)} module(s) from idea text")
             lines.append("- Wrote `plan/PRODUCT_MAP.md` + step stubs + ultraplan folders")
         else:
-            lines.append("- Platform scale but modules not extracted — agent must propose `PRODUCT_MAP.md` rows")
+            lines.append("- Platform scale but modules not extracted - agent must propose `PRODUCT_MAP.md` rows")
         lines.append("- Refreshed `plan/ULTRAPLAN_STATUS.md`")
     else:
-        lines.append("- Convenient scale — use standard step plan + feature spec (no ultraplan folders yet)")
+        lines.append("- Convenient scale - use standard step plan + feature spec (no ultraplan folders yet)")
 
     if decomposed:
         lines.extend(["", "## Modules created", ""])
         for item in decomposed:
             lines.append(f"- **{item['id']}** {item['title']} → `{item.get('folder', item.get('step', ''))}`")
 
+    try:
+        from plan_phase import render_phase_block
+
+        lines.extend(["", render_phase_block(workspace)])
+    except Exception:
+        pass
+
     lines.extend(["", "## Agent next action", ""])
     if scale == SCALE_PLATFORM:
         if next_step:
             lines.append(
-                f"1. Run **`skills/ultraplan/SKILL.md`** on step **{next_step['id']} — {next_step['title']}** "
+                f"1. Run **`skills/plan-loop/phases/ultraplan.md`** on step **{next_step['id']} - {next_step['title']}** "
                 f"(fill all files under `plan/steps/`)."
             )
-            lines.append("2. One step per session — do not shallow-plan every module at once.")
+            lines.append("2. One step per session - do not shallow-plan every module at once.")
             lines.append("3. When that step's pack is complete → feature spec + task-compiler for that step only.")
         elif not modules:
             lines.append("1. Propose module list in `plan/PRODUCT_MAP.md` (confirm with user if unclear).")
             lines.append("2. Re-run `loop plan-loop \"<idea>\"` or `loop plan-loop decompose` after map is filled.")
         else:
-            lines.append("1. All ultraplan packs marked structurally ready — validate content depth.")
+            lines.append("1. All ultraplan packs marked structurally ready - validate content depth.")
             lines.append("2. Continue `/plan-loop` grill, evidence, council, then feature spec on active step.")
     else:
         lines.append("1. Continue standard `/plan-loop`: init product, one `plan/step_01_*.md`, feature spec.")
@@ -105,7 +112,7 @@ def render_bootstrap(
             "loop plan-loop \"<product idea in plain language>\"",
             "```",
             "",
-            "Or `/plan-loop <idea>` / `/loop-engine <idea>` — agent runs the same bootstrap.",
+            "Or `/plan-loop <idea>` / `/loop-engine <idea>` - agent runs the same bootstrap.",
             "",
         ]
     )
@@ -178,7 +185,7 @@ def main() -> int:
     print(f"modules_decomposed={result['decomposed']}")
     if result["next"]:
         nxt = result["next"]
-        print(f"ultraplan_next=step {nxt['id']} — {nxt['title']}")
+        print(f"ultraplan_next=step {nxt['id']} - {nxt['title']}")
     print(f"bootstrap={result['bootstrap']}")
     print("Read plan/PLAN_BOOTSTRAP.md first.")
     return 0

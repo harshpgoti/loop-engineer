@@ -2,7 +2,7 @@
 
 Mirrors scripts/frontend_skill_router.py's pattern (gather context -> score
 signals -> write plan/AUTO_AGENT_SKILLS.md) but for products that are, or
-include, an AI agent — not for Loop Engineer's own operational skills.
+include, an AI agent - not for Loop Engineer's own operational skills.
 """
 
 from __future__ import annotations
@@ -83,7 +83,7 @@ def classify_shape(text: str) -> dict[str, bool]:
 
 def pick_skills(context: str) -> list[tuple[str, str]]:
     """Return [(skill_name, reason), ...]. Unlike the frontend router there is
-    one primary skill (agent-builder) — this signals whether it applies."""
+    one primary skill (agent-builder) - this signals whether it applies."""
     if not has_agent_signal(context):
         return []
     shape = classify_shape(context)
@@ -116,7 +116,7 @@ def format_auto_agent_skills_md(
         for name in active_shapes:
             lines.append(f"- `{name.replace('_', ' ')}`")
     else:
-        lines.append("- (no specific shape signals — treat as a single-agent, single-tool default until clarified)")
+        lines.append("- (no specific shape signals - treat as a single-agent, single-tool default until clarified)")
     lines.append("")
     lines.append("## Read (in order)")
     lines.append("")
@@ -133,7 +133,7 @@ def format_auto_agent_skills_md(
     lines.append("## Record")
     lines.append("")
     lines.append("Capture agent type, tools, memory, guardrails, and model provider in `agent/AGENT_ARCHITECTURE.md`")
-    lines.append("and in `DECISIONS.md` once chosen — do not re-ask the user once recorded.")
+    lines.append("and in `DECISIONS.md` once chosen - do not re-ask the user once recorded.")
     lines.append("")
     return "\n".join(lines)
 

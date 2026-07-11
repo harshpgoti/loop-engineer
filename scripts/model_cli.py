@@ -35,7 +35,7 @@ def _write_secret(key: str, value: str) -> None:
     existing = load_secrets_env()
     existing[key] = value
     lines = [
-        "# Loop Engineer provider secrets — never commit this file",
+        "# Loop Engineer provider secrets - never commit this file",
         f"# Updated {datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')}",
     ]
     for k, v in sorted(existing.items()):
@@ -106,7 +106,7 @@ def _print_model_preview(provider_id: str, *, search: str = "", limit: int = PRE
     for mid in show:
         print(f"  {mid}")
     if len(filtered) > limit:
-        print(f"  ... {len(filtered) - limit} more — use: loop model models {provider_id} --search <term>")
+        print(f"  ... {len(filtered) - limit} more - use: loop model models {provider_id} --search <term>")
     print("\nUse any id above, or any model id the provider publishes.")
 
 

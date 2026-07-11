@@ -6,7 +6,7 @@ Run Step 1: initialize product planning, validation, grilling, evidence, PRD, ar
 
 If the user says `/plan-loop`, `/plan-loop <idea>`, `/startup-discovery-loop`, `plan`, or describes a product idea, execute this file directly. Do not ask for `AGENT_BOOT_SEQUENCE.md`.
 
-**User types only the idea.** Loop Engineer auto-detects scale, decomposes modules, and routes ultraplan — no manual scale/decompose commands.
+**User types only the idea.** Loop Engineer auto-detects scale, decomposes modules, and routes ultraplan - no manual scale/decompose commands.
 
 ## One command (required first step)
 
@@ -30,14 +30,14 @@ Read command/skill files from the tool app (`~/.loop-engineer/app/` or your clon
 5. `CONTEXT.md`
 6. `DOUBTS.md`
 7. `skills/plan-loop/SKILL.md`
-8. `skills/ultraplan/SKILL.md`
+8. `skills/plan-loop/phases/ultraplan.md`
 9. `skills/session-lifecycle/SKILL.md`
 9. `skills/feature-workflow/SKILL.md`
-10. `skills/spec-clarify/SKILL.md`
-11. `skills/spec-checklist/SKILL.md`
-12. `skills/product-council/SKILL.md`
-13. `skills/product-grill/SKILL.md`
-14. `skills/task-compiler/SKILL.md`
+10. `skills/plan-loop/phases/spec-clarify.md`
+11. `skills/plan-loop/phases/spec-checklist.md`
+12. `skills/plan-loop/phases/council.md`
+13. `skills/plan-loop/phases/grill.md`
+14. `skills/plan-loop/phases/task-compiler.md`
 15. `skills/deployment-plan/SKILL.md`
 16. `skills/compact-loop/SKILL.md`
 17. `skills/memory-review/SKILL.md`
@@ -120,22 +120,22 @@ RECALL → DETECT INIT → ASK/INFER (PRODUCT + DEPLOYMENT) → GRILL → COUNCI
    - evidence quality
    - cloud/deployment fit
    - LLM vendor lock-in and cost
-9. **Run `skills/product-council/SKILL.md`** before major product or architecture decisions.
+9. **Run `skills/plan-loop/phases/council.md`** before major product or architecture decisions.
 10. **Fact-check claims** before decisions. Add sources to `EVIDENCE_LOG.md`.
 11. **Update `plan/main_plan.md`** with product-level strategy and the **Deployment & Infrastructure** table. Use `templates/main_plan.template.md` on first initialization.
 12. **Follow `plan/PLAN_BOOTSTRAP.md`** for scale branch (already auto-detected):
-    - **`convenient`:** one step file + feature spec (steps 15–17).
+    - **`convenient`:** one step file + feature spec (steps 15-17).
     - **`platform`:** ultraplan the step named in bootstrap (one step per session), then feature spec for that step only.
 
-## Plan scale branch (automatic — do not ask user to run manual commands)
+## Plan scale branch (automatic - do not ask user to run manual commands)
 
-### A) `convenient` — single wedge product
+### A) `convenient` - single wedge product
 
-Continue with standard step + deep **feature spec** (steps 15–17 below).
+Continue with standard step + deep **feature spec** (steps 15-17 below).
 
-### B) `platform` — multiple sub-products / agents
+### B) `platform` - multiple sub-products / agents
 
-Already bootstrapped: `PRODUCT_MAP.md`, step stubs, `plan/steps/NN-slug/` folders. **Your job:** fill the ultraplan pack for the step listed in `PLAN_BOOTSTRAP.md` — one step per session.
+Already bootstrapped: `PRODUCT_MAP.md`, step stubs, `plan/steps/NN-slug/` folders. **Your job:** fill the ultraplan pack for the step listed in `PLAN_BOOTSTRAP.md` - one step per session.
 
 13. **Use the initializer when enough product inputs are known** (convenient scale only, or first platform step):
    ```bash
@@ -146,14 +146,14 @@ Already bootstrapped: `PRODUCT_MAP.md`, step stubs, `plan/steps/NN-slug/` folder
    - `templates/adr.template.md`
    - `templates/risks.template.md`
    - `templates/metrics.template.md`
-15. **Create or update `plan/step_XX_<name>.md`** — for platform scale, step file is an **index** only; deep content lives in `plan/steps/NN-slug/`. For convenient scale, use `templates/step_plan.template.md` with full PRD, flows, and acceptance criteria.
+15. **Create or update `plan/step_XX_<name>.md`** - for platform scale, step file is an **index** only; deep content lives in `plan/steps/NN-slug/`. For convenient scale, use `templates/step_plan.template.md` with full PRD, flows, and acceptance criteria.
 16. **Create or update active feature spec** (built-in spec-driven workflow):
    ```bash
    loop feature new "<module title>" --step plan/step_XX_<name>.md
    ```
-   Fill `plan/features/NNN-slug/spec.md` from the step plan — link, do not duplicate entire step file.
+   Fill `plan/features/NNN-slug/spec.md` from the step plan - link, do not duplicate entire step file.
    Run `/spec-clarify` then `/spec-checklist` before locking `feature-plan.md`.
-17. **Run `skills/task-compiler/SKILL.md`** to convert plan into tasks, gates, acceptance criteria, test plan, and sync active feature `tasks.md` with `TASKS.yml`.
+17. **Run `skills/plan-loop/phases/task-compiler.md`** to convert plan into tasks, gates, acceptance criteria, test plan, and sync active feature `tasks.md` with `TASKS.yml`.
 18. **Record deployment decisions** in `DECISIONS.md` and unresolved items in `DOUBTS.md`.
 19. **Draft `DEPLOYMENT_PLAN.md`** from captured planning decisions:
    ```bash
@@ -171,7 +171,7 @@ Already bootstrapped: `PRODUCT_MAP.md`, step stubs, `plan/steps/NN-slug/` folder
    loop memory review --stage
    ```
 24. **Run `/compact-loop` when planning is long, many files changed, the user may switch tools, or the context is getting heavy.** At minimum, ensure `COMPACT.md` is current before ending a large `/plan-loop` session.
-25. **Session end** (mandatory — runs memory-review staging):
+25. **Session end** (mandatory - runs memory-review staging):
     ```bash
     loop session-end --command /plan-loop --summary "<progress>"
     ```
@@ -192,7 +192,7 @@ Return:
 10. Gate status
 11. Compact status (`COMPACT.md` updated or why not needed)
 12. Memory review status (`plan/MEMORY_REVIEW.md`, pending writes if staged)
-13. Next command: `/plan-loop`, `/ultraplan`, `/product-develop`, or `/loop-engine`
+13. Next command: `/plan-loop`, `/ultraplan-loop`, `/product-develop`, or `/loop-engine`
 
 ## Stop Conditions
 

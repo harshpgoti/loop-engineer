@@ -1,4 +1,4 @@
-# Acceptance — Step {{STEP_ID}}: {{STEP_TITLE}}
+# Acceptance - Step {{STEP_ID}}: {{STEP_TITLE}}
 
 **Updated:** {{DATE}}
 

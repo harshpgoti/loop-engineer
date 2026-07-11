@@ -1,4 +1,4 @@
-# Overview — Step {{STEP_ID}}: {{STEP_TITLE}}
+# Overview - Step {{STEP_ID}}: {{STEP_TITLE}}
 
 **Type:** {{MODULE_TYPE}}  
 **Updated:** {{DATE}}

@@ -1,6 +1,6 @@
 # Feature Workflow
 
-Built-in spec-driven development for one feature at a time. This is Loop Engineer's own workflow — not a vendored external CLI.
+Built-in spec-driven development for one feature at a time. This is Loop Engineer's own workflow - not a vendored external CLI.
 
 ## When to use
 
@@ -28,8 +28,8 @@ plan/features/001-auth-login/
 | Command | Script |
 |---------|--------|
 | `/feature-new` | `loop feature new "<title>" --step plan/step_XX.md` |
-| `/spec-clarify` | agent skill — updates `clarifications.md` |
-| `/spec-checklist` | agent skill — validates spec before feature-plan |
+| `/spec-clarify` | agent skill - updates `clarifications.md` |
+| `/spec-checklist` | agent skill - validates spec before feature-plan |
 | `/feature-converge` | `loop feature converge` |
 
 ## Flow
@@ -49,7 +49,7 @@ plan/features/001-auth-login/
 | `plan/step_XX.md` | Module/phase plan |
 | `spec.md` | One buildable feature slice |
 | `tasks.md` | Human-readable tasks for the feature |
-| `TASKS.yml` | Machine sync — same task ids as `tasks.md` |
+| `TASKS.yml` | Machine sync - same task ids as `tasks.md` |
 
 Do not copy entire step plans into `spec.md`. Link and summarize.
 

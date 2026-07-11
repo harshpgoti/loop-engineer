@@ -27,7 +27,7 @@ Use these directly in any agent that can access the repo:
 /feature-converge
 /plan-loop <idea>
 /loop-engine <idea>
-/ultraplan
+/ultraplan-loop
 /model
 /agent-builder
 /research-search
@@ -84,7 +84,7 @@ The agent must route the command through `commands/*.md` and update `memories/ME
 | `/spec-clarify` | `commands/spec-clarify.md` | Structured clarification on active feature spec |
 | `/spec-checklist` | `commands/spec-checklist.md` | Spec quality gate before feature-plan |
 | `/feature-converge` | `commands/feature-converge.md` | Drift check after implementation |
-| `/ultraplan` | `commands/ultraplan.md` | Deep planning per step when scale is platform |
+| `/ultraplan-loop` | `commands/ultraplan-loop.md` | Deep planning per step when scale is platform |
 | `/model` | `commands/model.md` | Configure AI model provider for API-hosted inference |
 | `/agent-builder` | `commands/agent-builder.md` | Design/scaffold an AI agent (or agentic/dynamic workflow) as the product |
 | `/research-search` | `commands/research-search.md` | Search arXiv, Research Square, and SSRN to ground a claim |

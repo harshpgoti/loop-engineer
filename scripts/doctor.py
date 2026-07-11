@@ -158,9 +158,9 @@ def check_model_provider(errors: list[str], warnings: list[str], passes: list[st
     cfg = load_config()
     active = cfg.get("active") or {}
     if not active.get("provider"):
-        warnings.append("No model provider selected — run `loop model setup` for API-hosted inference.")
+        warnings.append("No model provider selected - run `loop model setup` for API-hosted inference.")
     else:
-        passes.append(f"Active model: {active.get('provider')} — {active.get('model', '')}")
+        passes.append(f"Active model: {active.get('provider')} - {active.get('model', '')}")
 
     for name, ok, msg in doctor_active():
         if ok:
@@ -171,7 +171,7 @@ def check_model_provider(errors: list[str], warnings: list[str], passes: list[st
             warnings.append(f"model {name}: {msg}")
 
     if not secrets_env_path().exists():
-        warnings.append("No secrets.env yet — required for API-key providers.")
+        warnings.append("No secrets.env yet - required for API-key providers.")
 
 
 def check_memory_health(workspace: Path, errors: list[str], warnings: list[str], passes: list[str]) -> None:

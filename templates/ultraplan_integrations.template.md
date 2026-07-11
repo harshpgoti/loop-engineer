@@ -1,4 +1,4 @@
-# Integrations — Step {{STEP_ID}}: {{STEP_TITLE}}
+# Integrations - Step {{STEP_ID}}: {{STEP_TITLE}}
 
 **Updated:** {{DATE}}
 

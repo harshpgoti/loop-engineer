@@ -56,7 +56,7 @@ def detect_drift(workspace: Path) -> list[str]:
     canonical = memory_file(workspace)
     if root.exists() and canonical.exists() and root.resolve() != canonical.resolve():
         issues.append(
-            "Legacy root `MEMORY.md` still exists — canonical memory is `memories/MEMORY.md`; "
+            "Legacy root `MEMORY.md` still exists - canonical memory is `memories/MEMORY.md`; "
             "run `loop migrate workspace` to relocate it."
         )
     return issues
@@ -248,7 +248,7 @@ def main() -> int:
 
     print(f"Wrote {output}")
     if report["memory_usage"]["over"]:
-        print("Memory over limit — run with --apply or --stage.")
+        print("Memory over limit - run with --apply or --stage.")
         return 1
     return 0
 

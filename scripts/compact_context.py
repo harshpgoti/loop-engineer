@@ -103,7 +103,7 @@ def append_session_log(workspace: Path) -> None:
     with log_path.open("a", encoding="utf-8") as handle:
         handle.write(
             "\n"
-            f"## {date.today().isoformat()} — Context compacted\n\n"
+            f"## {date.today().isoformat()} - Context compacted\n\n"
             "- Updated `COMPACT.md`.\n"
             "- Next agent should read `COMPACT.md` and `HANDOFF.md` first.\n"
         )

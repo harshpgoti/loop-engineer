@@ -10,21 +10,21 @@ Operating summary for agents. Product details live in `plan/main_plan.md` and `p
 
 Design patterns used in this OS:
 
-- **Separated app and data** — updatable tool under `~/.loop-engineer/app/`, durable memory outside it
-- **Gate-driven loops** — planning and build advance only when `GATES.yml` allows
-- **Portable skills** — instructions in `skills/` with YAML frontmatter
-- **Evidence before decisions** — claims land in `EVIDENCE_LOG.md`
-- **Explicit handoff** — every session updates `HANDOFF.md` and memory files
+- **Separated app and data** - updatable tool under `~/.loop-engineer/app/`, durable memory outside it
+- **Gate-driven loops** - planning and build advance only when `GATES.yml` allows
+- **Portable skills** - instructions in `skills/` with YAML frontmatter
+- **Evidence before decisions** - claims land in `EVIDENCE_LOG.md`
+- **Explicit handoff** - every session updates `HANDOFF.md` and memory files
 
 ## Two-Step Loop
 
-### Step 1 — Discovery (`/plan-loop`)
+### Step 1 - Discovery (`/plan-loop`)
 
 Initialize product → brainstorm → evidence → interviews → score → PRD → ADR → tasks
 
 **Exit:** `G-INIT-01`, `G-DISCOVERY-*`, and `G-ARCH-01`
 
-### Step 2 — Build (`/product-develop`)
+### Step 2 - Build (`/product-develop`)
 
 Scaffold → platform → first product step → UI → QA → security → CI/CD → staging → pilot
 
@@ -48,11 +48,11 @@ Industry-neutral template. Replace during `/plan-loop` with product-specific req
 
 ## Research Pointers
 
-Use primary sources and standards for product-specific evidence. Use arXiv and Research Square for architecture/eval patterns, not market sizing — `loop research "<query>"` (`skills/research-search/SKILL.md`) searches both plus SSRN, and cites into `EVIDENCE_LOG.md`.
+Use primary sources and standards for product-specific evidence. Use arXiv and Research Square for architecture/eval patterns, not market sizing - `loop research "<query>"` (`skills/research-search/SKILL.md`) searches both plus SSRN, and cites into `EVIDENCE_LOG.md`.
 
 ## AI agent as the product
 
-If the product itself is, or includes, an AI agent (chatbot, workflow automation, multi-agent system), `skills/agent-builder/SKILL.md` auto-activates during `/plan-loop` and `/product-develop` — see `docs/AGENT_BUILDER.md`. It scaffolds `agent/AGENT_ARCHITECTURE.md`, `agent/skills/`, `agent/tools/`, `agent/evals/` and wires in `skills/model-providers/SKILL.md` for the model choice.
+If the product itself is, or includes, an AI agent (chatbot, workflow automation, multi-agent system), `skills/agent-builder/SKILL.md` auto-activates during `/plan-loop` and `/product-develop` - see `docs/AGENT_BUILDER.md`. It scaffolds `agent/AGENT_ARCHITECTURE.md`, `agent/skills/`, `agent/tools/`, `agent/evals/` and wires in `skills/model-providers/SKILL.md` for the model choice.
 
 ## Current Tasks
 

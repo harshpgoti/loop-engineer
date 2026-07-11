@@ -27,7 +27,7 @@ Build the product from `plan/main_plan.md` and `plan/` while respecting gates.
 10. `plan/AUTO_SKILLS.md` (if present)
 11. `plan/AUTO_AGENT_SKILLS.md` (if present)
 12. `skills/feature-workflow/SKILL.md`
-13. `skills/spec-clarify/SKILL.md` (when requirements blocked)
+13. `skills/plan-loop/phases/spec-clarify.md` (when requirements blocked)
 14. `skills/feature-converge/SKILL.md`
 15. `skills/frontend-animation/SKILL.md` (when AUTO_SKILLS present)
 16. `skills/agent-builder/SKILL.md` (when AUTO_AGENT_SKILLS present or the task involves building an AI agent)
@@ -39,9 +39,9 @@ Build the product from `plan/main_plan.md` and `plan/` while respecting gates.
 22. `skills/deployment-plan/SKILL.md`
 23. `skills/compact-loop/SKILL.md`
 24. `skills/memory-review/SKILL.md`
-25. `skills/docs/SKILL.md` (Documentation domain — PRDs, ADRs, API specs, runbooks)
+25. `skills/docs/SKILL.md` (Documentation domain - PRDs, ADRs, API specs, runbooks)
 26. `skills/model-providers/SKILL.md` (when the LLM provider/model decision is still open)
-27. `skills/tool-orchestrator/SKILL.md` (selecting supporting tools — memory, sandboxing, RAG, roles)
+27. `skills/tool-orchestrator/SKILL.md` (selecting supporting tools - memory, sandboxing, RAG, roles)
 28. `TASKS.yml`
 29. `GATES.yml`
 30. `HANDOFF.md`
@@ -62,19 +62,19 @@ Build the product from `plan/main_plan.md` and `plan/` while respecting gates.
 SESSION-START -> SELECT TASK (from active feature tasks.md + TASKS.yml) -> READ MANIFEST/AUTO-SKILLS -> PLAN DIFF -> BUILD -> TEST -> FEATURE-CONVERGE -> SESSION-END
 ```
 
-Run `loop session-start --command /product-develop` first and `loop session-end` last. Frontend motion/3D skills and agent-development skills are both auto-detected at session-start and included in the manifest when signals match (`plan/AUTO_SKILLS.md`, `plan/AUTO_AGENT_SKILLS.md`) — re-run `loop auto-agent-skills --write` only if the task description changed after session-start.
+Run `loop session-start --command /product-develop` first and `loop session-end` last. Frontend motion/3D skills and agent-development skills are both auto-detected at session-start and included in the manifest when signals match (`plan/AUTO_SKILLS.md`, `plan/AUTO_AGENT_SKILLS.md`) - re-run `loop auto-agent-skills --write` only if the task description changed after session-start.
 
 ## Development Domains
 
 1. Monorepo scaffold
-2. Frontend — motion/3D skills auto-selected via `frontend_skill_router.py` → `plan/AUTO_SKILLS.md`
+2. Frontend - motion/3D skills auto-selected via `frontend_skill_router.py` → `plan/AUTO_SKILLS.md`
 3. Backend
 4. Database and migrations
 5. Authentication, RBAC, tenant isolation
 6. Audit logging
 7. Secure file ingestion
 8. Deterministic parsers and validators
-9. Agent loops with schema validation — see `skills/agent-builder/SKILL.md` when the product itself is/includes an AI agent
+9. Agent loops with schema validation - see `skills/agent-builder/SKILL.md` when the product itself is/includes an AI agent
 10. QA and auto-validation
 11. Documentation
 12. Security checks
@@ -86,7 +86,7 @@ Run `loop session-start --command /product-develop` first and `loop session-end`
 
 - Run relevant tests or record why not.
 - Update active feature `tasks.md` checkboxes and `TASKS.yml` status.
-- Run `loop feature converge` (or `/feature-converge`) — also runs on `loop session-end` for `/product-develop`.
+- Run `loop feature converge` (or `/feature-converge`) - also runs on `loop session-end` for `/product-develop`.
 - Run `prod-gap` after meaningful development work.
 - Run `deployment-plan` at loop closeout to write `DEPLOYMENT_PLAN.md`.
 - Reuse cloud, LLM, and deployment answers already in `DECISIONS.md`, resolved `DOUBTS.md`, or `plan/main_plan.md`.

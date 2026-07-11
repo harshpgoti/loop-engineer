@@ -18,7 +18,7 @@ git pull
 python scripts/validate_template.py
 ```
 
-Product data remains in `product/.loop-engineer/` (a hidden nested folder — see `docs/DATA_LAYOUT.md`).
+Product data remains in `product/.loop-engineer/` (a hidden nested folder - see `docs/DATA_LAYOUT.md`).
 
 In this setup, product state is never stored in `loop-engineer/`. Files like `plan/main_plan.md`, `memories/MEMORY.md`, `TASKS.yml`, and `HANDOFF.md` live in `product/.loop-engineer/`. Updating `loop-engineer/` cannot overwrite them.
 
@@ -106,3 +106,23 @@ Then continue:
 ```text
 /loop-engine
 ```
+
+## Migration notes
+
+### Planning skills merged into the plan-loop orchestrator
+
+The six planning-phase skills - `ultraplan`, `product-grill`, `product-council`,
+`spec-clarify`, `spec-checklist`, `task-compiler` - are no longer standalone
+top-level skills. They now live as phase files under
+`skills/plan-loop/phases/*.md`, loaded on demand by the `skills/plan-loop/SKILL.md`
+orchestrator (progressive disclosure). The harness emits a `PHASE:` line in
+`plan/PLAN_BOOTSTRAP.md` / `plan/SESSION_MANIFEST.md` (see `scripts/plan_phase.py`)
+so the agent loads only the active phase.
+
+- The `/spec-clarify` and `/spec-checklist` commands are unchanged; `/ultraplan`
+  was renamed to **`/ultraplan-loop`**. `product-grill`, `product-council`, and
+  `task-compiler` had no slash command and are reached via `/plan-loop`.
+- The `loop plan-loop ultraplan next|status` CLI subcommand is unchanged.
+- If a product workspace kept a **local skill override** (`skills/ultraplan/`,
+  `skills/task-compiler/`, etc.) it will no longer be resolved by name. Move that
+  content into the matching `skills/plan-loop/phases/<name>.md` override, or delete it.

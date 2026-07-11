@@ -1,6 +1,6 @@
 ---
 name: <skill-name>
-description: <One sentence: what this skill does and when the agent should use it. Be specific — this is how the agent decides whether to load the skill.>
+description: <One sentence: what this skill does and when the agent should use it. Be specific - this is how the agent decides whether to load the skill.>
 ---
 
 # <Skill title>
@@ -11,7 +11,7 @@ description: <One sentence: what this skill does and when the agent should use i
 
 ## Triggers
 
-<Keywords, intents, or conditions that should cause the agent to read/use this skill. Be concrete — vague triggers cause the agent to load skills it doesn't need, or skip ones it does.>
+<Keywords, intents, or conditions that should cause the agent to read/use this skill. Be concrete - vague triggers cause the agent to load skills it doesn't need, or skip ones it does.>
 
 ## Tools used
 
@@ -34,4 +34,4 @@ description: <One sentence: what this skill does and when the agent should use i
 
 ## Failure modes
 
-<What happens when a tool call fails, input is malformed, or a guardrail is hit — should it retry, ask for approval, or fail closed?>
+<What happens when a tool call fails, input is malformed, or a guardrail is hit - should it retry, ask for approval, or fail closed?>

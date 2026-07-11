@@ -16,7 +16,7 @@ def config_path() -> Path:
     """Registry location: global ~/.loop-engineer/data/registry/workspaces.json.
 
     A legacy `.loop-workspaces.json` at the tool repo root is honored read-only
-    when the global registry doesn't exist yet. New writes always go global —
+    when the global registry doesn't exist yet. New writes always go global -
     the tool repo is never a write target (save_config creates the parent dir).
     """
     global_registry = registry_path()

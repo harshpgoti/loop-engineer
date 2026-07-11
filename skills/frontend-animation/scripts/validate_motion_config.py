@@ -39,7 +39,7 @@ def validate_config(config_path: Path, schema: Dict) -> Tuple[bool, List[str]]:
     try:
         import jsonschema
     except ImportError:
-        print("jsonschema package not available — skipping schema validation")
+        print("jsonschema package not available - skipping schema validation")
         sys.exit(1)
 
     # Load config

@@ -1,4 +1,4 @@
-# Step {{STEP_NUMBER}} — {{STEP_NAME}}
+# Step {{STEP_NUMBER}} - {{STEP_NAME}}
 
 ## Status
 

@@ -1,4 +1,4 @@
-# Risks — Step {{STEP_ID}}: {{STEP_TITLE}}
+# Risks - Step {{STEP_ID}}: {{STEP_TITLE}}
 
 **Updated:** {{DATE}}
 

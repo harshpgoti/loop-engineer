@@ -1,13 +1,11 @@
----
-name: product-grill
-description: Challenges product assumptions, asks hard user questions, records unresolved doubts, and prevents weak strategy from becoming product debt. Use during /plan-loop, pivots, ICP decisions, pricing, compliance, and architecture choices.
----
+# Phase: Grill
 
-# Product Grill
+> Loaded by `skills/plan-loop/SKILL.md` when `PHASE: grill` - force clarity before build work.
+> Also the target of the (internal) grill step during `/plan-loop`, pivots, ICP/pricing/compliance/architecture decisions.
 
 ## Purpose
 
-Force clarity before build work.
+Challenge product assumptions, ask hard user questions, record unresolved doubts, and prevent weak strategy from becoming product debt.
 
 ## Read First
 
@@ -44,3 +42,7 @@ Force clarity before build work.
 - User answers or defaults
 - New doubts
 - Recommended next action
+
+## Next phase
+
+`council` - pressure-test the grilled plan across senior perspectives before locking strategy/architecture.

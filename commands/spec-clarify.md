@@ -4,11 +4,11 @@ Structured clarification for the active feature spec.
 
 ## How To Interpret
 
-If the user says `/spec-clarify`, execute this file and `skills/spec-clarify/SKILL.md`.
+If the user says `/spec-clarify`, execute this file and `skills/plan-loop/phases/spec-clarify.md`.
 
 ## Required Reads
 
-1. `skills/spec-clarify/SKILL.md`
+1. `skills/plan-loop/phases/spec-clarify.md`
 2. Active feature `spec.md`, `clarifications.md`
 3. `DOUBTS.md`, `DECISIONS.md`
 

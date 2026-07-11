@@ -92,7 +92,7 @@ class TestFindLocalWorkspace(LoopHomeSandbox):
 
     def test_flat_legacy_markers_not_detected_as_new_style(self) -> None:
         """Old flat layout (no .loop-engineer/ subfolder) should NOT resolve
-        as a valid new-style local workspace — that's the migration's job."""
+        as a valid new-style local workspace - that's the migration's job."""
         flat = self.product / "memories"
         flat.mkdir(parents=True)
         (flat / "MEMORY.md").write_text("# mem", encoding="utf-8")
@@ -200,7 +200,7 @@ class TestMigrateLegacyLayout(unittest.TestCase):
         (self.product / "docs").mkdir()
         (self.product / "docs" / "my-own-readme.md").write_text("mine", encoding="utf-8")
         mll.migrate_local(self.product, apply=True)
-        # docs/ is flagged, not moved — the user's own file must stay put.
+        # docs/ is flagged, not moved - the user's own file must stay put.
         self.assertTrue((self.product / "docs" / "my-own-readme.md").exists())
 
     def test_migrate_skips_when_target_exists(self) -> None:

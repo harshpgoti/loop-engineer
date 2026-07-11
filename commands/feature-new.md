@@ -23,12 +23,12 @@ loop feature list
 
 1. Infer title from current step plan or user message.
 2. Run `loop feature new` with `--step` pointing at the related step file.
-3. Fill `spec.md` from PRD / step plan content — do not duplicate entire step plan; link and summarize.
+3. Fill `spec.md` from PRD / step plan content - do not duplicate entire step plan; link and summarize.
 4. Tell user next steps: `/spec-clarify` → `/spec-checklist` → feature-plan → task-compiler.
 
 ## Wired From
 
-- `/plan-loop` step 14–15 (after step plan, before task-compiler)
+- `/plan-loop` step 14-15 (after step plan, before task-compiler)
 - `/loop-engine` when entering planning for a new module
 
 ## Output

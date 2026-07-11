@@ -26,7 +26,7 @@ def main() -> int:
             print(f"No matches in {db_path}")
             return 0
         for row in results:
-            print(f"[{row['created_at']}] {row['command'] or 'session'} — {row['title']}")
+            print(f"[{row['created_at']}] {row['command'] or 'session'} - {row['title']}")
             excerpt = row["body"][:240].replace("\n", " ")
             print(f"  {excerpt}")
         return 0
@@ -36,7 +36,7 @@ def main() -> int:
         print(f"No sessions in {db_path}")
         return 0
     for row in results:
-        print(f"[{row['created_at']}] {row['command'] or 'session'} — {row['title']}")
+        print(f"[{row['created_at']}] {row['command'] or 'session'} - {row['title']}")
     return 0
 
 

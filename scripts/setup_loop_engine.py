@@ -2,8 +2,8 @@
 """First-time setup for Loop Engineering OS.
 
 Memory layout:
-  global (default) — product data in ~/.loop-engineer/data/
-  local            — product data in <product-folder>/.loop-engineer/ (auto-detected on return)
+  global (default) - product data in ~/.loop-engineer/data/
+  local            - product data in <product-folder>/.loop-engineer/ (auto-detected on return)
 """
 
 from __future__ import annotations
@@ -127,6 +127,11 @@ def main() -> int:
         action="store_true",
         help="With --source: classify arbitrary files by content and route them to the right homes.",
     )
+    parser.add_argument(
+        "--skip-native-commands",
+        action="store_true",
+        help="Do not generate native slash-command wrappers for agent CLIs (claude, cursor, codex, opencode).",
+    )
     args = parser.parse_args()
 
     cwd = Path.cwd() if args.use_cwd else None
@@ -232,6 +237,15 @@ def main() -> int:
     if detect_script.exists():
         print("\nWorkspace detection:")
         subprocess.run([sys.executable, str(detect_script)], cwd=ROOT, check=False)
+
+    gen_script = ROOT / "scripts" / "generate_agent_commands.py"
+    if not args.skip_native_commands and gen_script.exists():
+        print("\nRegistering native slash commands for agent CLIs...")
+        subprocess.run(
+            [sys.executable, str(gen_script), "--tool", "all", "--scope", "user"],
+            cwd=ROOT,
+            check=False,
+        )
 
     if memory_mode == "local":
         print("\nWhen you return to this folder, /plan-loop and /loop-engine auto-use local data here.")

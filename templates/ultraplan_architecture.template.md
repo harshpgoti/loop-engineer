@@ -1,4 +1,4 @@
-# Architecture — Step {{STEP_ID}}: {{STEP_TITLE}}
+# Architecture - Step {{STEP_ID}}: {{STEP_TITLE}}
 
 **Updated:** {{DATE}}
 

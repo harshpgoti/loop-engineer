@@ -26,19 +26,19 @@ Configure external LLM providers for Loop Engineer without vendoring third-party
 
 1. Run `loop model list` to show provider connections.
 2. Run `loop model models <provider>` to fetch the live catalog from the provider API.
-3. Run `loop model setup` or `loop model <provider>:<model-id>` — **any** model id the provider accepts.
+3. Run `loop model setup` or `loop model <provider>:<model-id>` - **any** model id the provider accepts.
 4. Store keys with `loop model set-key ENV_NAME`.
-5. Run `loop model doctor` — key + connectivity checks.
+5. Run `loop model doctor` - key + connectivity checks.
 6. Optional: `loop model custom add <name> <base_url>` for a second/third self-hosted endpoint, `loop model fallback add <provider:model>` for a backup chain, `loop model context set <n>` for a context-length override.
 
 ## Provider types
 
-- **api_key** — requires env var in `secrets.env`
-- **none** — local endpoint (Ollama, llama.cpp, Jan), no key
-- **optional_key** — LM Studio, vLLM, SGLang, custom endpoints
-- **ide** — Cursor, Claude Code, Codex; document only, no HTTP probe
+- **api_key** - requires env var in `secrets.env`
+- **none** - local endpoint (Ollama, llama.cpp, Jan), no key
+- **optional_key** - LM Studio, vLLM, SGLang, custom endpoints
+- **ide** - Cursor, Claude Code, Codex; document only, no HTTP probe
 
-Auth is API-key / env-var / no-auth only. OAuth device/browser flows and AWS credential-chain auth are not implemented yet — out of scope until explicitly requested.
+Auth is API-key / env-var / no-auth only. OAuth device/browser flows and AWS credential-chain auth are not implemented yet - out of scope until explicitly requested.
 
 ## Rules
 
@@ -47,7 +47,7 @@ Auth is API-key / env-var / no-auth only. OAuth device/browser flows and AWS cre
 - Model ids are free-form; use `loop model models` to discover what the provider currently offers.
 - Use `scripts/model_config.resolve_api_target()` for automation that needs base URL + model (also returns `fallback` chain and `context_length`).
 - Prefer OpenAI-compatible mode for local/self-hosted servers (Ollama, vLLM, SGLang, llama.cpp, Jan, LM Studio).
-- For more than one custom endpoint, use named entries (`loop model custom add <name> <base_url>`) and select with `custom:<name>:<model>` — never overload the single legacy `custom.base_url`.
+- For more than one custom endpoint, use named entries (`loop model custom add <name> <base_url>`) and select with `custom:<name>:<model>` - never overload the single legacy `custom.base_url`.
 
 ## Commands map
 

@@ -1,6 +1,6 @@
 # /session-end
 
-Always-on memory closeout — run **before stopping** in any tool.
+Always-on memory closeout - run **before stopping** in any tool.
 
 ## Agent (mandatory)
 
@@ -28,4 +28,4 @@ loop session-end --apply
 
 ## Wired into
 
-Every `/plan-loop`, `/product-develop`, `/loop-engine` closeout — always run this last.
+Every `/plan-loop`, `/product-develop`, `/loop-engine` closeout - always run this last.

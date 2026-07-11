@@ -51,7 +51,7 @@ def ensure_handoff_pointer(handoff_text: str) -> tuple[str, list[str]]:
     if "COMPACT.md" not in handoff_text:
         updated += (
             "\n"
-            f"## {date.today().isoformat()} — Sync note\n\n"
+            f"## {date.today().isoformat()} - Sync note\n\n"
             "- Read `COMPACT.md` and `STATUS.md` before continuing.\n"
         )
         fixes.append("Appended COMPACT.md pointer to HANDOFF.md.")
@@ -60,7 +60,7 @@ def ensure_handoff_pointer(handoff_text: str) -> tuple[str, list[str]]:
 
 def ensure_memory_timestamp(memory_text: str) -> tuple[str, list[str]]:
     fixes: list[str] = []
-    marker = f"## {date.today().isoformat()} — State sync"
+    marker = f"## {date.today().isoformat()} - State sync"
     if marker not in memory_text:
         updated = memory_text.rstrip() + (
             "\n\n"
@@ -166,7 +166,7 @@ def main() -> int:
     with log_path.open("a", encoding="utf-8") as handle:
         handle.write(
             "\n"
-            f"## {date.today().isoformat()} — Loop state sync\n\n"
+            f"## {date.today().isoformat()} - Loop state sync\n\n"
             f"- Updated `{output.name}`.\n"
             f"- Drift items: {len(drift)}.\n"
             f"- Fixes applied: {len(fixes)}.\n"

@@ -3,7 +3,7 @@
 **Feature:** {{FEATURE_ID}}  
 **Updated:** {{DATE}}
 
-Human-readable task list for this feature. `skills/task-compiler/SKILL.md` syncs ids into `TASKS.yml`.
+Human-readable task list for this feature. `skills/plan-loop/phases/task-compiler.md` syncs ids into `TASKS.yml`.
 
 ## Format
 

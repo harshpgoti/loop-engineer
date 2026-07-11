@@ -23,7 +23,7 @@
 ## Log template (paste to EVIDENCE_LOG.md)
 
 ```markdown
-### E-0XX: Interview [ID] — [Persona / segment]
+### E-0XX: Interview [ID] - [Persona / segment]
 - **Type:** customer_evidence
 - **Claim:** [summary quote]
 - **Source:** Interview [date], role [title]

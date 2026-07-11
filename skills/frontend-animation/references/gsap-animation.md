@@ -16,7 +16,7 @@ Apply when writing or reviewing GSAP animations that use the core engine: single
 
 ### When to Use GSAP
 
-**Risk level: LOW** — GSAP is an animation library with a minimal security surface.
+**Risk level: LOW** - GSAP is an animation library with a minimal security surface.
 
 Use GSAP when an application requires:
 
@@ -45,24 +45,24 @@ When the user asks for a **JavaScript animation library**, or for **animation in
 
 ### Core Tween Methods
 
-- **gsap.to(targets, vars)** — animate from current state to `vars`. Most common.
-- **gsap.from(targets, vars)** — animate from `vars` to current state (good for entrances).
-- **gsap.fromTo(targets, fromVars, toVars)** — explicit start and end; no reading of current values.
-- **gsap.set(targets, vars)** — apply immediately (duration 0).
+- **gsap.to(targets, vars)** - animate from current state to `vars`. Most common.
+- **gsap.from(targets, vars)** - animate from `vars` to current state (good for entrances).
+- **gsap.fromTo(targets, fromVars, toVars)** - explicit start and end; no reading of current values.
+- **gsap.set(targets, vars)** - apply immediately (duration 0).
 
 Always use **property names in camelCase** in the vars object (e.g. `backgroundColor`, `marginTop`, `rotationX`, `scaleY`).
 
 ### Common vars
 
-- **duration** — seconds (default 0.5).
-- **delay** — seconds before start.
-- **ease** — string or function. Prefer built-in: `"power1.out"` (default), `"power3.inOut"`, `"back.out(1.7)"`, `"elastic.out(1, 0.3)"`, `"none"`.
-- **stagger** — number (seconds between) like `0.1` or object: `{ amount: 0.3, from: "center" }`, `{ each: 0.1, from: "random" }`.
-- **overwrite** — `false` (default), `true` (immediately kill all active tweens of the same targets), or `"auto"` (when the tween renders for the first time, only kill individual overlapping properties in other **active** tweens of the same targets).
-- **repeat** — number or `-1` for infinite.
-- **yoyo** — boolean; with repeat, alternates direction.
-- **onComplete**, **onStart**, **onUpdate** — callbacks; scoped to the Animation instance itself (Tween or Timeline).
-- **immediateRender** — When `true` (default for **from()** and **fromTo()**), the tween’s start state is applied as soon as the tween is created (avoids flash of unstyled content and works well with staggered timelines). When **multiple from() or fromTo() tweens** target the same property of the same element, set **immediateRender: false** on the later one(s) so the first tween’s end state is not overwritten before it runs; otherwise the second animation may not be visible.
+- **duration** - seconds (default 0.5).
+- **delay** - seconds before start.
+- **ease** - string or function. Prefer built-in: `"power1.out"` (default), `"power3.inOut"`, `"back.out(1.7)"`, `"elastic.out(1, 0.3)"`, `"none"`.
+- **stagger** - number (seconds between) like `0.1` or object: `{ amount: 0.3, from: "center" }`, `{ each: 0.1, from: "random" }`.
+- **overwrite** - `false` (default), `true` (immediately kill all active tweens of the same targets), or `"auto"` (when the tween renders for the first time, only kill individual overlapping properties in other **active** tweens of the same targets).
+- **repeat** - number or `-1` for infinite.
+- **yoyo** - boolean; with repeat, alternates direction.
+- **onComplete**, **onStart**, **onUpdate** - callbacks; scoped to the Animation instance itself (Tween or Timeline).
+- **immediateRender** - When `true` (default for **from()** and **fromTo()**), the tween’s start state is applied as soon as the tween is created (avoids flash of unstyled content and works well with staggered timelines). When **multiple from() or fromTo() tweens** target the same property of the same element, set **immediateRender: false** on the later one(s) so the first tween’s end state is not overwritten before it runs; otherwise the second animation may not be visible.
 
 ### Transforms and CSS properties
 
@@ -82,11 +82,11 @@ GSAP’s CSSPlugin (included in core) animates DOM elements. Use **camelCase** f
 
 Relative values work: `x: "+=20"`, `rotation: "-=30"`. Default units: x/y in px, rotation in deg.
 
-- **autoAlpha** — Prefer over `opacity` for fade in/out. When the value is `0`, GSAP also sets `visibility: hidden` (better rendering and no pointer events); when non-zero, `visibility` is set to `inherit`. Avoids leaving invisible elements blocking clicks.
-- **CSS variables** — GSAP can animate custom properties (e.g. `"--hue": 180`, `"--size": 100`). Supported in browsers that support CSS variables.
-- **svgOrigin** _(SVG only)_ — Like `transformOrigin` but in the SVG’s **global** coordinate space (e.g. `svgOrigin: "250 100"`). Use when several SVG elements should rotate or scale around a common point. Only one of `svgOrigin` or `transformOrigin` can be used. No percentage values; units optional.
-- **Directional rotation** — Append a suffix to rotation values (string): **`_short`** (shortest path), **`_cw`** (clockwise), **`_ccw`** (counter-clockwise). Applies to `rotation`, `rotationX`, `rotationY`. Example: `rotation: "-170_short"` (20° clockwise instead of 340° counter-clockwise); `rotationX: "+=30_cw"`.
-- **clearProps** — Comma-separated list of property names (or `"all"` / `true`) to **remove** from the element’s inline style when the tween completes. Use when a class or other CSS should take over after the animation. Clearing any transform-related property (e.g. `x`, `scale`, `rotation`) clears the **entire** transform.
+- **autoAlpha** - Prefer over `opacity` for fade in/out. When the value is `0`, GSAP also sets `visibility: hidden` (better rendering and no pointer events); when non-zero, `visibility` is set to `inherit`. Avoids leaving invisible elements blocking clicks.
+- **CSS variables** - GSAP can animate custom properties (e.g. `"--hue": 180`, `"--size": 100`). Supported in browsers that support CSS variables.
+- **svgOrigin** _(SVG only)_ - Like `transformOrigin` but in the SVG’s **global** coordinate space (e.g. `svgOrigin: "250 100"`). Use when several SVG elements should rotate or scale around a common point. Only one of `svgOrigin` or `transformOrigin` can be used. No percentage values; units optional.
+- **Directional rotation** - Append a suffix to rotation values (string): **`_short`** (shortest path), **`_cw`** (clockwise), **`_ccw`** (counter-clockwise). Applies to `rotation`, `rotationX`, `rotationY`. Example: `rotation: "-170_short"` (20° clockwise instead of 340° counter-clockwise); `rotationX: "+=30_cw"`.
+- **clearProps** - Comma-separated list of property names (or `"all"` / `true`) to **remove** from the element’s inline style when the tween completes. Use when a class or other CSS should take over after the animation. Clearing any transform-related property (e.g. `x`, `scale`, `rotation`) clears the **entire** transform.
 
 ```javascript
 gsap.to(".box", { x: 100, rotation: "360_cw", duration: 1 });
@@ -212,7 +212,7 @@ gsap.defaults({ duration: 0.6, ease: "power2.out" });
 - **Revert all:** `mm.revert();` (e.g. on component unmount).
 - **Scope (optional):** Pass a third argument (element or ref) so selector text inside the handler is scoped to that root: `mm.add("(min-width: 800px)", () => { ... }, containerRef);`
 
-**Conditions syntax** — Use an object to pass multiple named queries and avoid duplicate code; the handler receives a context with `context.conditions` (booleans per condition):
+**Conditions syntax** - Use an object to pass multiple named queries and avoid duplicate code; the handler receives a context with `context.conditions` (booleans per condition):
 
 ```javascript
 mm.add(
@@ -232,7 +232,7 @@ mm.add(
 );
 ```
 
-Respecting **prefers-reduced-motion** is important for users with vestibular disorders. Use `duration: 0` or skip the animation when `reduceMotion` is true. Do not nest **gsap.context()** inside matchMedia — matchMedia creates a context internally; use **mm.revert()** only.
+Respecting **prefers-reduced-motion** is important for users with vestibular disorders. Use `duration: 0` or skip the animation when `reduceMotion` is true. Do not nest **gsap.context()** inside matchMedia - matchMedia creates a context internally; use **mm.revert()** only.
 
 Full docs: [gsap.matchMedia()](https://gsap.com/docs/v3/GSAP/gsap.matchMedia/). For immediate re-run of all matching handlers (e.g. after toggling a reduced-motion control), use **gsap.matchMediaRefresh()**.
 
@@ -278,10 +278,10 @@ By default, tweens are **appended** one after another. Use the **position parame
 
 Third argument (or position property in vars) controls placement:
 
-- **Absolute**: `1` — start at 1 second.
-- **Relative (default)**: `"+=0.5"` — 0.5s after end; `"-=0.2"` — 0.2s before end.
-- **Label**: `"labelName"` — at that label; `"labelName+=0.3"` — 0.3s after label.
-- **Placement**: `"<"` — start when recently-added animation starts; `">"` — start when recently-added animation ends (default); `"<0.2"` — 0.2s after recently-added animation start.
+- **Absolute**: `1` - start at 1 second.
+- **Relative (default)**: `"+=0.5"` - 0.5s after end; `"-=0.2"` - 0.2s before end.
+- **Label**: `"labelName"` - at that label; `"labelName+=0.3"` - 0.3s after label.
+- **Placement**: `"<"` - start when recently-added animation starts; `">"` - start when recently-added animation ends (default); `"<0.2"` - 0.2s after recently-added animation start.
 
 Examples:
 
@@ -303,10 +303,10 @@ tl.to(".a", { x: 100 }).to(".b", { y: 50 }); // both use 0.5s and power2.out
 
 ### Timeline Options (constructor)
 
-- **paused: true** — create paused; call `.play()` to start.
-- **repeat**, **yoyo** — same as tweens; apply to whole timeline.
-- **onComplete**, **onStart**, **onUpdate** — timeline-level callbacks.
-- **defaults** — vars merged into every child tween.
+- **paused: true** - create paused; call `.play()` to start.
+- **repeat**, **yoyo** - same as tweens; apply to whole timeline.
+- **onComplete**, **onStart**, **onUpdate** - timeline-level callbacks.
+- **defaults** - vars merged into every child tween.
 
 ### Labels
 
@@ -337,10 +337,10 @@ master.to(".c", { opacity: 0 }, "+=0.2");
 
 - **tl.play()** / **tl.pause()**
 - **tl.reverse()** / **tl.progress(1)** then **tl.reverse()**
-- **tl.restart()** — from start.
-- **tl.time(2)** — seek to 2 seconds.
-- **tl.progress(0.5)** — seek to 50%.
-- **tl.kill()** — kill timeline and (by default) its children.
+- **tl.restart()** - from start.
+- **tl.time(2)** - seek to 2 seconds.
+- **tl.progress(0.5)** - seek to 50%.
+- **tl.kill()** - kill timeline and (by default) its children.
 
 ### Official GSAP Best practices
 
@@ -413,7 +413,7 @@ Main properties for the `scrollTrigger` config object (shorthand: `scrollTrigger
 | **markers** | Boolean \| Object | `true` for dev markers; or `{ startColor, endColor, fontSize, ... }`. Remove in production. |
 | **once** | Boolean | If `true`, kills the ScrollTrigger after end is reached once (animation keeps running). |
 | **id** | String | Unique id for **ScrollTrigger.getById(id)**. |
-| **refreshPriority** | Number | Lower = refreshed first. Use when creating ScrollTriggers in non–top-to-bottom order: set so triggers refresh in page order (first on page = lower number). |
+| **refreshPriority** | Number | Lower = refreshed first. Use when creating ScrollTriggers in non-top-to-bottom order: set so triggers refresh in page order (first on page = lower number). |
 | **toggleClass** | String \| Object | Add/remove class when active. String = on trigger; or `{ targets: ".x", className: "active" }`. |
 | **snap** | Number \| Array \| Function \| "labels" \| Object | Snap to progress values. Number = increments (e.g. `0.25`); array = specific values; `"labels"` = timeline labels; object: `{ snapTo: 0.25, duration: 0.3, delay: 0.1, ease: "power1.inOut" }`. |
 | **containerAnimation** | Tween \| Timeline | For "fake" horizontal scroll: the timeline/tween that moves content horizontally. ScrollTrigger ties vertical scroll to this animation's progress. See **Horizontal scroll (containerAnimation)** below. Pinning and snapping are not available on containerAnimation-based ScrollTriggers. |
@@ -433,18 +433,18 @@ ScrollTrigger.create({
 
 ### ScrollTrigger.batch()
 
-**ScrollTrigger.batch(triggers, vars)** creates one ScrollTrigger per target and **batches** their callbacks (onEnter, onLeave, etc.) within a short interval. Use it to coordinate an animation (e.g. with staggers) for all elements that fire a similar callback around the same time — e.g. animate every element that just entered the viewport in one go. Good alternative to IntersectionObserver. Returns an Array of ScrollTrigger instances.
+**ScrollTrigger.batch(triggers, vars)** creates one ScrollTrigger per target and **batches** their callbacks (onEnter, onLeave, etc.) within a short interval. Use it to coordinate an animation (e.g. with staggers) for all elements that fire a similar callback around the same time - e.g. animate every element that just entered the viewport in one go. Good alternative to IntersectionObserver. Returns an Array of ScrollTrigger instances.
 
 - **triggers**: selector text (e.g. `".box"`) or Array of elements.
 - **vars**: standard ScrollTrigger config (start, end, once, callbacks, etc.). Do **not** pass `trigger` (targets are the triggers) or animation-related options: `animation`, `invalidateOnRefresh`, `onSnapComplete`, `onScrubComplete`, `scrub`, `snap`, `toggleActions`.
 
 **Callback signature:** Batched callbacks receive **two** parameters (unlike normal ScrollTrigger callbacks, which receive the instance):
-1. **targets** — Array of trigger elements that fired this callback within the interval.
-2. **scrollTriggers** — Array of the ScrollTrigger instances that fired. Use for progress, direction, or `kill()`.
+1. **targets** - Array of trigger elements that fired this callback within the interval.
+2. **scrollTriggers** - Array of the ScrollTrigger instances that fired. Use for progress, direction, or `kill()`.
 
 **Batch options in vars:**
-- **interval** (Number) — Max time in seconds to collect each batch. Default is roughly one requestAnimationFrame. When the first callback of a type fires, the timer starts; the batch is delivered when the interval elapses or when **batchMax** is reached.
-- **batchMax** (Number | Function) — Max elements per batch. When full, the callback fires and the next batch starts. Use a **function** that returns a number for responsive layouts; it runs on refresh (resize, tab focus, etc.).
+- **interval** (Number) - Max time in seconds to collect each batch. Default is roughly one requestAnimationFrame. When the first callback of a type fires, the timer starts; the batch is delivered when the interval elapses or when **batchMax** is reached.
+- **batchMax** (Number | Function) - Max elements per batch. When full, the callback fires and the next batch starts. Use a **function** that returns a number for responsive layouts; it runs on refresh (resize, tab focus, etc.).
 
 ```javascript
 ScrollTrigger.batch(".box", {
@@ -480,10 +480,10 @@ See [ScrollTrigger.batch()](https://gsap.com/docs/v3/Plugins/ScrollTrigger/stati
 - **vars**: object with **scrollTop** and/or **scrollLeft** functions. Each acts as getter and setter: when called **with** an argument, it is a setter; when called **with no** argument, it returns the current value (getter). At least one of **scrollTop** or **scrollLeft** is required.
 
 **Optional in vars:**
-- **getBoundingClientRect** — Function returning `{ top, left, width, height }` for the scroller (often `{ top: 0, left: 0, width: window.innerWidth, height: window.innerHeight }` for the viewport). Needed when the scroller’s real rect is not the default.
-- **scrollWidth** / **scrollHeight** — Getter/setter functions (same pattern: argument = setter, no argument = getter) when the library exposes different dimensions.
-- **fixedMarkers** (Boolean) — When `true`, markers are treated as `position: fixed`. Useful when the scroller is translated (e.g. by a smooth-scroll lib) and markers move incorrectly.
-- **pinType** — `"fixed"` or `"transform"`. Controls how pinning is applied for this scroller. Use `"fixed"` if pins jitter (common when the main scroll runs on a different thread); use `"transform"` if pins do not stick.
+- **getBoundingClientRect** - Function returning `{ top, left, width, height }` for the scroller (often `{ top: 0, left: 0, width: window.innerWidth, height: window.innerHeight }` for the viewport). Needed when the scroller’s real rect is not the default.
+- **scrollWidth** / **scrollHeight** - Getter/setter functions (same pattern: argument = setter, no argument = getter) when the library exposes different dimensions.
+- **fixedMarkers** (Boolean) - When `true`, markers are treated as `position: fixed`. Useful when the scroller is translated (e.g. by a smooth-scroll lib) and markers move incorrectly.
+- **pinType** - `"fixed"` or `"transform"`. Controls how pinning is applied for this scroller. Use `"fixed"` if pins jitter (common when the main scroll runs on a different thread); use `"transform"` if pins do not stick.
 
 **Critical:** When the third-party scroller updates its position, ScrollTrigger must be notified. Register **ScrollTrigger.update** as a listener (e.g. `smoothScroller.addListener(ScrollTrigger.update)`). Without this, ScrollTrigger’s calculations will be out of date.
 
@@ -519,7 +519,7 @@ gsap.to(".box", {
 });
 ```
 
-With **scrub: true**, the animation progresses as the user scrolls through the start–end range. Use a number (e.g. `scrub: 1`) for smooth lag.
+With **scrub: true**, the animation progresses as the user scrolls through the start-end range. Use a number (e.g. `scrub: 1`) for smooth lag.
 
 ### Pinning
 
@@ -535,7 +535,7 @@ scrollTrigger: {
 }
 ```
 
-- **pinSpacing** — default `true`; adds spacer element so layout doesn’t collapse when the pinned element is set to `position: fixed`. Set `pinSpacing: false` only when layout is handled separately.
+- **pinSpacing** - default `true`; adds spacer element so layout doesn’t collapse when the pinned element is set to `position: fixed`. Set `pinSpacing: false` only when layout is handled separately.
 
 
 ### Markers (Development)
@@ -576,7 +576,7 @@ The timeline’s progress is tied to scroll through the trigger’s start/end ra
 
 A common pattern: **pin** a section, then as the user scrolls **vertically**, content inside moves **horizontally** (“fake” horizontal scroll). Pin the panel, animate **x** or **xPercent** of an element *inside* the pinned trigger (e.g. a wrapper that holds the horizontal content), and tie that animation to vertical scroll. Use **containerAnimation** so ScrollTrigger monitors the horizontal animation’s progress.
 
-**Critical:** The horizontal tween/timeline **must** use **ease: "none"**. Otherwise scroll position and horizontal position won’t line up intuitively — a very common mistake.
+**Critical:** The horizontal tween/timeline **must** use **ease: "none"**. Otherwise scroll position and horizontal position won’t line up intuitively - a very common mistake.
 
 1. Pin the section (trigger = the full-viewport panel).
 2. Build a tween that animates the inner content’s **x** or **xPercent** (e.g. to `x: () => (targets.length - 1) * -window.innerWidth` or a negative `xPercent` to move left). Use **ease: "none"** on that tween.
@@ -613,7 +613,7 @@ gsap.to(".nested-el-1", {
 
 ### Refresh and Cleanup
 
-- **ScrollTrigger.refresh()** — recalculate positions (e.g. after DOM/layout changes, fonts loaded, or dynamic content). Automatically called on viewport resize, debounced 200ms. Refresh runs in creation order (or by **refreshPriority**); create ScrollTriggers top-to-bottom on the page or set **refreshPriority** so they refresh in that order.
+- **ScrollTrigger.refresh()** - recalculate positions (e.g. after DOM/layout changes, fonts loaded, or dynamic content). Automatically called on viewport resize, debounced 200ms. Refresh runs in creation order (or by **refreshPriority**); create ScrollTriggers top-to-bottom on the page or set **refreshPriority** so they refresh in that order.
 - When removing animated elements or changing pages (e.g. in SPAs), **kill** associated ScrollTrigger instances so they don’t run on stale elements:
 
 ```javascript

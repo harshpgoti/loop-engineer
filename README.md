@@ -6,11 +6,11 @@
 
 | Loop | Skill / command | Purpose |
 |------|-----------------|--------|
-| **Step 1 — Planning** | `/plan-loop` or skill `skills/plan-loop` | Initialize product → brainstorm → fact-check → PRD → architecture → task breakdown |
-| **Step 2 — Build** | `/product-develop` or skill `skills/product-develop` | Implement → review → QA → security/compliance → CI/CD → deploy |
+| **Step 1 - Planning** | `/plan-loop` or skill `skills/plan-loop` | Initialize product → brainstorm → fact-check → PRD → architecture → task breakdown |
+| **Step 2 - Build** | `/product-develop` or skill `skills/product-develop` | Implement → review → QA → security/compliance → CI/CD → deploy |
 | **All-in-one** | `/loop-engine` or skill `skills/loop-engine` | Route between planning, task compilation, development, QA, and release gates |
 
-Everything else in this repo (model providers, AI-agent-development scaffolding, research search, feature specs, frontend animation, deployment, release checks, ...) is auto-detected and wired into these three — see [`docs/PROCESS.md`](docs/PROCESS.md) and the full command table in [`AGENTS.md`](AGENTS.md).
+Everything else in this repo (model providers, AI-agent-development scaffolding, research search, feature specs, frontend animation, deployment, release checks, ...) is auto-detected and wired into these three - see [`docs/PROCESS.md`](docs/PROCESS.md) and the full command table in [`AGENTS.md`](AGENTS.md).
 
 ## Quick start (any agent)
 
@@ -55,7 +55,7 @@ Use:
 /loop-engine
 ```
 
-Agents should interpret these commands by reading `commands/` and `skills/`. On first run, `/plan-loop` initializes the user's product data automatically into `plan/main_plan.md`, `plan/`, `memories/MEMORY.md`, `DOUBTS.md`, and `TASKS.yml` — all inside the workspace data root, never inside the tool repo.
+Agents should interpret these commands by reading `commands/` and `skills/`. On first run, `/plan-loop` initializes the user's product data automatically into `plan/main_plan.md`, `plan/`, `memories/MEMORY.md`, `DOUBTS.md`, and `TASKS.yml` - all inside the workspace data root, never inside the tool repo.
 
 In central-tool setup, those product files are written to the registered product workspace, not into `loop-engineer/`.
 
@@ -67,7 +67,7 @@ For data layout and auto-detection, see [`docs/DATA_LAYOUT.md`](docs/DATA_LAYOUT
 
 ## Memory layer
 
-These live in the **workspace data root** (`~/.loop-engineer/data/` or `<product-folder>/.loop-engineer/`) — created at setup from [`templates/starter/`](templates/starter/). The tool repo carries no live state files.
+These live in the **workspace data root** (`~/.loop-engineer/data/` or `<product-folder>/.loop-engineer/`) - created at setup from [`templates/starter/`](templates/starter/). The tool repo carries no live state files.
 
 | File | Purpose |
 |------|---------|
@@ -95,17 +95,17 @@ loop session-start --command "<slash-command>" --tool "<tool>"
 loop session-end --summary "<progress>"
 ```
 
-This is what makes memory durable across chat sessions and tool switches — see
+This is what makes memory durable across chat sessions and tool switches - see
 [`docs/SESSION_LIFECYCLE.md`](docs/SESSION_LIFECYCLE.md). The agent runs it, not the user.
 
 ## Command Usage
 
-In order of a real product journey — every command works the same in Cursor, Claude Code, Codex, OpenCode, Grok Build, or a direct LLM with filesystem access.
+In order of a real product journey - every command works the same in Cursor, Claude Code, Codex, OpenCode, Grok Build, or a direct LLM with filesystem access.
 
 ### 0. Set up once
 
 ```bash
-/setup-loop-engine            # in your agent — registers the workspace, seeds starter files
+/setup-loop-engine            # in your agent - registers the workspace, seeds starter files
 loop setup                    # same thing from the terminal (global data: ~/.loop-engineer/data/)
 loop setup --use-cwd --name my-app                  # local data: ./my-app/.loop-engineer/
 loop setup --use-cwd --source /path/to/other-tool          # import MEMORY/USER/skills from another AI tool
@@ -113,16 +113,16 @@ loop setup --use-cwd --source /path/to/other-tool --scan   # different structure
 loop model setup              # optional: pick the LLM provider for API-hosted inference
 ```
 
-### 1. Plan — `/plan-loop`
+### 1. Plan - `/plan-loop`
 
 ```text
 /plan-loop
 /plan-loop an AI receptionist for dental clinics that answers calls and books appointments
 ```
 
-Initializes the product on first run (asks name, target user, problem, first step, deployment targets), then: grill → product council → fact-check → PRD → architecture → feature spec → task compiler. Auto-detects platform-vs-convenient scale and routes `/ultraplan` when needed.
+Initializes the product on first run (asks name, target user, problem, first step, deployment targets), then: grill → product council → fact-check → PRD → architecture → feature spec → task compiler. Auto-detects platform-vs-convenient scale and routes `/ultraplan-loop` when needed.
 
-### 2. Build — `/product-develop` (alias: `/develop-product`)
+### 2. Build - `/product-develop` (alias: `/develop-product`)
 
 ```text
 /product-develop
@@ -130,26 +130,26 @@ Initializes the product on first run (asks name, target user, problem, first ste
 
 Builds from the approved plan, one task at a time: implementation plan → smallest safe diff → tests → code review → QA → security/compliance → docs → prod-gap. Frontend motion/3D and AI-agent work auto-route to the right built-in skills.
 
-### 3. All-in-one — `/loop-engine`
+### 3. All-in-one - `/loop-engine`
 
 ```text
 /loop-engine
 /loop-engine a marketplace for local tutors with escrow payments
 ```
 
-The primary entry point: routes between planning and development based on gates — give it an idea and keep re-running it.
+The primary entry point: routes between planning and development based on gates - give it an idea and keep re-running it.
 
 ### Product & planning helpers
 
 ```text
-/agent-builder        # design/scaffold an AI agent as the product — auto-activates in /plan-loop + /product-develop
+/agent-builder        # design/scaffold an AI agent as the product - auto-activates in /plan-loop + /product-develop
 /research-search      # search arXiv / Research Square / SSRN, e.g. loop research "multi-agent evaluation"
 /model                # AI provider config, e.g. loop model anthropic:<model-id>, loop model doctor
 /feature-new          # new feature spec folder, e.g. loop feature new "auth login" --step plan/step_01.md
 /spec-clarify         # structured clarification on the active feature spec
 /spec-checklist       # spec quality gate before feature-plan
 /feature-converge     # post-build drift check vs spec/tasks
-/ultraplan            # deep per-step planning for platform-scale products
+/ultraplan-loop            # deep per-step planning for platform-scale products
 /frontend-animation   # route to built-in GSAP / Motion.dev / 3D skills
 ```
 
@@ -170,8 +170,8 @@ The primary entry point: routes between planning and development based on gates 
 ### Session lifecycle (agents run these, not you)
 
 ```text
-/session-start        # loop session-start — recall, manifest, auto-skills
-/session-end          # loop session-end — memory review, staged writes, state.db log
+/session-start        # loop session-start - recall, manifest, auto-skills
+/session-end          # loop session-end - memory review, staged writes, state.db log
 /session-recall       # recall only (normally inside session-start)
 /memory-review        # memory curation only (normally inside session-end)
 ```

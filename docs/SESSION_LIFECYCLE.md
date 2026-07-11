@@ -6,7 +6,7 @@ Cross-tool persistent memory that works in **any agent tool**, not only Cursor.
 
 Memory lives in the **product workspace** (`~/.loop-engineer/data/` or `<product-folder>/.loop-engineer/`), not in chat history. Every tool reads and writes the same files.
 
-## Two commands (agents run these — not users)
+## Two commands (agents run these - not users)
 
 | Phase | CLI | Slash |
 |-------|-----|-------|
@@ -23,7 +23,7 @@ Produces:
 
 | File | Purpose |
 |------|---------|
-| `plan/SESSION_MANIFEST.md` | **Read first** — ordered bootstrap list |
+| `plan/SESSION_MANIFEST.md` | **Read first** - ordered bootstrap list |
 | `plan/SESSION_RECALL.md` | Past decisions from `state.db` |
 | `plan/AUTO_SKILLS.md` | Frontend motion skills (if applicable) |
 | `.loop/session.json` | Session metadata |
@@ -57,11 +57,11 @@ loop pending approve --all
 | **Cursor** | Same CLI; optional: Cursor hook on session start (see below) |
 | **Claude Code** | Read `CLAUDE.md`; commands route to `commands/session-start.md` + `session-end.md` |
 | **Codex / OpenCode / Grok** | Read `CODEX.md`, `OPENCODE.md`, `GROK.md` |
-| **Direct API** | `API_USAGE.md` — call lifecycle scripts between API turns |
+| **Direct API** | `API_USAGE.md` - call lifecycle scripts between API turns |
 
 ### Optional Cursor hook (local)
 
-Add to `.cursor/hooks.json` in your product repo (not required — agents can run CLI manually):
+Add to `.cursor/hooks.json` in your product repo (not required - agents can run CLI manually):
 
 ```json
 {
@@ -95,6 +95,6 @@ Verify: `loop bootstrap`
 
 ## Related
 
-- `docs/DATA_LAYOUT.md` — where memory files live
+- `docs/DATA_LAYOUT.md` - where memory files live
 - `skills/session-lifecycle/SKILL.md`
 - `skills/memory-review/SKILL.md`

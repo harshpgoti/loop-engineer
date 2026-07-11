@@ -223,7 +223,7 @@ function TestimonialSection() {
           transition={{ delay: 0.2 }}
           className="text-xl text-gray-400"
         >
-          — Jane Doe, CEO at Company
+          - Loop Engineer, CEO at Company
         </motion.p>
       </motion.div>
     </section>

@@ -114,7 +114,7 @@ def init_ultraplan_folder(workspace: Path, step_id: str, title: str, module_type
 def write_step_index(workspace: Path, step_id: str, title: str, module_type: str, folder: Path) -> Path:
     rel_folder = folder.relative_to(workspace).as_posix()
     step_path = workspace / "plan" / step_file_name(step_id, title)
-    content = f"""# Step {step_id} — {title}
+    content = f"""# Step {step_id} - {title}
 
 ## Status
 
@@ -122,7 +122,7 @@ Planning (platform ultraplan).
 
 ## Module type
 
-`{module_type}` — sub-product / module in the platform map.
+`{module_type}` - sub-product / module in the platform map.
 
 ## Purpose
 
@@ -143,7 +143,7 @@ Deep planning lives in `{rel_folder}/`. This file is the step index only.
 
 ## Next
 
-Run `skills/ultraplan/SKILL.md` on this step until all ultraplan docs pass checklist.
+Run `skills/plan-loop/phases/ultraplan.md` on this step until all ultraplan docs pass checklist.
 Then `loop feature new "{title}" --step plan/{step_path.name}`.
 """
     step_path.parent.mkdir(parents=True, exist_ok=True)
@@ -155,7 +155,7 @@ Then `loop feature new "{title}" --step plan/{step_path.name}`.
 def decompose_from_map(workspace: Path, force: bool = False) -> list[dict]:
     modules = parse_product_map(workspace)
     if not modules:
-        raise SystemExit("No modules in PRODUCT_MAP.md — fill the table first.")
+        raise SystemExit("No modules in PRODUCT_MAP.md - fill the table first.")
 
     created: list[dict] = []
     for mod in modules:
@@ -262,18 +262,18 @@ def update_ultraplan_status(workspace: Path, modules: list[dict] | None = None) 
         title = mod.get("title", sid)
         if "complete" in mod:
             status = "complete" if mod["complete"] else "in progress"
-            missing = ", ".join(mod.get("missing", [])) or "—"
+            missing = ", ".join(mod.get("missing", [])) or "-"
         else:
             complete, missing_list = step_ultraplan_complete(workspace, sid, title)
             status = "complete" if complete else "outline"
-            missing = ", ".join(missing_list) if missing_list else "—"
+            missing = ", ".join(missing_list) if missing_list else "-"
         lines.append(f"| {sid} | {title} | {status} | {missing} |")
     lines.extend(["", "## Next step", ""])
     next_step = find_next_incomplete(workspace, modules)
     if next_step:
-        lines.append(f"- Deep-plan **step {next_step['id']} — {next_step['title']}** (`skills/ultraplan/SKILL.md`)")
+        lines.append(f"- Deep-plan **step {next_step['id']} - {next_step['title']}** (`skills/plan-loop/phases/ultraplan.md`)")
     else:
-        lines.append("- All ultraplan packs complete — run task-compiler per step or `/product-develop`.")
+        lines.append("- All ultraplan packs complete - run task-compiler per step or `/product-develop`.")
     lines.append("")
     path = ultraplan_status_file(workspace)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -374,7 +374,7 @@ def main() -> int:
         if not nxt:
             print("All ultraplan packs complete (or no platform steps).")
             return 0
-        print(f"Next: step {nxt['id']} — {nxt['title']}")
+        print(f"Next: step {nxt['id']} - {nxt['title']}")
         folder = step_ultraplan_dir(workspace, nxt["id"], nxt["title"])
         print(f"Folder: {folder.relative_to(workspace)}")
         return 0

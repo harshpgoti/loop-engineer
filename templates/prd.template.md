@@ -1,4 +1,4 @@
-# PRD — {{PRODUCT_NAME}} / {{STEP_NAME}}
+# PRD - {{PRODUCT_NAME}} / {{STEP_NAME}}
 
 ## Summary
 

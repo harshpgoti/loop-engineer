@@ -321,7 +321,7 @@ def append_decisions(workspace: Path, decisions: dict[str, str]) -> None:
     if not path.exists():
         path.write_text("# Decision Log\n\n", encoding="utf-8")
 
-    lines = [f"\n## {date.today().isoformat()} — Deployment decisions from /plan-loop\n"]
+    lines = [f"\n## {date.today().isoformat()} - Deployment decisions from /plan-loop\n"]
     for label, value in decisions.items():
         lines.append(f"- **{label}:** {value}\n")
     with path.open("a", encoding="utf-8") as handle:

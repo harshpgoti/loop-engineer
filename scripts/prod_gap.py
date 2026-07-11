@@ -211,7 +211,7 @@ def append_session_log(workspace: Path, output: Path) -> None:
     with log_path.open("a", encoding="utf-8") as handle:
         handle.write(
             "\n"
-            f"## {date.today().isoformat()} — Product gap analysis\n\n"
+            f"## {date.today().isoformat()} - Product gap analysis\n\n"
             f"- Updated `{output.relative_to(workspace)}`.\n"
         )
 
@@ -225,7 +225,7 @@ def append_human_blockers(workspace: Path) -> None:
 
     note = (
         "\n"
-        f"## {date.today().isoformat()} — Human-required production blockers\n\n"
+        f"## {date.today().isoformat()} - Human-required production blockers\n\n"
         "- Review `plan/PROD-GAP.md` section **Human-Required Blockers**.\n"
         "- Resolve or explicitly defer P0/P1 human-required blockers before production launch.\n"
     )
@@ -236,7 +236,7 @@ def append_human_blockers(workspace: Path) -> None:
     with handoff_path.open("a", encoding="utf-8") as handle:
         handle.write(
             "\n"
-            f"## {date.today().isoformat()} — Production gap follow-up\n\n"
+            f"## {date.today().isoformat()} - Production gap follow-up\n\n"
             "- `plan/PROD-GAP.md` was updated.\n"
             "- Ask the user to resolve human-required blockers listed there.\n"
             "- Agent may continue with safe P0/P1 technical blockers.\n"

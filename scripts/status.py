@@ -147,7 +147,7 @@ def append_session_log(workspace: Path) -> None:
     with log_path.open("a", encoding="utf-8") as handle:
         handle.write(
             "\n"
-            f"## {date.today().isoformat()} — Status snapshot\n\n"
+            f"## {date.today().isoformat()} - Status snapshot\n\n"
             "- Updated `STATUS.md`.\n"
         )
 

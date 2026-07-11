@@ -1,4 +1,4 @@
-# Agents — Step {{STEP_ID}}: {{STEP_TITLE}}
+# Agents - Step {{STEP_ID}}: {{STEP_TITLE}}
 
 **Updated:** {{DATE}}
 

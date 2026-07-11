@@ -7,7 +7,7 @@ description: Runs the all-in-one product loop. It chooses planning or developmen
 
 ## Purpose
 
-Self-drive the product loop from planning to development without manual context transfer. **Primary entry point** — must wire every built-in capability.
+Self-drive the product loop from planning to development without manual context transfer. **Primary entry point** - must wire every built-in capability.
 
 ## Command
 
@@ -24,7 +24,7 @@ Self-drive the product loop from planning to development without manual context 
 7. `plan/PLAN_SCALE.md`, `plan/ULTRAPLAN_STATUS.md` (when platform)
 8. `plan/SESSION_RECALL.md`, `plan/AUTO_SKILLS.md`, `plan/AUTO_AGENT_SKILLS.md` (if present)
 9. `TASKS.yml`, `GATES.yml`, `CURRENT_STATE.md`
-10. `skills/tool-orchestrator/SKILL.md` (supporting tool/pattern selection — `docs/PROCESS.md` names this a key `/loop-engine` skill)
+10. `skills/tool-orchestrator/SKILL.md` (supporting tool/pattern selection - `docs/PROCESS.md` names this a key `/loop-engine` skill)
 
 ## Mandatory bookends
 
@@ -39,10 +39,10 @@ loop session-end --command /loop-engine --summary "<progress>"
 |-------|-------------|
 | Uninitialized / init gates blocked | `commands/plan-loop.md` full flow |
 | Idea scope unknown | `loop plan-loop scale --write` |
-| Scale **platform**, ultraplan incomplete | `skills/ultraplan/SKILL.md` / `loop plan-loop ultraplan next` |
-| Missing step plan or feature spec | `commands/plan-loop.md` (steps 14–16) |
+| Scale **platform**, ultraplan incomplete | `skills/plan-loop/phases/ultraplan.md` / `loop plan-loop ultraplan next` |
+| Missing step plan or feature spec | `commands/plan-loop.md` (steps 14-16) |
 | Spec needs clarify/checklist | `/spec-clarify` → `/spec-checklist` |
-| Missing tasks | `skills/task-compiler/SKILL.md` |
+| Missing tasks | `skills/plan-loop/phases/task-compiler.md` |
 | Product is/includes an AI agent | `skills/agent-builder/SKILL.md` (`loop auto-agent-skills --write` first) |
 | Build gates pass | `commands/product-develop.md` full flow |
 | Blocked on requirements mid-build | `/spec-clarify` |
@@ -66,7 +66,7 @@ SESSION-START → MANIFEST → RECALL → AUTO-SKILLS → AUTO-AGENT-SKILLS
 0. Run `loop session-start`; read manifest and listed files.
 1. If Step 1 gates blocked → execute `skills/plan-loop/SKILL.md` / `commands/plan-loop.md`.
 2. Run `loop plan-loop scale --write` when product idea may be platform-scale.
-3. If scale is **platform** and ultraplan incomplete → `skills/ultraplan/SKILL.md` (one step per session).
+3. If scale is **platform** and ultraplan incomplete → `skills/plan-loop/phases/ultraplan.md` (one step per session).
 4. If no active feature or spec incomplete → feature workflow (`feature-new`, `spec-clarify`, `spec-checklist`).
 3. If tasks missing → `task-compiler`.
 4. If build gates pass → execute `skills/product-develop/SKILL.md` / `commands/product-develop.md`.

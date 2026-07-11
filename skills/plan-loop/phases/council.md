@@ -1,9 +1,6 @@
----
-name: product-council
-description: Runs a lightweight senior product council across strategy, product, architecture, engineering, design, QA, security, and release perspectives. Use during /plan-loop, major pivots, PRD review, architecture review, and before development gates.
----
+# Phase: Product Council
 
-# Product Council
+> Loaded by `skills/plan-loop/SKILL.md` when `PHASE: council` - run before PRD/architecture lock, major pivots, and development gates.
 
 ## Purpose
 
@@ -53,3 +50,8 @@ Make planning decisions sharper by forcing multiple senior perspectives before t
 - Required changes
 - Open questions
 - Gate recommendation
+
+## Next phase
+
+- **Platform scale** (`plan/PLAN_SCALE.md` = platform) → `ultraplan` for the active step.
+- **Convenient scale** → create the feature spec, then `spec-clarify`.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Loop Engineering OS — GitHub installer
+# Loop Engineering OS - GitHub installer
 # curl -fsSL https://raw.githubusercontent.com/harshpgoti/loop-engineer/main/install.sh | bash
 # curl -fsSL .../install.sh | bash -s -- --use-cwd   # local memory in current folder
 
@@ -140,6 +140,10 @@ Installed.
   Memory mode:  $MEMORY_MODE
   Data:         $WORKSPACE
   CLI:          loop
+
+Native slash commands registered for Claude Code, Cursor, Codex, and OpenCode.
+Restart your agent (new session) so it picks up the new /commands.
+Re-run any time with: loop commands install
 
 Open your agent in: $APP
 Then run: /plan-loop

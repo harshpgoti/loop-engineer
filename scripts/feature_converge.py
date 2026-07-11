@@ -48,7 +48,7 @@ def render_report(
         "# Feature Converge Report",
         "",
         f"**Updated:** {date.today().isoformat()}",
-        f"**Feature:** `{feature.get('path')}` — {feature.get('title', '')}",
+        f"**Feature:** `{feature.get('path')}` - {feature.get('title', '')}",
         "",
         "## Artifact status",
         "",
@@ -72,7 +72,7 @@ def render_report(
             "",
             "## Next",
             "",
-            "- Update `TASKS.yml` via `skills/task-compiler/SKILL.md` if gaps are real.",
+            "- Update `TASKS.yml` via `skills/plan-loop/phases/task-compiler.md` if gaps are real.",
             "- Re-run `/feature-converge` after implementation slices.",
             "",
         ]
@@ -90,9 +90,9 @@ def converge(workspace: Path) -> tuple[Path | None, list[str]]:
     suggestions: list[str] = []
 
     if not artifacts["spec"].exists():
-        gaps.append("Missing spec.md — run `/feature-new` or complete spec during `/plan-loop`.")
+        gaps.append("Missing spec.md - run `/feature-new` or complete spec during `/plan-loop`.")
     if not artifacts["tasks"].exists():
-        gaps.append("Missing tasks.md — run `skills/task-compiler/SKILL.md` after feature-plan.")
+        gaps.append("Missing tasks.md - run `skills/plan-loop/phases/task-compiler.md` after feature-plan.")
     if artifacts["spec"].exists() and not artifacts["clarifications"].exists():
         suggestions.append("Run `/spec-clarify` before locking feature-plan.")
     if artifacts["spec"].exists() and not artifacts["checklist"].exists():
@@ -101,15 +101,15 @@ def converge(workspace: Path) -> tuple[Path | None, list[str]]:
     tasks_md = read_text(artifacts["tasks"])
     open_tasks = unchecked_feature_tasks(tasks_md)
     if tasks_md and open_tasks:
-        suggestions.append(f"{len(open_tasks)} unchecked task(s) in tasks.md — continue `/product-develop`.")
+        suggestions.append(f"{len(open_tasks)} unchecked task(s) in tasks.md - continue `/product-develop`.")
     elif tasks_md:
-        suggestions.append("All feature tasks checked — run `/prod-gap` for release readiness.")
+        suggestions.append("All feature tasks checked - run `/prod-gap` for release readiness.")
 
     tasks_yml = read_text(workspace / "TASKS.yml")
     if tasks_md and tasks_yml:
         yaml_ids = extract_task_ids(tasks_yml)
         if yaml_ids and not any("TASK-" in ln for ln in extract_feature_task_lines(tasks_md)):
-            gaps.append("tasks.md does not reference TASKS.yml ids — sync via task-compiler.")
+            gaps.append("tasks.md does not reference TASKS.yml ids - sync via task-compiler.")
 
     report_path = artifacts["converge"]
     report_path.write_text(

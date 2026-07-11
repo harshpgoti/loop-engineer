@@ -38,7 +38,7 @@ def find_source_root(explicit: str | None) -> Path | None:
 
 
 def copy_if_exists(source_root: Path, relative: str, target: Path, dry_run: bool) -> str:
-    """Copy source_root/relative to target. Caller decides whether target may be written —
+    """Copy source_root/relative to target. Caller decides whether target may be written -
     this function does not re-check target.exists() for that decision."""
     src = source_root / relative
     if not src.exists():
@@ -89,7 +89,7 @@ def append_handoff(workspace: Path, summary: list[str]) -> None:
     with path.open("a", encoding="utf-8") as handle:
         handle.write(
             "\n"
-            f"## {date.today().isoformat()} — External workspace import\n\n"
+            f"## {date.today().isoformat()} - External workspace import\n\n"
             + "".join(f"- {line}\n" for line in summary)
             + "- Review imported files under `memories/` and `skills/imported/`.\n"
             + "- Secrets/API keys were not copied automatically; configure them manually.\n"
@@ -112,8 +112,8 @@ def run_import(
 
     `memory_actions`: pass the dict already returned by a caller's own
     `ensure_memory_layout()` call (e.g. `/setup-loop-engine` seeding starter files)
-    so this function knows which memory files are brand-new placeholders — safe for
-    the import to supersede — versus genuinely pre-existing content. If omitted,
+    so this function knows which memory files are brand-new placeholders - safe for
+    the import to supersede - versus genuinely pre-existing content. If omitted,
     this function calls `ensure_memory_layout()` itself (standalone `/migrate-import`
     usage, where nothing has touched memory yet).
     """
@@ -129,7 +129,7 @@ def run_import(
     init_db(state_db(workspace))
 
     # Files ensure_memory_layout() just seeded with Loop Engineer's own placeholder
-    # content (not real prior data) — safe for an import to supersede even without
+    # content (not real prior data) - safe for an import to supersede even without
     # --overwrite, otherwise a fresh `setup --source` can never actually land memory.
     freshly_seeded = {
         dest_rel

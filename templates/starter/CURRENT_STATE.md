@@ -8,9 +8,9 @@
 
 | Asset | Location | Status |
 |-------|----------|--------|
-| Loop OS | this repo | **Active** — commands, skills, adapters, gates |
-| Portable commands | `commands/` | **Active** — `/plan-loop`, `/product-develop`, `/loop-engine` |
-| Canonical skills | `skills/` | **Active** — shared by all tools |
+| Loop OS | this repo | **Active** - commands, skills, adapters, gates |
+| Portable commands | `commands/` | **Active** - `/plan-loop`, `/product-develop`, `/loop-engine` |
+| Canonical skills | `skills/` | **Active** - shared by all tools |
 | Tool adapters | `ADAPTERS.md`, `CLAUDE.md`, `CODEX.md`, `OPENCODE.md`, `GROK.md`, `API_USAGE.md` | **Active** |
 | Human-mind memory | `memories/MEMORY.md` | **Active** |
 | Doubt tracker | `DOUBTS.md` | **Active** |

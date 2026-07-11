@@ -18,7 +18,7 @@ curl -fsSL https://raw.githubusercontent.com/harshpgoti/loop-engineer/main/insta
 
 ```text
 ~/.loop-engineer/
-├── app/           # updatable tool — loop update
+├── app/           # updatable tool - loop update
 ├── bin/loop
 └── data/          # ALL global memory/data
     ├── memories/  # global memory (default)
@@ -28,7 +28,7 @@ curl -fsSL https://raw.githubusercontent.com/harshpgoti/loop-engineer/main/insta
     └── ...
 ```
 
-Local product folders get the same split, nested one level deeper: `<product-folder>/.loop-engineer/{memories,state.db,skills,plan/main_plan.md,...}` — a single hidden folder, kept out of your product code. See [`docs/DATA_LAYOUT.md`](docs/DATA_LAYOUT.md).
+Local product folders get the same split, nested one level deeper: `<product-folder>/.loop-engineer/{memories,state.db,skills,plan/main_plan.md,...}` - a single hidden folder, kept out of your product code. See [`docs/DATA_LAYOUT.md`](docs/DATA_LAYOUT.md).
 
 ### Memory: global vs local
 
@@ -75,7 +75,7 @@ loop setup --use-cwd --name qeautoai --source /path/to/other-tool/export
 loop setup --use-cwd --name qeautoai --source /path/to/other-tool/export --dry-run
 ```
 
-Imports `MEMORY.md`, `USER.md`, `SOUL.md`, and `skills/` from `--source`. If the other tool's files use **different names/structure**, add `--scan` — every file is classified by content and routed to the right home (secrets are never copied). See `skills/migrate-import/SKILL.md`.
+Imports `MEMORY.md`, `USER.md`, `SOUL.md`, and `skills/` from `--source`. If the other tool's files use **different names/structure**, add `--scan` - every file is classified by content and routed to the right home (secrets are never copied). See `skills/migrate-import/SKILL.md`.
 
 ### After install
 

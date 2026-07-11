@@ -2,7 +2,7 @@
 """Scaffold agent/ (skills, tools, evals, architecture doc) in the product workspace.
 
 Gives a product that is, or includes, an AI agent the same portable
-SKILL.md authoring convention Loop Engineer uses for its own skills —
+SKILL.md authoring convention Loop Engineer uses for its own skills -
 without vendoring any third-party agent runtime.
 """
 
@@ -15,7 +15,7 @@ from workspace_utils import ROOT, resolve_workspace
 
 AGENT_SKILLS_README = """# Product agent skills
 
-This folder holds **this product's own agent skills** — not Loop Engineer's
+This folder holds **this product's own agent skills** - not Loop Engineer's
 operational skills (those live in the repo-root `skills/`).
 
 Each skill is a folder with a `SKILL.md` (frontmatter `name` + `description`,
@@ -30,11 +30,11 @@ cp -r agent/skills/_template agent/skills/<your-skill-name>
 
 - One skill = one clear trigger + one clear job. Don't build a mega-skill.
 - Declare every tool the skill uses and whether it is destructive (ties to
-  AGENTS.md rule 5 — human approval for high-risk actions).
+  AGENTS.md rule 5 - human approval for high-risk actions).
 - Reference `agent/AGENT_ARCHITECTURE.md` for the overall agent shape; put
   skill-specific detail here, not there.
 - Prior art: the agent skill hubs listed in `tools/registry.md` are a useful
-  **read-only** reference — do not vendor their code or packages.
+  **read-only** reference - do not vendor their code or packages.
 """
 
 AGENT_TOOLS_README = """# Product agent tools
@@ -43,20 +43,20 @@ Tool/function definitions the agent can call, separate from the skills that
 decide when to call them. One file per tool (or per tool group) works well:
 name, JSON schema, side effects, and whether it is destructive.
 
-Destructive or high-risk tools need human approval per AGENTS.md rule 5 —
+Destructive or high-risk tools need human approval per AGENTS.md rule 5 -
 say so explicitly in the tool's doc, not just in code comments.
 """
 
 AGENT_EVALS_README = """# Product agent evals
 
 Golden cases and eval harness for the agent, distinct from unit tests.
-Tie into `skills/qa-validation/SKILL.md` — an agent PR should not merge on
+Tie into `skills/qa-validation/SKILL.md` - an agent PR should not merge on
 code review alone if its behavior is what changed.
 
 Suggested layout:
 
-- `cases/` — golden input/expected-output pairs
-- `run_evals.py` (or equivalent) — replays cases against the current agent
+- `cases/` - golden input/expected-output pairs
+- `run_evals.py` (or equivalent) - replays cases against the current agent
 - Track pass rate over time; regressions block merge same as failing tests.
 """
 

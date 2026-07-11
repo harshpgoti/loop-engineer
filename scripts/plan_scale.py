@@ -117,7 +117,7 @@ def infer_scale(workspace: Path, extra: str = "") -> dict:
 
     scale = SCALE_PLATFORM if score >= 4 else SCALE_CONVENIENT
     if not reasons:
-        reasons.append("single wedge / few modules — standard step planning")
+        reasons.append("single wedge / few modules - standard step planning")
 
     return {
         "scale": scale,
@@ -163,7 +163,7 @@ def render_scale_report(workspace: Path, result: dict) -> str:
                 "1. Fill or generate `plan/PRODUCT_MAP.md` (one row per sub-product/agent).",
                 "2. Run `loop plan-loop decompose` to create step stubs + ultraplan folders.",
                 "3. Run `loop plan-loop ultraplan next` and complete deep docs per step.",
-                "4. See `skills/ultraplan/SKILL.md`.",
+                "4. See `skills/plan-loop/phases/ultraplan.md`.",
             ]
         )
     else:

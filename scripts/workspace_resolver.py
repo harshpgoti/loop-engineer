@@ -1,6 +1,6 @@
 """Resolve product workspace: local folder vs global ~/.loop-engineer data.
 
-Local product data lives under <product-folder>/.loop-engineer/ — a single
+Local product data lives under <product-folder>/.loop-engineer/ - a single
 hidden folder holding everything (memories/, state.db, main_plan.md, plan/,
 ...), kept out of the way of the product's own code, mirroring how
 ~/.loop-engineer/data/ separates data from app/ globally.
@@ -97,7 +97,7 @@ def resolve_effective_workspace(
 ) -> tuple[Path, str]:
     """Return (workspace_path, mode) where mode is 'local' or 'global'.
 
-    `workspace_path` is always the actual data root — `.loop-engineer/`
+    `workspace_path` is always the actual data root - `.loop-engineer/`
     already appended for local mode, `~/.loop-engineer/data/` for global.
     """
     if explicit:
@@ -106,11 +106,11 @@ def resolve_effective_workspace(
             return path, "global"
         if path.resolve() == loop_home().resolve():
             # Someone passed the LOOP_ENGINEER_HOME root itself (which is
-            # typically also named ".loop-engineer") — that's the parent of
+            # typically also named ".loop-engineer") - that's the parent of
             # app/ + data/, not a product folder. Redirect to the data root.
             return global_data_home(), "global"
         if is_tool_runtime(path):
-            # The tool runtime holds no product state — route to global data.
+            # The tool runtime holds no product state - route to global data.
             return global_data_home(), "global"
         if path.name == LOCAL_DATA_DIRNAME:
             return path, "local"
@@ -118,7 +118,7 @@ def resolve_effective_workspace(
             # The path itself already looks like a data root (e.g. an explicit
             # data dir, templates/starter, or a legacy flat workspace).
             return path, "local"
-        # A raw product folder was passed explicitly — resolve to its data dir.
+        # A raw product folder was passed explicitly - resolve to its data dir.
         return local_data_dir(path), "local"
 
     local = find_local_workspace(cwd)

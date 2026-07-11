@@ -26,7 +26,7 @@ def apply(workspace: Path, seed: Callable[[Path, str, str], str | None]) -> list
         results.append("moved main_plan.md -> plan/main_plan.md")
     elif main_src.exists() and main_dest.exists():
         results.append(
-            "both main_plan.md and plan/main_plan.md exist — plan/main_plan.md is canonical; "
+            "both main_plan.md and plan/main_plan.md exist - plan/main_plan.md is canonical; "
             "review and remove the root copy manually"
         )
 
@@ -45,11 +45,11 @@ def apply(workspace: Path, seed: Callable[[Path, str, str], str | None]) -> list
         else:
             backup = workspace / "memories" / "MEMORY.root-legacy.md"
             if backup.exists():
-                results.append("root MEMORY.md differs from canonical and backup already exists — review manually")
+                results.append("root MEMORY.md differs from canonical and backup already exists - review manually")
             else:
                 root_mem.rename(backup)
                 results.append(
-                    "root MEMORY.md differed from memories/MEMORY.md — preserved as memories/MEMORY.root-legacy.md; "
+                    "root MEMORY.md differed from memories/MEMORY.md - preserved as memories/MEMORY.root-legacy.md; "
                     "merge anything still relevant into memories/MEMORY.md"
                 )
 
@@ -57,7 +57,7 @@ def apply(workspace: Path, seed: Callable[[Path, str, str], str | None]) -> list
     if startup.exists():
         dest = workspace / "memories" / "STARTUP_MEMORY.md"
         if dest.exists():
-            results.append("STARTUP_MEMORY.md exists in both places — review manually")
+            results.append("STARTUP_MEMORY.md exists in both places - review manually")
         else:
             dest.parent.mkdir(parents=True, exist_ok=True)
             startup.rename(dest)

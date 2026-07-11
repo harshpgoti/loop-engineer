@@ -1,4 +1,4 @@
-# AGENTS.md — Universal Operating Rules
+# AGENTS.md - Universal Operating Rules
 
 ## Mission
 
@@ -6,18 +6,18 @@ Run a reusable product loop that helps any user plan, validate, build, test, sec
 
 ## Non-negotiables
 
-1. **Memory first** — Auto-detect local `.loop-engineer/` data in cwd; else read global `~/.loop-engineer/data/`. Then read `DOUBTS.md`, `plan/main_plan.md`, `TASKS.yml`, `GATES.yml`, `HANDOFF.md`.
-2. **First-run initialization** — If `plan/main_plan.md` is uninitialized, `/plan-loop` must initialize product data automatically.
-3. **Evidence gate** — Product/architecture decisions require an entry in `EVIDENCE_LOG.md`.
-4. **Rules first, AI second** — Prefer deterministic parsers, validators, and rules before LLM calls. Frontend motion/3D: run `frontend_skill_router.py --write` and read `plan/AUTO_SKILLS.md`; do not ask the user to pick a library.
-5. **Human approval** — High-risk external actions require explicit user approval unless the product plan says otherwise.
-6. **Sensitive data safety** — Do not put secrets, regulated data, or private customer data in logs, fixtures, screenshots, or prompts.
-7. **Tenant isolation** — If the product is multi-tenant, every tenant-owned query must be server-scoped and tested.
-8. **Idempotent workflows** — Safe retries; audit important transitions.
-9. **Minimal diffs** — Match existing conventions; no drive-by refactors.
-10. **Tests required** — No task marked done without relevant tests or a documented reason tests could not run.
-11. **Handoff required** — Update `memories/MEMORY.md`, `DOUBTS.md`, and `HANDOFF.md` before ending session.
-12. **Always-on lifecycle** — Before loop work: `loop session-start`. Before stopping: `loop session-end`. Read `plan/SESSION_MANIFEST.md` first. Works in any tool (Cursor, Claude, Codex, OpenCode, Grok, direct LLM).
+1. **Memory first** - Auto-detect local `.loop-engineer/` data in cwd; else read global `~/.loop-engineer/data/`. Then read `DOUBTS.md`, `plan/main_plan.md`, `TASKS.yml`, `GATES.yml`, `HANDOFF.md`.
+2. **First-run initialization** - If `plan/main_plan.md` is uninitialized, `/plan-loop` must initialize product data automatically.
+3. **Evidence gate** - Product/architecture decisions require an entry in `EVIDENCE_LOG.md`.
+4. **Rules first, AI second** - Prefer deterministic parsers, validators, and rules before LLM calls. Frontend motion/3D: run `frontend_skill_router.py --write` and read `plan/AUTO_SKILLS.md`; do not ask the user to pick a library.
+5. **Human approval** - High-risk external actions require explicit user approval unless the product plan says otherwise.
+6. **Sensitive data safety** - Do not put secrets, regulated data, or private customer data in logs, fixtures, screenshots, or prompts.
+7. **Tenant isolation** - If the product is multi-tenant, every tenant-owned query must be server-scoped and tested.
+8. **Idempotent workflows** - Safe retries; audit important transitions.
+9. **Minimal diffs** - Match existing conventions; no drive-by refactors.
+10. **Tests required** - No task marked done without relevant tests or a documented reason tests could not run.
+11. **Handoff required** - Update `memories/MEMORY.md`, `DOUBTS.md`, and `HANDOFF.md` before ending session.
+12. **Always-on lifecycle** - Before loop work: `loop session-start`. Before stopping: `loop session-end`. Read `plan/SESSION_MANIFEST.md` first. Works in any tool (Cursor, Claude, Codex, OpenCode, Grok, direct LLM).
 
 ## Always-on session lifecycle (any tool)
 
@@ -38,7 +38,7 @@ loop session-end --summary "<progress>"
 
 Details: `docs/SESSION_LIFECYCLE.md` + `skills/session-lifecycle/SKILL.md`.
 
-User does **not** run these manually — the agent runs them. Staged memory: `loop pending approve --all`.
+User does **not** run these manually - the agent runs them. Staged memory: `loop pending approve --all`.
 
 ## Portable Commands
 
@@ -65,13 +65,13 @@ The user should be able to type these commands in Cursor, Codex, Claude Code, Gr
 | `/upgrade-loop-engineer` | Safely update tool files without overwriting product-state files | `commands/upgrade-loop-engineer.md` + `skills/upgrade-loop-engineer/SKILL.md` |
 | `/migrate-import` | Import external workspace memory/skills into product paths | `commands/migrate-import.md` + `skills/migrate-import/SKILL.md` |
 | `/feature-new` | Create numbered feature spec folder (`plan/features/`) | `commands/feature-new.md` + `skills/feature-workflow/SKILL.md` |
-| `/spec-clarify` | Structured clarification on active feature spec | `commands/spec-clarify.md` + `skills/spec-clarify/SKILL.md` |
-| `/spec-checklist` | Spec quality gate before feature-plan | `commands/spec-checklist.md` + `skills/spec-checklist/SKILL.md` |
+| `/spec-clarify` | Structured clarification on active feature spec | `commands/spec-clarify.md` + `skills/plan-loop/phases/spec-clarify.md` |
+| `/spec-checklist` | Spec quality gate before feature-plan | `commands/spec-checklist.md` + `skills/plan-loop/phases/spec-checklist.md` |
 | `/feature-converge` | Post-build drift check vs spec/tasks | `commands/feature-converge.md` + `skills/feature-converge/SKILL.md` |
-| `/ultraplan` | Deep per-step planning for platform-scale products | `commands/ultraplan.md` + `skills/ultraplan/SKILL.md` |
+| `/ultraplan-loop` | Deep per-step planning for platform-scale products | `commands/ultraplan-loop.md` + `skills/plan-loop/phases/ultraplan.md` |
 | `/model` | Configure AI model provider for API-hosted inference | `commands/model.md` + `skills/model-providers/SKILL.md` |
 | `/frontend-animation` | Route to built-in GSAP, Motion.dev, and 3D core skills for frontend work | `commands/frontend-animation.md` + `skills/frontend-animation/SKILL.md` |
-| `/agent-builder` | Design/scaffold an AI agent (or agentic/dynamic workflow) as the product itself — auto-activates in `/plan-loop` and `/product-develop` | `commands/agent-builder.md` + `skills/agent-builder/SKILL.md` |
+| `/agent-builder` | Design/scaffold an AI agent (or agentic/dynamic workflow) as the product itself - auto-activates in `/plan-loop` and `/product-develop` | `commands/agent-builder.md` + `skills/agent-builder/SKILL.md` |
 | `/research-search` | Search arXiv, Research Square, and SSRN to ground a claim in evidence | `commands/research-search.md` + `skills/research-search/SKILL.md` |
 
 If a tool does not support slash commands natively, interpret a plain user message containing one of the commands as a request to read the matching command file and execute it.
@@ -103,7 +103,7 @@ Reusable loop mechanics belong in `skills/` and `commands/`.
 
 ## Feature workflow (built-in)
 
-During `/plan-loop`, detect scale (`loop plan-loop scale --write`). **Convenient** → standard step + feature spec. **Platform** → `PRODUCT_MAP.md` + ultraplan pack per sub-product/agent (`skills/ultraplan/SKILL.md`).
+During `/plan-loop`, detect scale (`loop plan-loop scale --write`). **Convenient** → standard step + feature spec. **Platform** → `PRODUCT_MAP.md` + ultraplan pack per sub-product/agent (`skills/plan-loop/phases/ultraplan.md`).
 
 ```text
 /feature-new → /spec-clarify → /spec-checklist → feature-plan → task-compiler → /product-develop → /feature-converge
@@ -140,16 +140,16 @@ Use conservative defaults unless `plan/main_plan.md` or `DECISIONS.md` says othe
 
 Use these before major work:
 
-- `skills/product-council/SKILL.md` before major product, architecture, or release decisions.
-- `skills/task-compiler/SKILL.md` after planning and before development.
+- `skills/plan-loop/phases/council.md` before major product, architecture, or release decisions.
+- `skills/plan-loop/phases/task-compiler.md` after planning and before development.
 - `skills/implementation-planner/SKILL.md` before code edits.
 - `skills/code-reviewer/SKILL.md` after code edits.
 
 ## Memory layout (tool vs data)
 
-- **App** (`~/.loop-engineer/app/`): updatable tool runtime — update with `loop update`.
+- **App** (`~/.loop-engineer/app/`): updatable tool runtime - update with `loop update`.
 - **Global data** (`~/.loop-engineer/data/`): default memory when no local product folder is detected. Never mixed with `app/`.
-- **Local data** (`<product-folder>/.loop-engineer/`): memories/, state.db, plan/main_plan.md — **auto-detected** when you work from that folder. A single hidden folder, kept out of the product's own code.
+- **Local data** (`<product-folder>/.loop-engineer/`): memories/, state.db, plan/main_plan.md - **auto-detected** when you work from that folder. A single hidden folder, kept out of the product's own code.
 
 When you run `/plan-loop`, `/loop-engine`, or any loop command, Loop checks the current folder (and parents) for a `.loop-engineer/` data dir. If found, it uses `<that-folder>/.loop-engineer/`; otherwise it uses `~/.loop-engineer/data/`.
 
@@ -168,7 +168,7 @@ SESSION-START → READ MANIFEST → RESTATE → PLAN (one task) → BUILD → TE
 Every command must update:
 
 - Run **`loop session-start`** at the beginning and **`loop session-end`** at the end (or `/session-start` / `/session-end`).
-- `plan/SESSION_MANIFEST.md` and `plan/SESSION_CLOSEOUT.md` — lifecycle outputs (script-generated).
+- `plan/SESSION_MANIFEST.md` and `plan/SESSION_CLOSEOUT.md` - lifecycle outputs (script-generated).
 - `memories/MEMORY.md` (or `memories/MEMORY.md`): what changed, what is happening now, what is next.
 - `memories/USER.md`: user profile and durable preferences.
 - `state.db`: searchable session history for long-running loops.

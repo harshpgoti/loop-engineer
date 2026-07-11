@@ -60,7 +60,7 @@ def describe_memory_mode(memory_mode: str, workspace: Path) -> str:
             f"(memories/, state.db, plan/main_plan.md, ...). Default when no local folder is detected."
         )
     return (
-        f"Local memory: product state lives in `{workspace}` — a hidden "
+        f"Local memory: product state lives in `{workspace}` - a hidden "
         f"`.loop-engineer/` folder inside your product folder, kept out of your "
         f"product code. Loop auto-detects it when you return and run /plan-loop or /loop-engine."
     )
@@ -68,8 +68,8 @@ def describe_memory_mode(memory_mode: str, workspace: Path) -> str:
 
 def print_memory_mode_menu() -> None:
     print("Choose where to store product memory (plan, MEMORY.md, state.db, ...):")
-    print("  1) local  — in your product development folder (recommended for multiple products)")
-    print("  2) global — in ~/.loop-engineer/ (default; used when no local data is present)")
+    print("  1) local  - in your product development folder (recommended for multiple products)")
+    print("  2) global - in ~/.loop-engineer/ (default; used when no local data is present)")
     print("")
 
 

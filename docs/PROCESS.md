@@ -21,9 +21,9 @@ detect init
 Key skills:
 
 - `skills/plan-loop/SKILL.md`
-- `skills/product-grill/SKILL.md`
-- `skills/product-council/SKILL.md`
-- `skills/task-compiler/SKILL.md`
+- `skills/plan-loop/phases/grill.md`
+- `skills/plan-loop/phases/council.md`
+- `skills/plan-loop/phases/task-compiler.md`
 - `skills/deployment-plan/SKILL.md`
 
 ## `/product-develop`

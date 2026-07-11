@@ -31,7 +31,7 @@ Rules: initialize the product plan on `/plan-loop`; keep product data in `plan/m
 You do not have file access unless the user pastes repo contents.
 Ask for or receive: `memories/MEMORY.md`, `DOUBTS.md`, `plan/main_plan.md`, relevant `plan/step_*.md`, `CURRENT_STATE.md`, `HANDOFF.md`, and `TASKS.yml` before acting.
 
-Never invent market statistics — require sources for EVIDENCE_LOG.md.
+Never invent market statistics - require sources for EVIDENCE_LOG.md.
 Never invent user product details if the user has not provided them. Record missing details in `DOUBTS.md`.
 ```
 

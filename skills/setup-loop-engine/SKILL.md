@@ -28,7 +28,7 @@ loop setup --interactive
 ## Importing memory/data from another tool during setup
 
 Pass `--source <path>` to import an external tool's `memories/MEMORY.md`, `memories/USER.md`, `memories/SOUL.md`,
-and `skills/` in the same step — no separate `/migrate-import` call needed:
+and `skills/` in the same step - no separate `/migrate-import` call needed:
 
 ```bash
 loop setup --use-cwd --name qeautoai --source /path/to/other-tool/export
@@ -44,8 +44,8 @@ secrets never copied). See `skills/migrate-import/SKILL.md` for the full table.
 
 - Fresh workspace: the imported files supersede Loop Engineer's own starter
   placeholders automatically (there is nothing real to protect yet).
-- Existing workspace: real content is protected — pass `--overwrite` to replace it.
+- Existing workspace: real content is protected - pass `--overwrite` to replace it.
 - To import later instead, use `skills/migrate-import/SKILL.md` (`/migrate-import`)
-  standalone — same underlying `run_import()`, same `--overwrite` semantics.
+  standalone - same underlying `run_import()`, same `--overwrite` semantics.
 
 See `docs/DATA_LAYOUT.md`.

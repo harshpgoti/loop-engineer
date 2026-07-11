@@ -263,14 +263,14 @@ def format_auto_skills_md(
         rel = f"{TOPIC_DIR}/{TOPIC_FILES.get(name, name + '.md')}"
         if rel not in listed:
             listed.add(rel)
-            lines.append(f"{idx}. `{rel}` — {name}: {reason}")
+            lines.append(f"{idx}. `{rel}` - {name}: {reason}")
             idx += 1
         else:
             lines.append(f"   - also `{name}`: {reason} (same reference)")
         ex = example_for(name)
         if ex and ex not in listed:
             listed.add(ex)
-            lines.append(f"{idx}. `{ex}` — example patterns")
+            lines.append(f"{idx}. `{ex}` - example patterns")
             idx += 1
 
     lines.extend(
@@ -289,7 +289,7 @@ def format_auto_skills_md(
         ]
     )
     if ambiguous:
-        lines.append("**Ambiguous:** two stacks scored similarly — prefer `DECISIONS.md`, else React→`ui-motion`, scroll pin/scrub→`scroll-animation`, 3D→`react-3d`/`webgl-3d`.")
+        lines.append("**Ambiguous:** two stacks scored similarly - prefer `DECISIONS.md`, else React→`ui-motion`, scroll pin/scrub→`scroll-animation`, 3D→`react-3d`/`webgl-3d`.")
         lines.append("")
     return "\n".join(lines)
 

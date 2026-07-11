@@ -36,7 +36,7 @@ loop model fallback list
 loop model context set 64000
 ```
 
-Secrets live in `~/.loop-engineer/data/secrets.env` — never in the product repo.
+Secrets live in `~/.loop-engineer/data/secrets.env` - never in the product repo.
 
 ## Loop
 
@@ -55,13 +55,13 @@ LIST REGISTRY -> CHECK SECRETS -> SET ACTIVE -> DOCTOR -> SYNC plan/MODEL_STATUS
 
 ## IDE-hosted agents
 
-Cursor, Claude Code, and Codex use the IDE's own inference — no API key in Loop Engineer. Register with `loop model use cursor` only when documenting routing; skip HTTP probe.
+Cursor, Claude Code, and Codex use the IDE's own inference - no API key in Loop Engineer. Register with `loop model use cursor` only when documenting routing; skip HTTP probe.
 
 ## Output
 
-- `~/.loop-engineer/data/model.yml` — active provider + model
-- `~/.loop-engineer/data/secrets.env` — API keys
-- `plan/MODEL_STATUS.md` — workspace snapshot (when workspace resolved)
+- `~/.loop-engineer/data/model.yml` - active provider + model
+- `~/.loop-engineer/data/secrets.env` - API keys
+- `plan/MODEL_STATUS.md` - workspace snapshot (when workspace resolved)
 
 ## Handoff
 

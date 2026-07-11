@@ -1,6 +1,6 @@
 ---
 name: frontend-animation
-description: Loop Engineer's single core skill for frontend motion, animation, 3D, and modern web design. Auto-activated during /product-develop when task/plan-loop signals animation, scroll effects, WebGL, or design work. Do not ask the user to pick a library — read plan/AUTO_SKILLS.md.
+description: Loop Engineer's single core skill for frontend motion, animation, 3D, and modern web design. Auto-activated during /product-develop when task/plan-loop signals animation, scroll effects, WebGL, or design work. Do not ask the user to pick a library - read plan/AUTO_SKILLS.md.
 ---
 
 # Frontend Animation & 3D (Auto)

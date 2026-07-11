@@ -1,4 +1,4 @@
-# Deployment Plan — {{PRODUCT_NAME}}
+# Deployment Plan - {{PRODUCT_NAME}}
 
 **Updated:** {{UPDATED_DATE}}
 **Status:** {{PLAN_STATUS}}

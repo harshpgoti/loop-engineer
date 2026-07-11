@@ -1,9 +1,6 @@
----
-name: task-compiler
-description: Converts product plans, PRDs, ADRs, and step plans into buildable tasks, gates, acceptance criteria, test plans, and handoff-ready implementation slices. Use after /plan-loop and before /product-develop.
----
+# Phase: Task Compiler
 
-# Task Compiler
+> Loaded by `skills/plan-loop/SKILL.md` when `PHASE: task-compiler` - the last planning phase, run after `spec-checklist` is Ready and before `/product-develop`.
 
 ## Purpose
 
@@ -29,7 +26,7 @@ Turn strategy into small, gated engineering tasks.
 - Tasks should be small enough for one focused agent session when possible.
 - Blockers must be explicit.
 - Write human-readable tasks to active feature `tasks.md` using `[P]` for parallel-safe items and `files:` paths.
-- Sync the same task ids into `TASKS.yml` — do not maintain two conflicting lists.
+- Sync the same task ids into `TASKS.yml` - do not maintain two conflicting lists.
 
 ## Output Files
 
@@ -61,3 +58,7 @@ Each task should include:
 - New/updated gates
 - Acceptance criteria summary
 - Next build task
+
+## Next
+
+Planning is complete for this feature. Hand off to `/product-develop`, then `loop session-end`.

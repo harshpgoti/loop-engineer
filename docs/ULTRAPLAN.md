@@ -1,4 +1,4 @@
-# Ultraplan — Platform-Scale Planning
+# Ultraplan - Platform-Scale Planning
 
 When a user's idea is a **full platform** (multiple sub-products, AI agents, or major modules), Loop Engineer handles it **automatically**. The user only types their idea.
 
@@ -28,7 +28,7 @@ loop session-start --command /plan-loop --text "<idea>"
 2. **Idea capture** → `plan/IDEA.md`
 3. **Route card** → `plan/PLAN_BOOTSTRAP.md` (agent reads this first)
 4. **If platform:** extract modules from idea text → `PRODUCT_MAP.md` → step stubs → `plan/steps/NN-slug/` ultraplan folders
-5. **Ultraplan next step** named in bootstrap — agent fills deep docs **one step per session**
+5. **Ultraplan next step** named in bootstrap - agent fills deep docs **one step per session**
 
 No manual `loop plan-loop scale`, `modules`, or `decompose` for users.
 
@@ -57,7 +57,7 @@ User: /plan-loop <idea>  OR  /loop-engine <idea>
 
 ## Agent-only advanced CLI
 
-Not for users — debugging or recovery only:
+Not for users - debugging or recovery only:
 
 ```bash
 loop plan-loop scale --write --text "..."
@@ -67,5 +67,5 @@ loop plan-loop ultraplan next
 
 ## Skills
 
-- `skills/ultraplan/SKILL.md`
+- `skills/plan-loop/phases/ultraplan.md`
 - Wired in `commands/plan-loop.md` and `commands/loop-engine.md`

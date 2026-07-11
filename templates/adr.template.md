@@ -1,4 +1,4 @@
-# ADR-{{ADR_NUMBER}} — {{TITLE}}
+# ADR-{{ADR_NUMBER}} - {{TITLE}}
 
 ## Status
 

@@ -1,4 +1,4 @@
-# Main Plan — {{PRODUCT_NAME}}
+# Main Plan - {{PRODUCT_NAME}}
 
 Status: **INITIALIZED**
 
@@ -46,7 +46,7 @@ Captured during `/plan-loop`. Reused by `/deployment-plan` unless the user chang
 
 | Field | Value |
 |-------|-------|
-| Scale | `convenient` or `platform` — see `plan/PLAN_SCALE.md` |
+| Scale | `convenient` or `platform` - see `plan/PLAN_SCALE.md` |
 | Platform map | `plan/PRODUCT_MAP.md` when scale is platform |
 | Ultraplan tracker | `plan/ULTRAPLAN_STATUS.md` when scale is platform |
 

@@ -21,10 +21,10 @@ python scripts/migrate_import.py --source /path/to/source
 loop migrate import --source /path/to/source --scan          # + classify arbitrary files
 ```
 
-## Scan mode (`--scan`) — different tool, different file structure
+## Scan mode (`--scan`) - different tool, different file structure
 
 When the source tool's files don't use Loop Engineer's names, add `--scan`: every
-file in the folder is classified deterministically (filename + content signals —
+file in the folder is classified deterministically (filename + content signals -
 rules first, no LLM call) and routed:
 
 | Detected as | Goes to |
@@ -33,8 +33,8 @@ rules first, no LLM call) and routed:
 | behavior rules / persona / prompts | appended to `memories/SOUL.md` |
 | project memory / notes / logs | appended to `memories/MEMORY.md` |
 | how-tos / runbooks / procedures | `skills/imported/<slug>.md` (frontmatter added) |
-| plans / roadmaps / PRDs / specs | `plan/imported/` — absorb via `/plan-loop` next session |
-| secrets / API keys | **never copied** — warned; re-enter via `loop model set-key` |
+| plans / roadmaps / PRDs / specs | `plan/imported/` - absorb via `/plan-loop` next session |
+| secrets / API keys | **never copied** - warned; re-enter via `loop model set-key` |
 | binary / unclassifiable | skipped / staged in `.loop/import-review/` for manual review |
 
 Appends carry an `Imported from <path>` marker, so re-running is idempotent.
@@ -50,5 +50,5 @@ Dry-run first: `loop migrate import --source <path> --scan --dry-run`.
 ## One-shot alternative
 
 To import during first-time setup instead of as a separate step, pass `--source` to
-`/setup-loop-engine` directly (`loop setup --use-cwd --source /path/to/other-tool`) —
+`/setup-loop-engine` directly (`loop setup --use-cwd --source /path/to/other-tool`) -
 same underlying `scripts/migrate_import.run_import()`, same `--overwrite` semantics.

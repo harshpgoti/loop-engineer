@@ -23,7 +23,7 @@ See `docs/SESSION_LIFECYCLE.md`.
 Use command files as system/developer instructions, paired with the matching skill
 file as additional context: `commands/<name>.md` + `skills/<name>/SKILL.md`. See the
 full, current list in **`AGENTS.md`'s Portable Commands table** (or
-`LOOP_COMMANDS.md`) — not duplicated here, since a second copy drifts stale every
+`LOOP_COMMANDS.md`) - not duplicated here, since a second copy drifts stale every
 time a command is added.
 
 ## Minimum User Context

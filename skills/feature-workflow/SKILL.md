@@ -1,13 +1,13 @@
 ---
 name: feature-workflow
-description: Routes feature spec folders under plan/features — create, clarify, checklist, compile tasks, develop, converge. Wired into /plan-loop and /product-develop.
+description: Routes feature spec folders under plan/features - create, clarify, checklist, compile tasks, develop, converge. Wired into /plan-loop and /product-develop.
 ---
 
 # Feature Workflow
 
 ## Purpose
 
-Build one feature at a time with a durable spec folder. This is Loop Engineer's built-in spec-driven path — not a vendored external tool.
+Build one feature at a time with a durable spec folder. This is Loop Engineer's built-in spec-driven path - not a vendored external tool.
 
 ## Layout
 
@@ -31,7 +31,7 @@ plan/features/001-slug/
 | `/feature-new` | New buildable feature during `/plan-loop` |
 | `/spec-clarify` | Resolve open questions before feature-plan |
 | `/spec-checklist` | Quality gate before task compile |
-| `/feature-converge` | After dev slices — drift vs spec/tasks |
+| `/feature-converge` | After dev slices - drift vs spec/tasks |
 
 ## Scripts
 
@@ -59,4 +59,4 @@ loop feature converge
 
 - Numbered feature folder
 - Active feature pointer
-- No duplicate task sources — `tasks.md` is human view; `TASKS.yml` is machine sync
+- No duplicate task sources - `tasks.md` is human view; `TASKS.yml` is machine sync

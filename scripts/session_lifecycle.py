@@ -92,7 +92,7 @@ def render_manifest(
         "",
         "## Lifecycle",
         "",
-        "- **Start:** `loop session-start` (or `/session-start`) — you are here",
+        "- **Start:** `loop session-start` (or `/session-start`) - you are here",
         "- **End:** `loop session-end` (or `/session-end`) before stopping",
         "",
     ]
@@ -120,12 +120,12 @@ def render_manifest(
     if auto_skills:
         lines.extend(["", "## Auto frontend skills", ""])
         for name in auto_skills:
-            lines.append(f"- `{name}` — see `plan/AUTO_SKILLS.md`")
+            lines.append(f"- `{name}` - see `plan/AUTO_SKILLS.md`")
 
     if auto_agent_skills:
         lines.extend(["", "## Auto agent-development skills", ""])
         for name in auto_agent_skills:
-            lines.append(f"- `{name}` — see `plan/AUTO_AGENT_SKILLS.md`")
+            lines.append(f"- `{name}` - see `plan/AUTO_AGENT_SKILLS.md`")
 
     bootstrap = workspace / "plan" / "PLAN_BOOTSTRAP.md"
     if bootstrap.exists():
@@ -134,9 +134,19 @@ def render_manifest(
                 "",
                 "## Plan bootstrap",
                 "",
-                f"- Read `{bootstrap.relative_to(workspace).as_posix()}` — auto scale + ultraplan route from user idea.",
+                f"- Read `{bootstrap.relative_to(workspace).as_posix()}` - auto scale + ultraplan route from user idea.",
             ]
         )
+
+    if command in ("/plan-loop", "/ultraplan-loop", "/loop-engine", "/spec-clarify", "/spec-checklist") or (
+        workspace / "plan" / "main_plan.md"
+    ).exists():
+        try:
+            from plan_phase import render_phase_block
+
+            lines.extend(["", render_phase_block(workspace, heading="## Plan phase")])
+        except Exception:
+            pass
 
     active = read_active_feature(workspace)
     if active:
@@ -145,7 +155,7 @@ def render_manifest(
                 "",
                 "## Active feature",
                 "",
-                f"- **ID:** `{active.get('id')}` — {active.get('title', '')}",
+                f"- **ID:** `{active.get('id')}` - {active.get('title', '')}",
                 f"- **Path:** `{active.get('path')}`",
                 "- Read `spec.md`, `feature-plan.md`, `tasks.md` in that folder during `/product-develop`.",
             ]
@@ -172,7 +182,7 @@ def render_manifest(
                     "",
                     "## Model provider",
                     "",
-                    "- Not configured — run `loop model setup` for API-hosted inference outside IDE agents.",
+                    "- Not configured - run `loop model setup` for API-hosted inference outside IDE agents.",
                 ]
             )
     except Exception:
@@ -183,7 +193,7 @@ def render_manifest(
             "",
             "## Rules",
             "",
-            "- Reuse `plan/SESSION_RECALL.md` — do not re-ask settled decisions.",
+            "- Reuse `plan/SESSION_RECALL.md` - do not re-ask settled decisions.",
             "- Update `HANDOFF.md`, `DOUBTS.md`, `memories/MEMORY.md` before `loop session-end`.",
             "- Memory curator stages writes; user approves via `loop pending approve --all` when ready.",
             "",

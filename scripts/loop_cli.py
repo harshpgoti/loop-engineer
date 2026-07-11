@@ -36,6 +36,8 @@ def cmd_setup(args: argparse.Namespace) -> int:
         extra.append("--overwrite")
     if getattr(args, "scan", False):
         extra.append("--scan")
+    if getattr(args, "skip_native_commands", False):
+        extra.append("--skip-native-commands")
     return run_script("setup_loop_engine.py", extra)
 
 
@@ -381,6 +383,22 @@ def cmd_bootstrap(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_commands(args: argparse.Namespace) -> int:
+    if args.commands_cmd != "install":
+        print(f"unknown commands subcommand: {args.commands_cmd}", file=sys.stderr)
+        return 2
+    extra: list[str] = ["--tool", args.tool, "--scope", args.scope]
+    if getattr(args, "workspace", None):
+        extra.extend(["--workspace", args.workspace])
+    if getattr(args, "app_root", None):
+        extra.extend(["--app-root", args.app_root])
+    if getattr(args, "dry_run", False):
+        extra.append("--dry-run")
+    if getattr(args, "force", False):
+        extra.append("--force")
+    return run_script("generate_agent_commands.py", extra)
+
+
 def _workspace_args(args: argparse.Namespace) -> list[str]:
     if getattr(args, "workspace", None):
         return ["--workspace", args.workspace]
@@ -406,6 +424,7 @@ def build_parser() -> argparse.ArgumentParser:
     setup.add_argument("--dry-run", action="store_true", help="Preview --source import without writing.")
     setup.add_argument("--overwrite", action="store_true", help="Overwrite existing imported files from --source.")
     setup.add_argument("--scan", action="store_true", help="With --source: classify arbitrary files by content and route them.")
+    setup.add_argument("--skip-native-commands", action="store_true", help="Do not generate native agent slash-command wrappers.")
     setup.set_defaults(func=cmd_setup)
     sub.add_parser("update", help="Update loop-engineer runtime safely.").set_defaults(func=cmd_update)
     sub.add_parser("doctor", help="Health-check runtime and product workspace.").set_defaults(func=cmd_doctor)
@@ -511,7 +530,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     model = sub.add_parser(
         "model",
-        help="Configure AI model provider — keys in ~/.loop-engineer/data/secrets.env (loop model setup).",
+        help="Configure AI model provider - keys in ~/.loop-engineer/data/secrets.env (loop model setup).",
     )
     model.add_argument(
         "tokens",
@@ -540,6 +559,19 @@ def build_parser() -> argparse.ArgumentParser:
     scaffold = agent_sub.add_parser("scaffold", help="Scaffold agent/ skill+tool+eval structure in the workspace.")
     scaffold.add_argument("--force", action="store_true", help="Overwrite existing scaffold files.")
     scaffold.set_defaults(func=cmd_agent_scaffold)
+
+    commands = sub.add_parser("commands", help="Generate native slash-command wrappers for supported agent CLIs.")
+    commands_sub = commands.add_subparsers(dest="commands_cmd", required=True)
+    install = commands_sub.add_parser(
+        "install",
+        help="Write native /command wrappers into each tool's command dir (claude, cursor, codex, opencode).",
+    )
+    install.add_argument("--tool", choices=["claude", "cursor", "codex", "opencode", "all"], default="all")
+    install.add_argument("--scope", choices=["user", "project"], default="user")
+    install.add_argument("--app-root", default=None, help="Loop Engineer app dir the wrappers point at (default: this app).")
+    install.add_argument("--dry-run", action="store_true", help="Preview without writing.")
+    install.add_argument("--force", action="store_true", help="Overwrite files without the generated marker.")
+    install.set_defaults(func=cmd_commands)
 
     return parser
 

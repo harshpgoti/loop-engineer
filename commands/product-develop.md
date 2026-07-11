@@ -20,7 +20,7 @@ In central-tool setup, read command/skill files from `loop-engineer/`, but read 
 8. `skills/product-develop/SKILL.md`
 9. `skills/session-lifecycle/SKILL.md`
 10. `skills/feature-workflow/SKILL.md`
-11. `skills/spec-clarify/SKILL.md` (when requirements ambiguous)
+11. `skills/plan-loop/phases/spec-clarify.md` (when requirements ambiguous)
 12. `skills/feature-converge/SKILL.md`
 13. `skills/frontend-animation/SKILL.md` (when `plan/AUTO_SKILLS.md` present)
 14. `skills/implementation-planner/SKILL.md`
@@ -35,7 +35,7 @@ In central-tool setup, read command/skill files from `loop-engineer/`, but read 
 23. relevant `plan/step_*.md`
 24. `.loop/active-feature.json` and active feature `spec.md`, `feature-plan.md`, `tasks.md`
 25. `plan/SESSION_RECALL.md`
-26. `plan/AUTO_SKILLS.md` (if present — read before frontend work)
+26. `plan/AUTO_SKILLS.md` (if present - read before frontend work)
 27. `CURRENT_STATE.md`
 28. `TASKS.yml`
 29. `GATES.yml`
@@ -70,7 +70,7 @@ SESSION-START → RECALL → AUTO-SKILLS → SELECT TASK → IMPLEMENTATION PLAN
 | Pre-build | Active feature tasks | `tasks.md` + `TASKS.yml` |
 | Blocked? | Clarify spec | `/spec-clarify` |
 | Build | Plan diff + implement | `implementation-planner` |
-| Frontend | Motion/3D skills | Read `AUTO_SKILLS.md` — do not ask user for library |
+| Frontend | Motion/3D skills | Read `AUTO_SKILLS.md` - do not ask user for library |
 | Quality | Review + QA + security | `code-reviewer`, `qa-validation`, `security-compliance` |
 | Sync | Tasks + converge | Update `tasks.md`; `loop feature converge` |
 | Release | Gaps + deploy | `/prod-gap`, `/deployment-plan` |
@@ -83,7 +83,7 @@ SESSION-START → RECALL → AUTO-SKILLS → SELECT TASK → IMPLEMENTATION PLAN
 loop session-start --command /product-develop --tool "<tool>"
 ```
 
-Read `plan/SESSION_MANIFEST.md` first — it lists recall, memory, and auto-skills.
+Read `plan/SESSION_MANIFEST.md` first - it lists recall, memory, and auto-skills.
 
 At closeout:
 
@@ -127,7 +127,7 @@ For each task:
     loop memory review --stage
     ```
 14. Run `/compact-loop` when development is long, many files changed, tests generated substantial context, the user may switch tools, or the context is getting heavy. At minimum, ensure `COMPACT.md` is current before ending a large `/product-develop` session.
-15. **Session end** (mandatory — runs memory-review staging + feature converge):
+15. **Session end** (mandatory - runs memory-review staging + feature converge):
     ```bash
     loop session-end --command /product-develop --summary "<progress>"
     ```

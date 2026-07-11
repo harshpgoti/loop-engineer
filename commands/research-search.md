@@ -23,7 +23,7 @@ loop research "<query>" --limit 20
 ## Rules
 
 - Cite the returned URL in `EVIDENCE_LOG.md`, not just the search term.
-- SSRN has no public API — `--source ssrn` only prints a search URL (unverified; SSRN blocks automated fetches). Open it yourself; do not report SSRN results you have not actually read.
+- SSRN has no public API - `--source ssrn` only prints a search URL (unverified; SSRN blocks automated fetches). Open it yourself; do not report SSRN results you have not actually read.
 - Prefer this over a generic web search when the claim is research-grounded (architecture pattern, eval methodology, benchmark result, safety finding).
 
 ## Output

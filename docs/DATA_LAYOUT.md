@@ -1,6 +1,6 @@
-# Loop Engineer — Data Layout
+# Loop Engineer - Data Layout
 
-Loop Engineer separates **updatable app code** from **durable memory/data** —
+Loop Engineer separates **updatable app code** from **durable memory/data** -
 `app/` never mixes with data, in both global and local modes.
 
 Works the same on Windows, macOS, and Linux.
@@ -11,7 +11,7 @@ Works the same on Windows, macOS, and Linux.
 ~/.loop-engineer/
 ├── app/                     # updatable tool runtime (git clone; loop update)
 ├── bin/loop                 # CLI entry point
-└── data/                    # ALL global memory/data — nothing else lives loose here
+└── data/                    # ALL global memory/data - nothing else lives loose here
     ├── registry/
     │   └── workspaces.json  # registered local product folders
     ├── memories/            # global MEMORY.md, USER.md, SOUL.md
@@ -27,13 +27,13 @@ Works the same on Windows, macOS, and Linux.
 ## Local layout: `<product-folder>/.loop-engineer/`
 
 A local product folder gets the exact same split, just rooted one level
-deeper — `app/` doesn't apply locally (the tool runtime stays global), but
+deeper - `app/` doesn't apply locally (the tool runtime stays global), but
 **all** memory/data is nested under a single hidden `.loop-engineer/` folder
 so it never mixes with your actual product code:
 
 ```text
 my-product/
-├── src/                     # your product code — untouched by Loop Engineer
+├── src/                     # your product code - untouched by Loop Engineer
 ├── package.json
 └── .loop-engineer/          # ALL local memory/data, hidden away
     ├── memories/
@@ -64,7 +64,7 @@ When you run `/plan-loop`, `/loop-engine`, or any loop command:
 2. **If found** → uses `<that-folder>/.loop-engineer/` as the data root
 3. **If not** → uses global data in `~/.loop-engineer/data/`
 
-Example: set up `H:/POC/QEAutoAI` once with local mode, close the terminal, come back later — `/plan-loop` automatically uses `H:/POC/QEAutoAI/.loop-engineer/` again, from anywhere inside that product folder (including subdirectories).
+Example: set up `H:/POC/QEAutoAI` once with local mode, close the terminal, come back later - `/plan-loop` automatically uses `H:/POC/QEAutoAI/.loop-engineer/` again, from anywhere inside that product folder (including subdirectories).
 
 ## Central tool + local product (multiple products)
 
@@ -86,7 +86,7 @@ loop setup --use-cwd --name qeautoai
 
 | Variable | Purpose |
 |----------|---------|
-| `LOOP_ENGINEER_HOME` | Override home (default `~/.loop-engineer`) — `app/`, `bin/`, and `data/` all live under this |
+| `LOOP_ENGINEER_HOME` | Override home (default `~/.loop-engineer`) - `app/`, `bin/`, and `data/` all live under this |
 | `LOOP_HOME` | Alias for `LOOP_ENGINEER_HOME` |
 
 ## Updates
@@ -112,7 +112,7 @@ loop migrate legacy-layout --workspace <product> --apply   # local, apply
 ```
 
 Dry-run by default. Only moves an explicit allowlist of Loop-Engineer-owned
-paths — never touches your actual product code. For local mode, `docs/` and
+paths - never touches your actual product code. For local mode, `docs/` and
 `skills/` are flagged rather than auto-moved (a real product may have its own),
 except the three known Loop-Engineer-generated files under `docs/`.
 
@@ -129,7 +129,7 @@ except the three known Loop-Engineer-generated files under `docs/`.
 All paths above are relative to the resolved data root (`~/.loop-engineer/data/`
 or `<product-folder>/.loop-engineer/`).
 
-Feature specs: `plan/features/` — see `docs/FEATURE_WORKFLOW.md`
+Feature specs: `plan/features/` - see `docs/FEATURE_WORKFLOW.md`
 
 Always-on lifecycle: `docs/SESSION_LIFECYCLE.md`
 

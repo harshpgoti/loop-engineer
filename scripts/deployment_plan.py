@@ -86,7 +86,7 @@ def append_handoff_note(workspace: Path, open_count: int, confirmed_count: int, 
     handoff_path.parent.mkdir(parents=True, exist_ok=True)
     note = (
         "\n"
-        f"## {date.today().isoformat()} — Deployment plan updated ({source})\n\n"
+        f"## {date.today().isoformat()} - Deployment plan updated ({source})\n\n"
         "- Updated `DEPLOYMENT_PLAN.md`.\n"
         f"- Reused {confirmed_count} previously discussed deployment decision(s).\n"
     )
@@ -241,7 +241,7 @@ def append_session_log(workspace: Path, source: str) -> None:
     with log_path.open("a", encoding="utf-8") as handle:
         handle.write(
             "\n"
-            f"## {date.today().isoformat()} — Deployment plan updated ({source})\n\n"
+            f"## {date.today().isoformat()} - Deployment plan updated ({source})\n\n"
             "- Updated `DEPLOYMENT_PLAN.md`.\n"
         )
 

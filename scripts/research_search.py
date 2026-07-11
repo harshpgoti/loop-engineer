@@ -2,12 +2,12 @@
 
 Stdlib only, no vendoring, no scraping of sites that block automated access.
 
-- arXiv: official Atom API (export.arxiv.org) — no key needed.
+- arXiv: official Atom API (export.arxiv.org) - no key needed.
 - Research Square: Crossref REST API filtered to Research Square's DOI prefix
   (10.21203, confirmed live: publisher field returns "Research Square Platform LLC").
 - SSRN: no public search API, and papers.ssrn.com returns HTTP 403 to automated
   fetches on every endpoint tried. `ssrn_search_url()` only builds a best-effort
-  browser URL (unverified) — open it yourself or fetch it with a tool that has
+  browser URL (unverified) - open it yourself or fetch it with a tool that has
   browser-grade access.
 """
 
@@ -146,7 +146,7 @@ def search_research_square(query: str, limit: int = 10) -> tuple[bool, list[Pape
 
 
 def ssrn_search_url(query: str) -> str:
-    """Best-effort SSRN search URL — NOT programmatically verified.
+    """Best-effort SSRN search URL - NOT programmatically verified.
 
     papers.ssrn.com returns HTTP 403 to every automated fetch attempted
     (bot protection), so this cannot be confirmed the way arXiv/Crossref were.
@@ -169,7 +169,7 @@ def search(
     if "researchsquare" in sources:
         results["researchsquare"] = search_research_square(query, limit)
     if "ssrn" in sources:
-        results["ssrn"] = (True, [], f"no public API — open manually: {ssrn_search_url(query)}")
+        results["ssrn"] = (True, [], f"no public API - open manually: {ssrn_search_url(query)}")
     return results
 
 

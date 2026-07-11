@@ -4,7 +4,7 @@ Layout (all platforms: ~/.loop-engineer):
 
   app/                 updatable tool runtime (git clone; loop update)
   bin/                 loop CLI shim
-  data/                ALL global memory/data — nothing else lives loose at the top level
+  data/                ALL global memory/data - nothing else lives loose at the top level
     registry/          workspace registry for local products
     memories/          global product memory (when not using a local folder)
     state.db           global session store
@@ -13,7 +13,7 @@ Layout (all platforms: ~/.loop-engineer):
     secrets.env        API keys (never commit)
     plan/main_plan.md, ...    global product state files
 
-Local product folders mirror this under <product-folder>/.loop-engineer/ —
+Local product folders mirror this under <product-folder>/.loop-engineer/ -
 see workspace_resolver.py.
 """
 
@@ -44,7 +44,7 @@ def bin_path() -> Path:
 
 
 def data_home() -> Path:
-    """Directory holding ALL global memory/data — sibling of app/, never mixed with it."""
+    """Directory holding ALL global memory/data - sibling of app/, never mixed with it."""
     return loop_home() / "data"
 
 

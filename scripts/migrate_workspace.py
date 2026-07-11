@@ -103,7 +103,7 @@ def main() -> int:
     with log_path.open("a", encoding="utf-8") as handle:
         handle.write(
             "\n"
-            f"## {date.today().isoformat()} — Workspace migration\n\n"
+            f"## {date.today().isoformat()} - Workspace migration\n\n"
             f"- Updated `{VERSION_FILE}` to version {load_version(workspace)}.\n"
         )
 

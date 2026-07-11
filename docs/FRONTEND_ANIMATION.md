@@ -50,8 +50,8 @@ skills/frontend-animation/
 
 ## Overrides
 
-- **`DECISIONS.md`** — if a stack is already chosen (GSAP, Motion, R3F), the router locks to it.
-- **Ambiguous scores** — router notes when two stacks tie; agent uses defaults (React→Motion, scroll pin→ScrollTrigger, 3D→R3F/Three.js).
+- **`DECISIONS.md`** - if a stack is already chosen (GSAP, Motion, R3F), the router locks to it.
+- **Ambiguous scores** - router notes when two stacks tie; agent uses defaults (React→Motion, scroll pin→ScrollTrigger, 3D→R3F/Three.js).
 
 ## Acceptance for motion tasks
 

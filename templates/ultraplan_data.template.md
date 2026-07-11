@@ -1,4 +1,4 @@
-# Data Model — Step {{STEP_ID}}: {{STEP_TITLE}}
+# Data Model - Step {{STEP_ID}}: {{STEP_TITLE}}
 
 **Updated:** {{DATE}}
 

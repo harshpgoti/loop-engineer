@@ -1,10 +1,10 @@
-# /ultraplan
+# /ultraplan-loop
 
 Deep per-step planning for **platform-scale** products (multiple sub-products / AI agents).
 
 ## How To Interpret
 
-If scale is `platform` in `plan/PLAN_SCALE.md`, or the user describes multiple agents/sub-products, execute this file and `skills/ultraplan/SKILL.md`.
+If scale is `platform` in `plan/PLAN_SCALE.md`, or the user describes multiple agents/sub-products, execute this file and `skills/plan-loop/phases/ultraplan.md`.
 
 ## Scripts
 

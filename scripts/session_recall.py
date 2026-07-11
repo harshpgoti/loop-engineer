@@ -61,7 +61,7 @@ def render_recall(workspace: Path, hits: list[dict]) -> str:
         return "\n".join(lines) + "\n"
 
     for row in hits:
-        lines.append(f"## {row.get('created_at', 'unknown')} — {row.get('title', 'session')}")
+        lines.append(f"## {row.get('created_at', 'unknown')} - {row.get('title', 'session')}")
         lines.append("")
         if row.get("command"):
             lines.append(f"- **Command:** `{row['command']}`")
@@ -78,7 +78,7 @@ def append_handoff_pointer(workspace: Path) -> None:
     if not handoff.exists():
         handoff.write_text("# Handoff\n\n", encoding="utf-8")
     note = (
-        f"\n## {date.today().isoformat()} — Session recall refreshed\n\n"
+        f"\n## {date.today().isoformat()} - Session recall refreshed\n\n"
         "- Read `plan/SESSION_RECALL.md` for relevant past loop decisions.\n"
     )
     if "SESSION_RECALL.md" in handoff.read_text(encoding="utf-8", errors="ignore"):

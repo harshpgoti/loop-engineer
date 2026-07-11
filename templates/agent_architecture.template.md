@@ -1,6 +1,6 @@
 # Agent Architecture
 
-Filled in by `skills/agent-builder/SKILL.md` during `/plan-loop` or `/product-develop` when the product is, or includes, an AI agent. Reuse answers already in `DECISIONS.md` — do not re-ask the user once recorded.
+Filled in by `skills/agent-builder/SKILL.md` during `/plan-loop` or `/product-develop` when the product is, or includes, an AI agent. Reuse answers already in `DECISIONS.md` - do not re-ask the user once recorded.
 
 ## Agent type
 
@@ -17,7 +17,7 @@ Filled in by `skills/agent-builder/SKILL.md` during `/plan-loop` or `/product-de
 
 ## Model provider
 
-- Provider/model: see `~/.loop-engineer/data/model.yml` (`loop model status`) — record the chosen provider:model pair here once fixed.
+- Provider/model: see `~/.loop-engineer/data/model.yml` (`loop model status`) - record the chosen provider:model pair here once fixed.
 - Fallback chain (if any): `loop model fallback list`
 
 ## Tools
@@ -29,7 +29,7 @@ Filled in by `skills/agent-builder/SKILL.md` during `/plan-loop` or `/product-de
 ## Memory
 
 - Session memory: (none / in-context / external store)
-- Long-term memory: (none / vector store / structured DB) — name the store and retention policy.
+- Long-term memory: (none / vector store / structured DB) - name the store and retention policy.
 
 ## Guardrails
 
@@ -40,7 +40,7 @@ Filled in by `skills/agent-builder/SKILL.md` during `/plan-loop` or `/product-de
 
 ## Skills (this product's own agent skills, not Loop Engineer's)
 
-Location: `agent/skills/<name>/SKILL.md` — see `templates/agent_skill.template.md` for the per-skill format.
+Location: `agent/skills/<name>/SKILL.md` - see `templates/agent_skill.template.md` for the per-skill format.
 
 | Skill | Trigger | Tools used |
 |-------|---------|------------|

@@ -1,89 +1,72 @@
 ---
 name: plan
-description: Runs product planning: initialize a fresh product plan, brainstorm, grill, validate evidence, draft PRD/architecture/ADRs, capture deployment targets early, and prepare implementation tasks. Use when the user types /plan-loop or asks to prepare product development.
+description: Orchestrates product planning end to end - initialize a fresh product plan, grill assumptions, run the senior product council, deep-plan platform steps (ultraplan), clarify and checklist the feature spec, and compile buildable tasks. Use when the user types /plan-loop, /ultraplan-loop, /spec-clarify, /spec-checklist, or asks to prepare product development.
 ---
 
-# Plan
+# Plan (orchestrator)
 
-## Purpose
-
-Turn a product idea into a validated, buildable plan. On a fresh clone, initialize product-specific files automatically and capture deployment choices early.
+Turn a product idea into a validated, buildable plan. This skill is a **thin orchestrator**: it holds the loop, the read order, and a phase router. Each planning phase lives in its own file under `phases/` and is **loaded only when its trigger fires** - never preload all phases.
 
 ## Command
 
-`/plan-loop`
+`/plan-loop` (also the entry for `/ultraplan-loop`, `/spec-clarify`, `/spec-checklist`, which jump straight to one phase).
 
-## Read First
+## Progressive disclosure - the one rule
+
+> Read the orchestrator (this file) every planning session. Load a **phase file** only when the harness or a command selects it. Do not read all `phases/*.md` up front.
+
+The harness picks the phase for you: `loop session-start` / `loop plan-loop "<idea>"` writes a **`PHASE:` line** into `plan/PLAN_BOOTSTRAP.md` and `plan/SESSION_MANIFEST.md`, computed from deterministic state (init status, `plan/PLAN_SCALE.md`, ultraplan progress, active feature, checklist verdict). Read that line, then open the matching phase file.
+
+## Phase router
+
+| Phase | Load when | File |
+|-------|-----------|------|
+| **grill** | product uninitialized, pivot, or `PHASE: grill` | `phases/grill.md` |
+| **council** | before PRD/architecture lock, or `PHASE: council` | `phases/council.md` |
+| **ultraplan** | `plan/PLAN_SCALE.md` = platform with an incomplete step, `/ultraplan-loop`, or `PHASE: ultraplan` | `phases/ultraplan.md` |
+| **spec-clarify** | active feature spec has open questions, `/spec-clarify`, or `PHASE: spec-clarify` | `phases/spec-clarify.md` |
+| **spec-checklist** | before locking `feature-plan.md`, `/spec-checklist`, or `PHASE: spec-checklist` | `phases/spec-checklist.md` |
+| **task-compiler** | spec checklist Ready → compile tasks, or `PHASE: task-compiler` | `phases/task-compiler.md` |
+
+## Read First (orchestrator only - not the phase files)
 
 1. `AGENTS.md`
-2. `memories/SOUL.md`
-3. `memories/USER.md`
-4. `memories/MEMORY.md`
-5. `DOUBTS.md`
-6. `plan/main_plan.md`
-7. `plan/`
-8. `TASKS.yml`
-9. `GATES.yml`
-10. `EVIDENCE_LOG.md`
-11. `DECISIONS.md`
-12. `HANDOFF.md`
-13. `templates/plan_deployment_questions.md`
-14. `skills/session-lifecycle/SKILL.md`
-15. `skills/feature-workflow/SKILL.md`
-16. `skills/spec-clarify/SKILL.md`
-17. `skills/spec-checklist/SKILL.md`
-18. `skills/deployment-plan/SKILL.md`
-19. `skills/session-recall/SKILL.md`
-20. `skills/memory-review/SKILL.md`
-21. `skills/product-council/SKILL.md`
-22. `skills/product-grill/SKILL.md`
-23. `skills/task-compiler/SKILL.md`
-24. `skills/compact-loop/SKILL.md`
-25. `skills/ultraplan/SKILL.md`
-26. `skills/agent-builder/SKILL.md` (when the product is/includes an AI agent)
-27. `skills/research-search/SKILL.md`
-28. `skills/model-providers/SKILL.md` (every product needs an LLM provider decision, not just agent-shaped ones)
-29. `skills/tool-orchestrator/SKILL.md` (selecting supporting tools/patterns — memory, roles, spec discipline)
+2. `memories/SOUL.md`, `memories/USER.md`, `memories/MEMORY.md`
+3. `DOUBTS.md`
+4. `plan/main_plan.md`, `plan/`
+5. `TASKS.yml`, `GATES.yml`, `EVIDENCE_LOG.md`, `DECISIONS.md`, `HANDOFF.md`
+6. `plan/PLAN_BOOTSTRAP.md` and `plan/SESSION_MANIFEST.md` - get the `PHASE:` line
+7. `templates/plan_deployment_questions.md`
+8. `skills/session-lifecycle/SKILL.md`, `skills/session-recall/SKILL.md`, `skills/memory-review/SKILL.md`, `skills/compact-loop/SKILL.md`
+9. `skills/feature-workflow/SKILL.md` (feature spec folder routing)
+10. `skills/deployment-plan/SKILL.md` (closeout deployment draft)
+11. `skills/agent-builder/SKILL.md` (when the product is/includes an AI agent - see `plan/AUTO_AGENT_SKILLS.md`)
+12. `skills/research-search/SKILL.md`, `skills/model-providers/SKILL.md`, `skills/tool-orchestrator/SKILL.md`
+
+Then load the current phase file from the router above.
 
 ## Loop
 
 ```text
-SESSION-START -> SCALE DETECT -> [CONVENIENT: STEP + FEATURE] | [PLATFORM: MAP -> ULTRAPLAN/step -> FEATURE] -> TASKS -> SESSION-END
+SESSION-START -> READ PHASE -> [grill -> council] -> (platform: ultraplan/step) -> spec-clarify -> spec-checklist -> task-compiler -> SESSION-END
 ```
 
 ## Instructions
 
-0. Run `loop session-start --command /plan-loop --text "<user idea>"` (or `loop plan-loop "<idea>"`) and read `plan/PLAN_BOOTSTRAP.md`.
-1. `session-start` auto-detects agent-development signals — if `plan/AUTO_AGENT_SKILLS.md` was written, read it and `skills/agent-builder/SKILL.md` before drafting architecture.
-3. If **`platform`**: follow bootstrap next step — `skills/ultraplan/SKILL.md` (one step per session). Do not shallow-plan all modules.
-4. If **`convenient`**: follow steps below (single step + feature spec).
-2. If uninitialized, ask for product name, target user, problem, first product step, constraints, sensitive data, preferred stack, and deployment targets.
-3. During planning, capture deployment choices in `plan/main_plan.md` → **Deployment & Infrastructure**:
-   - cloud provider
-   - single-cloud vs multi-cloud
-   - primary region(s)
-   - compute model
-   - database hosting
-   - LLM provider and model(s)
-   - embedding provider/model
-   - agent runtime
-   - CI/CD platform
-   - secrets management
-4. **Reuse rule:** if a deployment answer already exists in `DECISIONS.md`, resolved `DOUBTS.md`, or `plan/main_plan.md`, reuse it, inform the user, and do not ask again unless they want to change it.
-5. If the user is unavailable, record missing inputs in `DOUBTS.md` and do not invent product-specific facts.
-6. Restate the product state from `memories/MEMORY.md` and `plan/main_plan.md`.
-7. Review `DOUBTS.md`; ask user questions if available.
-8. Validate claims with sources before adding them to product decisions. For research-grounded claims (architecture pattern, eval methodology, benchmark), use `skills/research-search/SKILL.md` (`loop research "<query>"`) and cite the result in `EVIDENCE_LOG.md`.
-9. Update `plan/main_plan.md` with product-level strategy and deployment table.
-10. Create or update `plan/step_XX_<name>.md` for each product step/module.
-11. Create or update active feature spec: `loop feature new "<title>" --step plan/step_XX_<name>.md`, fill `spec.md`, run `/spec-clarify` and `/spec-checklist`, then `feature-plan.md`.
-12. Run `skills/task-compiler/SKILL.md` — sync active feature `tasks.md` with `TASKS.yml`.
-13. Update `GATES.yml`, `DECISIONS.md`, and `EVIDENCE_LOG.md` as needed.
-14. Draft `DEPLOYMENT_PLAN.md` with `python scripts/deployment_plan.py --source plan`.
-15. Update `memories/MEMORY.md`, `DOUBTS.md`, `HANDOFF.md`, and `.ai/SESSION_LOG.md`.
-16. Run `memory-review` at closeout with `--stage` by default (`loop memory review --stage`).
-17. Run `compact-loop` when planning is long, many files changed, the user may switch tools, or the context is getting heavy.
-18. Run `loop session-end --command /plan-loop` (mandatory closeout).
+0. Run `loop session-start --command /plan-loop --text "<user idea>"` (or `loop plan-loop "<idea>"`) and read `plan/PLAN_BOOTSTRAP.md` + `plan/SESSION_MANIFEST.md`. Note the `PHASE:` line.
+1. `session-start` auto-detects agent-development signals - if `plan/AUTO_AGENT_SKILLS.md` was written, read it and `skills/agent-builder/SKILL.md` before drafting architecture.
+2. **If product is uninitialized**, ask for product name, target user, problem, first product step, constraints, sensitive data, preferred stack, and deployment targets. Capture deployment choices in `plan/main_plan.md` → **Deployment & Infrastructure**:
+   - cloud provider; single-cloud vs multi-cloud; primary region(s); compute model; database hosting; LLM provider and model(s); embedding provider/model; agent runtime; CI/CD platform; secrets management.
+3. **Reuse rule:** if a deployment answer already exists in `DECISIONS.md`, resolved `DOUBTS.md`, or `plan/main_plan.md`, reuse it, inform the user, and do not ask again unless they want to change it.
+4. If the user is unavailable, record missing inputs in `DOUBTS.md` and do not invent product-specific facts.
+5. Restate the product state from `memories/MEMORY.md` and `plan/main_plan.md`.
+6. **Run the current phase** (load its file from the router), then advance along the loop. Validate claims with sources before adding product decisions; for research-grounded claims use `skills/research-search/SKILL.md` (`loop research "<query>"`) and cite in `EVIDENCE_LOG.md`.
+7. Update `plan/main_plan.md`, `plan/step_XX_<name>.md`, `GATES.yml`, `DECISIONS.md`, and `EVIDENCE_LOG.md` as phases produce them.
+8. Draft `DEPLOYMENT_PLAN.md` with `python scripts/deployment_plan.py --source plan`.
+9. Update `memories/MEMORY.md`, `DOUBTS.md`, `HANDOFF.md`, and `.ai/SESSION_LOG.md`.
+10. Run `memory-review` at closeout with `--stage` by default (`loop memory review --stage`).
+11. Run `compact-loop` when planning is long, many files changed, the user may switch tools, or the context is getting heavy.
+12. Run `loop session-end --command /plan-loop` (mandatory closeout).
 
 ## Optional Initializer
 
@@ -95,14 +78,12 @@ python scripts/init_product.py --name "<product>" --first-step "<step>" --cloud-
 
 - Product plan summary
 - Deployment decisions captured or reused
-- Open user questions
-- Evidence added
+- Open user questions; evidence added
 - Step files created/updated
 - Active feature spec status (`plan/features/`)
 - Plan scale and ultraplan status (`plan/PLAN_SCALE.md`, `plan/ULTRAPLAN_STATUS.md`)
-- `DEPLOYMENT_PLAN.md` draft status
-- Gate status
-- Compact status
+- Phase(s) run this session and next `PHASE:`
+- `DEPLOYMENT_PLAN.md` draft status; gate status; compact status
 - Next command
 
 ## Stop Conditions

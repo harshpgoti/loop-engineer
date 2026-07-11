@@ -32,9 +32,9 @@ def check_provider_key(
         return False, f"unknown provider `{provider_id}`"
     auth = meta.get("auth", "api_key")
     if auth == "ide":
-        return True, "IDE-hosted — no API key required"
+        return True, "IDE-hosted - no API key required"
     if auth == "none":
-        return True, "local endpoint — no API key required"
+        return True, "local endpoint - no API key required"
     env_key = meta.get("env_key", "")
     if provider_id == "custom" and custom_name:
         from model_config import get_custom_provider, load_config
@@ -42,7 +42,7 @@ def check_provider_key(
         entry = get_custom_provider(custom_name, load_config()) or {}
         env_key = entry.get("env_key") or env_key
         if not env_key:
-            return True, f"custom:{custom_name} — no key configured"
+            return True, f"custom:{custom_name} - no key configured"
     alt = meta.get("env_key_alt")
     merge_env_secrets()
     if os.environ.get(env_key) or (alt and os.environ.get(alt)):
@@ -52,7 +52,7 @@ def check_provider_key(
         return True, f"{env_key} in secrets.env"
     if auth == "optional_key":
         return True, f"{env_key} optional (not set)"
-    return False, f"missing {env_key} — run: loop model set-key {env_key}"
+    return False, f"missing {env_key} - run: loop model set-key {env_key}"
 
 
 def probe_openai_compatible(base_url: str, headers: dict[str, str], timeout: int = 8) -> tuple[bool, str]:
@@ -66,7 +66,7 @@ def probe_openai_compatible(base_url: str, headers: dict[str, str], timeout: int
             return False, f"HTTP {resp.status}: {body[:120]}"
     except urllib.error.HTTPError as e:
         if e.code in (401, 403):
-            return False, f"HTTP {e.code} — check API key"
+            return False, f"HTTP {e.code} - check API key"
         return False, f"HTTP {e.code}"
     except urllib.error.URLError as e:
         return False, f"connection failed: {e.reason}"
@@ -80,7 +80,7 @@ def doctor_active(root: Path | None = None) -> list[tuple[str, bool, str]]:
     pid = active.get("provider", "")
     results: list[tuple[str, bool, str]] = []
     if not pid:
-        results.append(("active", False, "no provider selected — run: loop model setup"))
+        results.append(("active", False, "no provider selected - run: loop model setup"))
         return results
     custom_name = active.get("custom_name", "")
     ok, msg = check_provider_key(pid, root, custom_name)
@@ -92,7 +92,7 @@ def doctor_active(root: Path | None = None) -> list[tuple[str, bool, str]]:
         results.append(("registry", False, "provider missing from registry"))
         return results
     if meta.get("auth") == "ide":
-        results.append(("probe", True, "IDE provider — skip HTTP probe"))
+        results.append(("probe", True, "IDE provider - skip HTTP probe"))
         return results
     base_url = target.get("base_url", "")
     if not base_url:

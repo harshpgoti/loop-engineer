@@ -37,7 +37,7 @@ loop memory review --stage
 
 ## Closeout Rules
 
-1. Product facts belong in `plan/main_plan.md` and step plans — not duplicated in memory diary entries.
+1. Product facts belong in `plan/main_plan.md` and step plans - not duplicated in memory diary entries.
 2. User preferences belong in `memories/USER.md`.
 3. Session progress diary belongs in `memories/MEMORY.md`.
 4. Default to `--stage` for production workspaces; use `--apply` only when the user approves direct writes.

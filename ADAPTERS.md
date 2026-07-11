@@ -25,7 +25,33 @@ This repo is designed to work across Cursor, Claude Code, Codex, OpenCode, Grok 
 ## Use
 
 In any agent, type any command from **`AGENTS.md`'s Portable Commands table** (or
-`LOOP_COMMANDS.md` for the plain list) — not duplicated here, since a second copy
+`LOOP_COMMANDS.md` for the plain list) - not duplicated here, since a second copy
 drifts stale every time a command is added.
 
 If slash commands are not supported, type the same text as a normal message. The agent should route it via `AGENTS.md`.
+
+## Native slash commands (autocomplete)
+
+By default the commands are *portable* - an agent reads `commands/<name>.md` and runs
+it. Most agent CLIs only autocomplete **native** slash commands they discover in a
+per-tool directory, so `/plan-loop` won't appear in the `/` menu until you install
+thin native wrappers:
+
+```bash
+loop commands install                       # all supported tools, user scope
+loop commands install --tool claude         # one tool
+loop commands install --scope project       # <workspace>/.<tool>/commands/ instead
+loop commands install --dry-run             # preview
+```
+
+This regenerates from `commands/*.md` (single source of truth) - re-run whenever
+commands are added or renamed. Each wrapper carries a `loop-engineer:generated`
+marker; hand-written command files are never overwritten without `--force`.
+
+| Tool | Native command dir (user scope) | Invoke |
+|------|---------------------------------|--------|
+| Claude Code | `~/.claude/commands/<name>.md` | `/<name>` |
+| Cursor | `~/.cursor/commands/<name>.md` | `/<name>` |
+| Codex | `~/.codex/prompts/<name>.md` (home only) | `/prompts:<name>` |
+| OpenCode | `~/.config/opencode/commands/<name>.md` | `/<name>` |
+| Grok Build | *(no file-based command mechanism)* | type as text; routes via `GROK.md` + `AGENTS.md` |

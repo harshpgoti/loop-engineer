@@ -1,4 +1,4 @@
-# Loop Engineering OS — GitHub installer
+# Loop Engineering OS - GitHub installer
 # Usage:
 #   irm https://raw.githubusercontent.com/harshpgoti/loop-engineer/main/install.ps1 | iex
 #   & ([scriptblock]::Create((irm .../install.ps1))) -UseCwd   # local memory in cwd
@@ -112,6 +112,10 @@ Write-Host "  App:         $App"
 Write-Host "  Memory mode: $MemoryMode"
 Write-Host "  Data:        $Workspace"
 Write-Host "  CLI:         loop  (new terminal, or $LoopCmd)"
+Write-Host ""
+Write-Host "Native slash commands registered for Claude Code, Cursor, Codex, and OpenCode."
+Write-Host "Restart your agent (new session) so it picks up the new /commands."
+Write-Host "Re-run any time with: loop commands install"
 Write-Host ""
 Write-Host "Open your agent in: $App"
 Write-Host "Then run: /plan-loop"
