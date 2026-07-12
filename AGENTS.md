@@ -49,6 +49,8 @@ The user should be able to type these commands in Cursor, Codex, Claude Code, Gr
 | `/setup-loop-engine` | First-time setup: register product workspace and seed missing product-state files | `commands/setup-loop-engine.md` + `skills/setup-loop-engine/SKILL.md` |
 | `/plan-loop` | Run Step 1: brainstorm, grill, fact-check, evidence, PRD, architecture, and task planning | `commands/plan-loop.md` + `skills/plan-loop/SKILL.md` |
 | `/startup-discovery-loop` | Alias for `/plan-loop` | `commands/plan-loop.md` + `skills/plan-loop/SKILL.md` |
+| `/revise-plan` | Correct or add detail to a plan that already exists - agent routes the edit to the right file from full plan context | `commands/revise-plan.md` + `skills/revise-plan/SKILL.md` |
+| `/ask-loop` | Answer a question about the existing plan or build from full context (reads product code when needed); read-only, cites sources | `commands/ask-loop.md` + `skills/ask-loop/SKILL.md` |
 | `/product-develop` | Run Step 2: build product from the approved plan, with QA/security/compliance/CI/CD gates | `commands/product-develop.md` + `skills/product-develop/SKILL.md` |
 | `/loop-engine` | Run all-in-one loop: Step 1 planning, then Step 2 development when gates allow | `commands/loop-engine.md` + `skills/loop-engine/SKILL.md` |
 | `/prod-gap` | Analyze product requirements, current progress, implementation, and readiness gaps | `commands/prod-gap.md` + `skills/prod-gap/SKILL.md` |

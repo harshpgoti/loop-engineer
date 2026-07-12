@@ -5,6 +5,8 @@ Use these directly in any agent that can access the repo:
 ```text
 /setup-loop-engine
 /plan-loop
+/revise-plan
+/ask-loop
 /product-develop
 /loop-engine
 /prod-gap
@@ -65,6 +67,8 @@ The agent must route the command through `commands/*.md` and update `memories/ME
 |---------|------|----------|
 | `/setup-loop-engine` | `commands/setup-loop-engine.md` | First-time setup and product workspace registration |
 | `/plan-loop` | `commands/plan-loop.md` | Brainstorming, validation, grilling, PRD, architecture |
+| `/revise-plan` | `commands/revise-plan.md` | Correct or add a detail to a plan that already exists, without asking which file it belongs in |
+| `/ask-loop` | `commands/ask-loop.md` | Ask a question about the existing plan or build; read-only answer with citations, reads code when needed |
 | `/product-develop` | `commands/product-develop.md` | Build frontend/backend/db/agents/QA/security/CI/CD |
 | `/loop-engine` | `commands/loop-engine.md` | All-in-one loop that chooses plan or build based on gates |
 | `/prod-gap` | `commands/prod-gap.md` | Analyze product requirements/progress and write `plan/PROD-GAP.md` |

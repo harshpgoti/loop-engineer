@@ -26,6 +26,43 @@ Key skills:
 - `skills/plan-loop/phases/task-compiler.md`
 - `skills/deployment-plan/SKILL.md`
 
+## `/revise-plan`
+
+```text
+load full plan surface (no progressive disclosure)
+-> parse user statement into discrete facts
+-> route each fact to its owning file
+-> check gate/build lock -> confirm if reopening
+-> apply edit(s)
+-> log DECISIONS.md revision entry
+-> add/update TASKS.yml rework entries if locked area changed
+-> resolve DOUBTS.md if applicable
+-> memory/handoff
+```
+
+Use after `/plan-loop` has already produced a plan and the user wants to correct or add a
+detail conversationally, without knowing which file it lives in.
+
+Key skill: `skills/revise-plan/SKILL.md`
+
+## `/ask-loop`
+
+```text
+load full plan + build context (no progressive disclosure)
+-> parse question
+-> answer from plan/docs
+-> escalate to product code if implementation-level and docs are silent
+-> route by intent (plain answer / handoff for change request / flag drift)
+-> cite every claim
+```
+
+Read-only mirror of `/revise-plan`: answers questions about the existing plan or build
+without changing anything. Reads the product source code when a "how does it work" question
+can't be answered from plan/docs. Hands off to `/revise-plan`, `/sync-loop-state`, or
+`/feature-converge` instead of editing.
+
+Key skill: `skills/ask-loop/SKILL.md`
+
 ## `/product-develop`
 
 ```text

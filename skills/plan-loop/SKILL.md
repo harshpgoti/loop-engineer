@@ -86,6 +86,12 @@ python scripts/init_product.py --name "<product>" --first-step "<step>" --cloud-
 - `DEPLOYMENT_PLAN.md` draft status; gate status; compact status
 - Next command
 
+## After the plan exists
+
+Once `plan/main_plan.md` is initialized, route later corrections or additions (not a new
+planning session) to `skills/revise-plan/SKILL.md` (`/revise-plan`) instead of re-running
+grill/council - it loads the full plan surface and edits the right file directly.
+
 ## Stop Conditions
 
 Stop and ask if:
