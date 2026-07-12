@@ -48,10 +48,18 @@ This regenerates from `commands/*.md` (single source of truth) - re-run whenever
 commands are added or renamed. Each wrapper carries a `loop-engineer:generated`
 marker; hand-written command files are never overwritten without `--force`.
 
-| Tool | Native command dir (user scope) | Invoke |
-|------|---------------------------------|--------|
+| Tool | Native wrapper location (user scope) | Invoke |
+|------|---------------------------------------|--------|
 | Claude Code | `~/.claude/commands/<name>.md` | `/<name>` |
 | Cursor | `~/.cursor/commands/<name>.md` | `/<name>` |
-| Codex | `~/.codex/prompts/<name>.md` (home only) | `/prompts:<name>` |
+| Codex | `~/.codex/skills/<name>/SKILL.md` | `$<name>` (or implicit, matched from your prompt) |
 | OpenCode | `~/.config/opencode/commands/<name>.md` | `/<name>` |
 | Grok Build | *(no file-based command mechanism)* | type as text; routes via `GROK.md` + `AGENTS.md` |
+
+**Codex note:** file-based custom *prompts* (`~/.codex/prompts/*.md`, invoked as
+`/prompts:<name>`) were removed upstream in codex-cli >= 0.117.0 - Codex reserves
+`/` for built-in session commands. `loop commands install` writes Codex wrappers
+as *Skills* instead (the current mechanism) and automatically deletes any
+previously generated `~/.codex/prompts/*.md` files. If you already have stale
+files there from an older Loop Engineer version, re-run `loop commands install`
+(or `loop update`) to clean them up.

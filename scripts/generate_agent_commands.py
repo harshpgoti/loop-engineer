@@ -1,35 +1,44 @@
 #!/usr/bin/env python3
-"""Generate native slash-command wrappers for every coding agent Loop Engineer supports.
+"""Generate native command/skill wrappers for every coding agent Loop Engineer supports.
 
 Loop Engineer's commands live in `commands/*.md` (+ `skills/*/SKILL.md`) and are
 "portable commands" - an agent reads the file and executes it. Most agent CLIs,
-however, only autocomplete *native* slash commands they discover in a per-tool
+however, only autocomplete *native* commands they discover in a per-tool
 directory. This script emits thin native wrappers, one per command per tool, that
 tell the agent to read+execute the canonical Loop Engineer command against the
 active product workspace.
 
 Single source of truth = `commands/*.md`. Re-run any time commands change.
 
-Supported tools and where their native commands live:
+Supported tools and where their native wrappers live:
 
-  claude    ~/.claude/commands/<name>.md            -> /<name>
-  cursor    ~/.cursor/commands/<name>.md            -> /<name>
-  codex     ~/.codex/prompts/<name>.md              -> /prompts:<name>   (home only)
-  opencode  ~/.config/opencode/commands/<name>.md   -> /<name>
+  claude    ~/.claude/commands/<name>.md              -> /<name>
+  cursor    ~/.cursor/commands/<name>.md              -> /<name>
+  opencode  ~/.config/opencode/commands/<name>.md     -> /<name>
+  codex     ~/.codex/skills/<name>/SKILL.md           -> $<name> (or implicit)
 
-Project scope writes to <workspace>/.claude|.cursor|.opencode/commands/ instead
-(Codex only supports the home prompts dir, so project scope skips Codex).
+Project scope writes to <workspace>/.claude|.cursor|.opencode|.codex/... instead.
+
+Codex note: Codex CLI's file-based custom *prompts* (`~/.codex/prompts/*.md`,
+invoked as `/prompts:<name>`) were removed upstream in codex-cli >= 0.117.0 -
+see openai/codex#15941 and #15972. Codex reserves `/` for built-in session
+commands; the current mechanism is *Skills* (`SKILL.md` in a named folder),
+invoked explicitly with `$<name>` or implicitly when the prompt matches the
+skill's description. This generator writes Codex wrappers in that format. Any
+previously generated `~/.codex/prompts/*.md` files (dead weight now) are
+cleaned up automatically since they carry our generated marker.
 
 Grok Build has no reliable file-based custom-command mechanism, so it keeps using
 portable interpretation via GROK.md + AGENTS.md - nothing to generate.
 
 Every generated file carries a MARKER line; the script refuses to overwrite a file
 that lacks the marker unless --force is given, so it never clobbers hand-written
-commands.
+commands/skills.
 """
 from __future__ import annotations
 
 import argparse
+import shutil
 import re
 from pathlib import Path
 
@@ -39,32 +48,47 @@ SKILLS_DIR = ROOT / "skills"
 
 MARKER = "loop-engineer:generated"
 
-# scope="user": absolute dir. scope="project": relative to workspace.
+# style="command": flat `<dest>/<name>.md` file, invoked as f"{invoke_prefix}<name>".
+# style="skill":    `<dest>/<name>/SKILL.md` folder, invoked as f"{invoke_prefix}<name>"
+#                    and requires a `name:` field in frontmatter.
 TOOLS: dict[str, dict] = {
     "claude": {
         "user": Path.home() / ".claude" / "commands",
         "project": ".claude/commands",
-        "prefix": "",          # invoked as /<name>
+        "style": "command",
+        "invoke_prefix": "/",
         "frontmatter": True,
     },
     "cursor": {
         "user": Path.home() / ".cursor" / "commands",
         "project": ".cursor/commands",
-        "prefix": "",
+        "style": "command",
+        "invoke_prefix": "/",
         "frontmatter": False,  # Cursor commands are plain markdown
-    },
-    "codex": {
-        "user": Path.home() / ".codex" / "prompts",
-        "project": None,       # Codex only reads the home prompts dir
-        "prefix": "prompts:",  # invoked as /prompts:<name>
-        "frontmatter": True,
     },
     "opencode": {
         "user": Path.home() / ".config" / "opencode" / "commands",
         "project": ".opencode/commands",
-        "prefix": "",
+        "style": "command",
+        "invoke_prefix": "/",
         "frontmatter": True,
     },
+    "codex": {
+        "user": Path.home() / ".codex" / "skills",
+        "project": ".codex/skills",
+        "style": "skill",
+        "invoke_prefix": "$",
+        "frontmatter": True,
+    },
+}
+
+# Legacy locations this generator used to write to before a tool's native
+# mechanism changed. Cleaned up automatically (marker-guarded) so stale,
+# non-functional wrappers don't linger and confuse users.
+LEGACY_LOCATIONS: dict[str, list[dict]] = {
+    "codex": [
+        {"user": Path.home() / ".codex" / "prompts", "project": None, "style": "command"},
+    ],
 }
 
 
@@ -105,29 +129,71 @@ def wrapper_body(name: str, description: str, app_root: Path) -> str:
     )
 
 
-def render(name: str, description: str, app_root: Path, frontmatter: bool) -> str:
+def render(name: str, description: str, app_root: Path, *, style: str, frontmatter: bool) -> str:
     body = wrapper_body(name, description, app_root)
     fm = ""
     if frontmatter:
         # escape double quotes in description for YAML
         desc = description.replace('"', "'")
-        fm = (
-            "---\n"
-            f'description: "{desc}"\n'
-            "argument-hint: [args]\n"
-            "---\n"
-        )
+        if style == "skill":
+            # Codex SKILL.md requires `name:`; keep it short and match the folder.
+            fm = "---\n" f"name: {name}\n" f'description: "{desc}"\n' "---\n"
+        else:
+            fm = "---\n" f'description: "{desc}"\n' "argument-hint: [args]\n" "---\n"
     return f"{fm}<!-- {MARKER} name={name} -->\n{body}"
 
 
-def target_dir(tool: str, scope: str, workspace: Path) -> Path | None:
-    cfg = TOOLS[tool]
+def target_dir(cfg: dict, scope: str, workspace: Path) -> Path | None:
     if scope == "user":
-        return cfg["user"]
-    rel = cfg["project"]
+        return cfg.get("user")
+    rel = cfg.get("project")
     if rel is None:
         return None
     return workspace / rel
+
+
+def wrapper_path(dest: Path, name: str, style: str) -> Path:
+    if style == "skill":
+        return dest / name / "SKILL.md"
+    return dest / f"{name}.md"
+
+
+def existing_wrapper_paths(dest: Path, style: str):
+    if not dest.exists():
+        return
+    if style == "skill":
+        for skill_md in dest.glob("*/SKILL.md"):
+            yield skill_md.parent.name, skill_md
+    else:
+        for md in dest.glob("*.md"):
+            yield md.stem, md
+
+
+def remove_wrapper(path: Path, style: str) -> None:
+    if style == "skill":
+        shutil.rmtree(path.parent, ignore_errors=True)
+    else:
+        path.unlink()
+
+
+def clean_legacy(tool: str, scope: str, workspace: Path, *, dry_run: bool) -> int:
+    removed = 0
+    for legacy in LEGACY_LOCATIONS.get(tool, []):
+        dest = target_dir(legacy, scope, workspace)
+        if dest is None or not dest.exists():
+            continue
+        for name, path in list(existing_wrapper_paths(dest, legacy["style"])):
+            try:
+                body = path.read_text(encoding="utf-8", errors="ignore")
+            except OSError:
+                continue
+            if MARKER not in body:
+                continue  # never touch hand-written files
+            if not dry_run:
+                remove_wrapper(path, legacy["style"])
+            print(f"[{tool}] remove legacy {path}  (superseded mechanism)")
+            removed += 1
+    return removed
 
 
 def main() -> int:
@@ -142,7 +208,7 @@ def main() -> int:
         "--scope",
         choices=["user", "project"],
         default="user",
-        help="user = global agent config dirs (default); project = <workspace>/.<tool>/commands/.",
+        help="user = global agent config dirs (default); project = <workspace>/.<tool>/....",
     )
     parser.add_argument("--workspace", default=".", help="Product folder for --scope project (default: cwd).")
     parser.add_argument(
@@ -171,57 +237,62 @@ def main() -> int:
     total_written = 0
     total_skipped = 0
     total_pruned = 0
+    total_legacy_removed = 0
     for tool in tools:
-        dest = target_dir(tool, args.scope, workspace)
+        cfg = TOOLS[tool]
+        dest = target_dir(cfg, args.scope, workspace)
         if dest is None:
             print(f"[{tool}] no {args.scope}-scope command dir (skipped)")
             continue
-        prefix = TOOLS[tool]["prefix"]
-        frontmatter = TOOLS[tool]["frontmatter"]
+        style = cfg["style"]
+        frontmatter = cfg["frontmatter"]
         written = skipped = 0
         if not args.dry_run:
             dest.mkdir(parents=True, exist_ok=True)
         for cmd in commands:
             name = cmd.stem
-            out = dest / f"{name}.md"
+            out = wrapper_path(dest, name, style)
             if out.exists() and not args.force:
                 existing = out.read_text(encoding="utf-8", errors="ignore")
                 if MARKER not in existing:
                     print(f"[{tool}] SKIP {out}  (exists, not generated - use --force)")
                     skipped += 1
                     continue
-            content = render(name, command_description(cmd), app_root, frontmatter)
-            if args.dry_run:
-                pass
-            else:
+            content = render(name, command_description(cmd), app_root, style=style, frontmatter=frontmatter)
+            if not args.dry_run:
+                out.parent.mkdir(parents=True, exist_ok=True)
                 out.write_text(content, encoding="utf-8")
             written += 1
         # Prune stale generated wrappers whose command was removed/renamed.
         current = {cmd.stem for cmd in commands}
         pruned = 0
-        if dest.exists():
-            for existing in dest.glob("*.md"):
-                if existing.stem in current:
-                    continue
-                try:
-                    body = existing.read_text(encoding="utf-8", errors="ignore")
-                except OSError:
-                    continue
-                if MARKER not in body:
-                    continue  # never touch hand-written commands
-                if not args.dry_run:
-                    existing.unlink()
-                pruned += 1
-                print(f"[{tool}] prune {existing.name}  (command no longer exists)")
-        invoke = f"/{prefix}<name>"
+        for existing_name, existing_path in list(existing_wrapper_paths(dest, style)):
+            if existing_name in current:
+                continue
+            try:
+                body = existing_path.read_text(encoding="utf-8", errors="ignore")
+            except OSError:
+                continue
+            if MARKER not in body:
+                continue  # never touch hand-written commands
+            if not args.dry_run:
+                remove_wrapper(existing_path, style)
+            pruned += 1
+            print(f"[{tool}] prune {existing_name}  (command no longer exists)")
+        legacy_removed = clean_legacy(tool, args.scope, workspace, dry_run=args.dry_run)
+        invoke = f"{cfg['invoke_prefix']}<name>"
         print(f"[{tool}] {written} command(s) -> {dest}   (invoke: {invoke})")
         total_written += written
         total_skipped += skipped
         total_pruned += pruned
+        total_legacy_removed += legacy_removed
 
     print()
     verb = "Would write" if args.dry_run else "Wrote"
-    print(f"{verb} {total_written} wrapper file(s); pruned {total_pruned}; skipped {total_skipped}.")
+    print(
+        f"{verb} {total_written} wrapper file(s); pruned {total_pruned}; "
+        f"removed {total_legacy_removed} legacy; skipped {total_skipped}."
+    )
     if args.dry_run:
         print("Dry run only - re-run without --dry-run to apply.")
     return 0
