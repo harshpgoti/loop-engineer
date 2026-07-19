@@ -50,7 +50,6 @@ SAFE_ENTRIES = (
     ".ai",
     ".loop",
     ".loop-workspace-version",
-    "model.yml",
     "secrets.env",
     "registry",
 )

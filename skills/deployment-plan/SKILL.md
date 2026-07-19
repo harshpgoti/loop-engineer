@@ -44,7 +44,7 @@ Ask the user directly when unresolved:
 - compute model
 - database hosting
 - LLM provider and model(s)
-- embedding provider/manage-model
+- embedding provider/model
 - agent runtime
 - CI/CD platform
 - secrets management

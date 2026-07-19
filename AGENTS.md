@@ -17,7 +17,7 @@ Run a reusable product loop that helps any user plan, validate, build, test, sec
 9. **Minimal diffs** - Match existing conventions; no drive-by refactors.
 10. **Tests required** - No task marked done without relevant tests or a documented reason tests could not run.
 11. **Handoff required** - Update `memories/MEMORY.md`, `DOUBTS.md`, and `HANDOFF.md` before ending session.
-12. **Always-on lifecycle** - Before loop work: `loop session-start`. Before stopping: `loop session-end`. Read `plan/SESSION_MANIFEST.md` first. Works in any tool (Cursor, Claude, Codex, OpenCode, Grok, direct LLM).
+12. **Always-on lifecycle** - Before loop work: `loop session-start`. Before stopping: `loop session-end`. Read `plan/SESSION_MANIFEST.md` first. Works in any coding agent (Cursor, Claude, Codex, OpenCode, Grok, ...).
 
 ## Always-on session lifecycle (any tool)
 
@@ -40,9 +40,21 @@ Details: `docs/SESSION_LIFECYCLE.md` + `skills/session-lifecycle/SKILL.md`.
 
 User does **not** run these manually - the agent runs them. Staged memory: `loop pending approve --all`.
 
+## App root resolution
+
+Commands and skills reference app files (`AGENTS.md`, `commands/`, `skills/`,
+`templates/`, `scripts/`) **relative to the app root**. Resolve it in this order:
+
+1. **Router skill** from a coding agent's skills dir — the router names the app
+   root explicitly; if that path is missing, run `loop home` (app = `<home>/app`).
+2. **Direct checkout** — you are already inside the app; use relative paths.
+
+The app root holds the runtime only. Product state always lives in the active
+workspace (local `.loop-engineer/` or `~/.loop-engineer/data/`), never in the app.
+
 ## Portable Commands
 
-The user should be able to type these commands in Cursor, Codex, Claude Code, Grok Build, OpenCode, or a direct LLM with filesystem access. Do not ask the user to paste boot prompts.
+The user should be able to type these commands in Cursor, Codex, Claude Code, Grok Build, OpenCode, or any other coding agent with filesystem access. Do not ask the user to paste boot prompts.
 
 | Command | Meaning | First file to read |
 |---------|---------|--------------------|
@@ -71,7 +83,6 @@ The user should be able to type these commands in Cursor, Codex, Claude Code, Gr
 | `/spec-checklist` | Spec quality gate before feature-plan | `commands/spec-checklist.md` + `skills/plan-loop/phases/spec-checklist.md` |
 | `/feature-converge` | Post-build drift check vs spec/tasks | `commands/feature-converge.md` + `skills/feature-converge/SKILL.md` |
 | `/ultraplan-loop` | Deep per-step planning for platform-scale products | `commands/ultraplan-loop.md` + `skills/plan-loop/phases/ultraplan.md` |
-| `/manage-model` | Configure AI model provider for API-hosted inference | `commands/manage-model.md` + `skills/model-providers/SKILL.md` |
 | `/frontend-animation` | Route to built-in GSAP, Motion.dev, and 3D core skills for frontend work | `commands/frontend-animation.md` + `skills/frontend-animation/SKILL.md` |
 | `/agent-builder` | Design/scaffold an AI agent (or agentic/dynamic workflow) as the product itself - auto-activates in `/plan-loop` and `/product-develop` | `commands/agent-builder.md` + `skills/agent-builder/SKILL.md` |
 | `/research-search` | Search arXiv, Research Square, and SSRN to ground a claim in evidence | `commands/research-search.md` + `skills/research-search/SKILL.md` |
@@ -89,7 +100,6 @@ Tool-specific files are adapters only:
 - `CODEX.md`
 - `OPENCODE.md`
 - `GROK.md`
-- `API_USAGE.md`
 
 Do not put canonical logic only in a tool-specific folder.
 

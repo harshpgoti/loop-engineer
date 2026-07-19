@@ -10,18 +10,16 @@ If the user says `/agent-builder`, `build an agent`, `build an ai agent`, `devel
 
 1. `AGENTS.md`
 2. `skills/agent-builder/SKILL.md`
-3. `skills/model-providers/SKILL.md`
-4. `skills/research-search/SKILL.md`
-5. `plan/AUTO_AGENT_SKILLS.md` (if present)
-6. `agent/AGENT_ARCHITECTURE.md` (if present)
-7. `DECISIONS.md`
+3. `skills/research-search/SKILL.md`
+4. `plan/AUTO_AGENT_SKILLS.md` (if present)
+5. `agent/AGENT_ARCHITECTURE.md` (if present)
+6. `DECISIONS.md`
 
 ## One-shot commands
 
 ```bash
 loop auto-agent-skills --write          # detect agent-development signals -> plan/AUTO_AGENT_SKILLS.md
 loop agent scaffold                     # create agent/AGENT_ARCHITECTURE.md, agent/skills/, agent/tools/, agent/evals/
-loop manage-model setup                        # pick the agent's model provider
 loop research "<topic>"                 # ground a design choice in published work
 ```
 

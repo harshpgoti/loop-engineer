@@ -10,6 +10,8 @@ from __future__ import annotations
 import argparse
 import filecmp
 import shutil
+import subprocess
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -49,10 +51,8 @@ TOOL_PATHS = [
     "CODEX.md",
     "OPENCODE.md",
     "GROK.md",
-    "API_USAGE.md",
     "ADAPTERS.md",
     "AGENT_BOOT_SEQUENCE.md",
-    "DIRECT_LLM_PROMPTS.md",
     "LOOP_COMMANDS.md",
     "LOOP_SCHEDULE.md",
     "STARTUP_LOOP_ENGINEERING_PLAYBOOK.md",
@@ -127,11 +127,35 @@ def copy_tool_files(source: Path, target: Path, apply: bool) -> tuple[list[str],
     return copied, skipped, protected_hits
 
 
+def refresh_routers(target: Path) -> None:
+    """Re-wire agents after an embedded upgrade so router skills track the new
+    command set. Runs the target's own install_skills so routers point at this
+    upgraded copy. Failure-safe - never aborts the upgrade."""
+    script = target / "scripts" / "install_skills.py"
+    if not script.exists():
+        return
+    try:
+        result = subprocess.run(
+            [sys.executable, str(script), "--user"],
+            cwd=str(target),
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        if result.returncode == 0:
+            print("Refreshed router skills for all coding agents.")
+        else:
+            print("Router refresh skipped (run `loop skills install` manually).")
+    except (OSError, subprocess.TimeoutExpired):
+        print("Router refresh skipped (run `loop skills install` manually).")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Safely upgrade Loop Engineering OS tool files.")
     parser.add_argument("--source", required=True, help="Path to updated loop-engineer repo")
     parser.add_argument("--target", required=True, help="Path to product workspace or embedded copy")
     parser.add_argument("--apply", action="store_true", help="Apply changes. Default is dry-run.")
+    parser.add_argument("--skip-native-commands", action="store_true", help="Do not refresh router skills after apply.")
     args = parser.parse_args()
 
     source = Path(args.source).resolve()
@@ -160,8 +184,13 @@ def main() -> int:
         for item in protected_hits:
             print(f"  protected {item}")
 
+    if args.apply and not args.skip_native_commands:
+        refresh_routers(target)
+
     if not args.apply:
         print("\nDry-run only. Re-run with --apply to copy tool files.")
+        if any(c == "commands" or c.startswith("commands/") for c in copied):
+            print("On --apply, router skills for all agents are refreshed automatically.")
 
     return 0
 

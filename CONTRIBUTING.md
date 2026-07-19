@@ -9,7 +9,7 @@ Thanks for improving Loop Engineering OS.
 - Keep `plan/main_plan.md` uninitialized in the template.
 - Do not commit `plan/step_*.md` files to the template.
 - Add reusable behavior to `skills/`, not tool-specific adapter files.
-- Keep adapter files thin (`CURSOR.md`, `CLAUDE.md`, `CODEX.md`, `OPENCODE.md`, `GROK.md`, `API_USAGE.md`).
+- Keep adapter files thin (`CURSOR.md`, `CLAUDE.md`, `CODEX.md`, `OPENCODE.md`, `GROK.md`).
 
 ## Validate
 

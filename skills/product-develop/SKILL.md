@@ -40,9 +40,8 @@ Build the product from `plan/main_plan.md` and `plan/` while respecting gates.
 23. `skills/compact-loop/SKILL.md`
 24. `skills/memory-review/SKILL.md`
 25. `skills/docs/SKILL.md` (Documentation domain - PRDs, ADRs, API specs, runbooks)
-26. `skills/model-providers/SKILL.md` (when the LLM provider/manage-model decision is still open)
-27. `skills/tool-orchestrator/SKILL.md` (selecting supporting tools - memory, sandboxing, RAG, roles)
-28. `TASKS.yml`
+26. `skills/tool-orchestrator/SKILL.md` (selecting supporting tools - memory, sandboxing, RAG, roles)
+27. `TASKS.yml`
 29. `GATES.yml`
 30. `HANDOFF.md`
 31. Active feature: `.loop/active-feature.json` → `spec.md`, `feature-plan.md`, `tasks.md`

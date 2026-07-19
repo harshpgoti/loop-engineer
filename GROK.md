@@ -2,6 +2,15 @@
 
 Grok Build should use the repo's canonical command and skill files.
 
+## Native skills
+
+Grok Build reads SKILL.md skills from `~/.grok/skills/` (global) and
+`.grok/skills/` (project), and surfaces user-invocable skills as `/<name>` slash
+commands - `loop skills install` writes Loop's router skills there like any other
+agent. Grok Build also auto-reads Claude Code skills, plugins, and `CLAUDE.md`, so
+`loop team-init` reaches it through that channel too. Add it explicitly with
+`loop skills install --host grok` if you want Grok-only.
+
 ## Always-on lifecycle
 
 ```bash

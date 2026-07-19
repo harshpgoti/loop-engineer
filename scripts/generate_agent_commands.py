@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """Generate native command/skill wrappers for every coding agent Loop Engineer supports.
 
+DEPRECATED — prefer `install_skills.py` (router skills in every agent's skills
+dir; see `docs/DISTRIBUTION.md`). This generator is retained only for tool
+versions that predate SKILL.md support and is run solely via
+`loop setup --legacy-commands` / `loop update --legacy-commands` /
+`loop commands install`. It will be removed after a deprecation window.
+
 Loop Engineer's commands live in `commands/*.md` (+ `skills/*/SKILL.md`) and are
 "portable commands" - an agent reads the file and executes it. Most agent CLIs,
 however, only autocomplete *native* commands they discover in a per-tool
@@ -28,8 +34,10 @@ skill's description. This generator writes Codex wrappers in that format. Any
 previously generated `~/.codex/prompts/*.md` files (dead weight now) are
 cleaned up automatically since they carry our generated marker.
 
-Grok Build has no reliable file-based custom-command mechanism, so it keeps using
-portable interpretation via GROK.md + AGENTS.md - nothing to generate.
+Grok Build now reads SKILL.md skills from ~/.grok/skills (and .grok/skills), so it
+is covered by the router install (scripts/install_skills.py), not this legacy
+generator. Older Grok Build builds without skills support fall back to portable
+interpretation via GROK.md + AGENTS.md.
 
 Every generated file carries a MARKER line; the script refuses to overwrite a file
 that lacks the marker unless --force is given, so it never clobbers hand-written

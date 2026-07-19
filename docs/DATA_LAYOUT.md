@@ -17,8 +17,7 @@ Works the same on Windows, macOS, and Linux.
     ├── memories/            # global MEMORY.md, USER.md, SOUL.md
     ├── state.db             # global session search (SQLite FTS5)
     ├── skills/              # global procedural skills
-    ├── model.yml            # active model provider + model id
-    ├── secrets.env          # provider API keys (chmod 600)
+    ├── secrets.env          # user secrets, if any (chmod 600)
     ├── plan/                # product plan: main_plan.md + step plans
     ├── DOUBTS.md
     └── ...

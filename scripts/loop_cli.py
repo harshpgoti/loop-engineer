@@ -38,6 +38,8 @@ def cmd_setup(args: argparse.Namespace) -> int:
         extra.append("--scan")
     if getattr(args, "skip_native_commands", False):
         extra.append("--skip-native-commands")
+    if getattr(args, "legacy_commands", False):
+        extra.append("--legacy-commands")
     return run_script("setup_loop_engine.py", extra)
 
 
@@ -47,6 +49,8 @@ def cmd_update(args: argparse.Namespace) -> int:
         extra.append("--skip-validate")
     if getattr(args, "skip_native_commands", False):
         extra.append("--skip-native-commands")
+    if getattr(args, "legacy_commands", False):
+        extra.append("--legacy-commands")
     return run_script("loop_update.py", extra)
 
 
@@ -79,6 +83,17 @@ def cmd_compact(args: argparse.Namespace) -> int:
 
 def cmd_prod_gap(args: argparse.Namespace) -> int:
     return run_script("prod_gap.py", _workspace_args(args))
+
+
+def cmd_team_init(args: argparse.Namespace) -> int:
+    extra: list[str] = [args.mode]
+    if getattr(args, "workspace", None):
+        extra.extend(["--workspace", args.workspace])
+    if getattr(args, "commit", False):
+        extra.append("--commit")
+    if getattr(args, "dry_run", False):
+        extra.append("--dry-run")
+    return run_script("team_init.py", extra)
 
 
 def cmd_home(args: argparse.Namespace) -> int:
@@ -183,6 +198,24 @@ def cmd_skills(args: argparse.Namespace) -> int:
     from skill_resolver import list_skills, resolve_skill
     from workspace_utils import resolve_workspace
 
+    if args.skills_cmd in ("install", "uninstall", "installed"):
+        extra: list[str] = _workspace_args(args)
+        if getattr(args, "user", False):
+            extra.append("--user")
+        if getattr(args, "project", False):
+            extra.append("--project")
+        for host in getattr(args, "hosts", None) or []:
+            extra.extend(["--host", host])
+        if getattr(args, "detected_only", False):
+            extra.append("--detected-only")
+        if getattr(args, "dry_run", False):
+            extra.append("--dry-run")
+        if args.skills_cmd == "uninstall":
+            extra.append("--uninstall")
+        elif args.skills_cmd == "installed":
+            extra.append("--list")
+        return run_script("install_skills.py", extra)
+
     workspace = resolve_workspace(args.workspace)
     if args.skills_cmd == "list":
         for item in list_skills(workspace):
@@ -274,14 +307,6 @@ def cmd_feature(args: argparse.Namespace) -> int:
 
 
 PLAN_SUBCMDS = frozenset({"scale", "modules", "decompose", "ultraplan"})
-
-
-def cmd_model(args: argparse.Namespace) -> int:
-    tokens = getattr(args, "tokens", []) or []
-    extra = list(tokens)
-    if getattr(args, "workspace", None):
-        extra = ["--workspace", args.workspace, *extra]
-    return run_script("model_cli.py", extra)
 
 
 def cmd_research(args: argparse.Namespace) -> int:
@@ -429,11 +454,13 @@ def build_parser() -> argparse.ArgumentParser:
     setup.add_argument("--dry-run", action="store_true", help="Preview --source import without writing.")
     setup.add_argument("--overwrite", action="store_true", help="Overwrite existing imported files from --source.")
     setup.add_argument("--scan", action="store_true", help="With --source: classify arbitrary files by content and route them.")
-    setup.add_argument("--skip-native-commands", action="store_true", help="Do not generate native agent slash-command wrappers.")
+    setup.add_argument("--skip-native-commands", action="store_true", help="Do not install the skills pack into .agents/skills.")
+    setup.add_argument("--legacy-commands", action="store_true", help="Also generate the deprecated per-tool command wrappers.")
     setup.set_defaults(func=cmd_setup)
-    update = sub.add_parser("update", help="Update loop-engineer runtime safely (also refreshes native slash commands).")
+    update = sub.add_parser("update", help="Update loop-engineer runtime safely (also refreshes the .agents/skills pack).")
     update.add_argument("--skip-validate", action="store_true", help="Skip template validation after pull.")
-    update.add_argument("--skip-native-commands", action="store_true", help="Do not refresh native agent slash-command wrappers.")
+    update.add_argument("--skip-native-commands", action="store_true", help="Do not refresh the skills pack in .agents/skills.")
+    update.add_argument("--legacy-commands", action="store_true", help="Also refresh the deprecated per-tool command wrappers.")
     update.set_defaults(func=cmd_update)
     sub.add_parser("doctor", help="Health-check runtime and product workspace.").set_defaults(func=cmd_doctor)
     sub.add_parser("status", help="Quick workspace snapshot.").set_defaults(func=cmd_status)
@@ -448,6 +475,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub.add_parser("compact", help="Write COMPACT.md summary.").set_defaults(func=cmd_compact)
     sub.add_parser("prod-gap", help="Analyze production readiness gaps.").set_defaults(func=cmd_prod_gap)
+
+    team = sub.add_parser("team-init", help="Commit a bootstrap so teammates auto-get Loop when they open any agent.")
+    team.add_argument("mode", nargs="?", choices=("required", "optional"), default="required")
+    team.add_argument("--workspace", default=None, help="Repo root (default: cwd).")
+    team.add_argument("--commit", action="store_true", help="git add + commit the bootstrap.")
+    team.add_argument("--dry-run", action="store_true", help="Preview without writing.")
+    team.set_defaults(func=cmd_team_init)
 
     release = sub.add_parser("release-check", help="Pre-production release readiness check.")
     release.set_defaults(func=cmd_release_check)
@@ -507,12 +541,36 @@ def build_parser() -> argparse.ArgumentParser:
     reject.add_argument("--all", action="store_true")
     reject.set_defaults(func=cmd_pending)
 
-    skills = sub.add_parser("skills", help="List or resolve product vs canonical skills.")
+    skills = sub.add_parser("skills", help="List, resolve, or install skills for coding agents.")
     skills_sub = skills.add_subparsers(dest="skills_cmd", required=True)
     skills_sub.add_parser("list", help="List resolved skills.").set_defaults(func=cmd_skills)
     resolve = skills_sub.add_parser("resolve", help="Resolve one skill path.")
     resolve.add_argument("name")
     resolve.set_defaults(func=cmd_skills)
+    skill_install = skills_sub.add_parser(
+        "install",
+        help="Install router skills into every coding agent (Claude, Codex, Cursor, Gemini, OpenCode, ...), pointing at the installed app.",
+    )
+    skill_install.add_argument("--workspace", default=None, help="Project root for --project (default: cwd).")
+    skill_install.add_argument("--user", action="store_true", help="Global scope: each agent's ~/... skills dir (default).")
+    skill_install.add_argument("--project", action="store_true", help="Project scope: per-repo skills dirs under the workspace.")
+    skill_install.add_argument("--host", action="append", dest="hosts", help="Limit to one agent (repeatable). Default: all.")
+    skill_install.add_argument("--detected-only", action="store_true", help="Only agents whose config dir exists (plus universal).")
+    skill_install.add_argument("--dry-run", action="store_true", help="Preview without writing.")
+    skill_install.set_defaults(func=cmd_skills)
+    skill_uninstall = skills_sub.add_parser("uninstall", help="Remove Loop-installed routers from all agents.")
+    skill_uninstall.add_argument("--workspace", default=None)
+    skill_uninstall.add_argument("--user", action="store_true")
+    skill_uninstall.add_argument("--project", action="store_true")
+    skill_uninstall.add_argument("--host", action="append", dest="hosts")
+    skill_uninstall.add_argument("--dry-run", action="store_true")
+    skill_uninstall.set_defaults(func=cmd_skills)
+    skill_installed = skills_sub.add_parser("installed", help="Show which routers Loop installed, per agent.")
+    skill_installed.add_argument("--workspace", default=None)
+    skill_installed.add_argument("--user", action="store_true")
+    skill_installed.add_argument("--project", action="store_true")
+    skill_installed.add_argument("--host", action="append", dest="hosts")
+    skill_installed.set_defaults(func=cmd_skills)
 
     feature = sub.add_parser("feature", help="Feature spec folders under plan/features/.")
     feature_sub = feature.add_subparsers(dest="feature_cmd", required=True)
@@ -536,16 +594,6 @@ def build_parser() -> argparse.ArgumentParser:
     )
     plan.set_defaults(func=cmd_plan)
 
-    model = sub.add_parser(
-        "manage-model",
-        help="Configure AI model provider - keys in ~/.loop-engineer/data/secrets.env (loop manage-model setup).",
-    )
-    model.add_argument(
-        "tokens",
-        nargs="*",
-        help="setup | list | doctor | use | set-key | provider[:model]",
-    )
-    model.set_defaults(func=cmd_model)
 
     research = sub.add_parser("research", help="Search arXiv, Research Square, and SSRN.")
     research.add_argument("query", help="Search terms")

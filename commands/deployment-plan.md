@@ -30,7 +30,7 @@ READ PRIOR DECISIONS -> REUSE KNOWN ANSWERS -> IDENTIFY OPEN QUESTIONS -> WRITE 
 
 ## Reuse Rule
 
-If cloud provider, multi-cloud strategy, LLM provider/manage-model, or related deployment choices were already discussed:
+If cloud provider, multi-cloud strategy, LLM provider/model, or related deployment choices were already discussed:
 
 - copy the same answer into `DEPLOYMENT_PLAN.md`
 - mark it as reused

@@ -17,3 +17,11 @@ commands:
 skills: skills
 templates: templates
 scripts: scripts
+
+# App auto-update at session-start (silent, throttled to once/hour, failure-safe).
+#   pull  - fast-forward the app when its checkout is clean (default)
+#   check - only notice available updates in plan/SESSION_MANIFEST.md
+#   off   - never touch the app
+# The runtime reads this from the LOOP_AUTO_UPDATE env var, else
+# ~/.loop-engineer/data/auto_update.txt (one word), else defaults to pull.
+auto_update: pull

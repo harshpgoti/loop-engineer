@@ -18,16 +18,15 @@ Also runs directly on `/agent-builder`.
 1. `plan/AUTO_AGENT_SKILLS.md` (if present)
 2. `agent/AGENT_ARCHITECTURE.md` (if present - reuse decisions already recorded)
 3. `DECISIONS.md`
-4. `skills/model-providers/SKILL.md`
-5. `skills/research-search/SKILL.md`
-6. `skills/qa-validation/SKILL.md`
+4. `skills/research-search/SKILL.md`
+5. `skills/qa-validation/SKILL.md`
 
 ## Workflow
 
 1. Run `loop auto-agent-skills --write` (usually already done by `/plan-loop` or `/product-develop`) and read `plan/AUTO_AGENT_SKILLS.md` for the detected agent shape.
 2. If `agent/AGENT_ARCHITECTURE.md` does not exist yet, run `loop agent scaffold` - creates `agent/AGENT_ARCHITECTURE.md`, `agent/skills/`, `agent/tools/`, `agent/evals/` from `templates/agent_architecture.template.md` and `templates/agent_skill.template.md`.
 3. Fill `agent/AGENT_ARCHITECTURE.md`: agent type (single/multi/workflow), trigger, tools, memory, guardrails, model provider, eval plan. Reuse anything already answered in `DECISIONS.md` - don't re-ask.
-4. Pick the model provider via `skills/model-providers/SKILL.md` (`loop manage-model setup` / `loop manage-model <provider>:<model>`) - record the choice in `agent/AGENT_ARCHITECTURE.md` and `DECISIONS.md`.
+4. Choose the agent product's model provider and model - record the choice in `agent/AGENT_ARCHITECTURE.md` and `DECISIONS.md`. This is a product decision; the coding agent's own model runs the loop.
 5. For each distinct capability the agent needs, author a skill under `agent/skills/<name>/SKILL.md` (copy `agent/skills/_template/SKILL.md`). One skill = one trigger + one job - don't build a mega-skill.
 6. For any tool the agent can call, document it under `agent/tools/` with its JSON schema and whether it is destructive. Destructive/high-risk tools require human approval per **AGENTS.md rule 5** - say so explicitly.
 7. When a design choice is non-obvious (an eval methodology, a safety pattern, a memory architecture), ground it with `skills/research-search/SKILL.md` (arXiv / Research Square) and cite the source in `EVIDENCE_LOG.md` - don't assert it from vibes.

@@ -11,7 +11,7 @@
 | Loop OS | this repo | **Active** - commands, skills, adapters, gates |
 | Portable commands | `commands/` | **Active** - `/plan-loop`, `/product-develop`, `/loop-engine` |
 | Canonical skills | `skills/` | **Active** - shared by all tools |
-| Tool adapters | `ADAPTERS.md`, `CLAUDE.md`, `CODEX.md`, `OPENCODE.md`, `GROK.md`, `API_USAGE.md` | **Active** |
+| Tool adapters | `ADAPTERS.md`, `CLAUDE.md`, `CODEX.md`, `OPENCODE.md`, `GROK.md` | **Active** |
 | Human-mind memory | `memories/MEMORY.md` | **Active** |
 | Doubt tracker | `DOUBTS.md` | **Active** |
 | Product master plan | `plan/main_plan.md` | **Template; uninitialized** |

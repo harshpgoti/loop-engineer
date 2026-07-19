@@ -75,7 +75,7 @@ def main() -> int:
     parser.add_argument("--database-hosting", default="TBD", help="Database hosting")
     parser.add_argument("--llm-provider", default="TBD", help="LLM provider")
     parser.add_argument("--llm-models", default="TBD", help="LLM model(s)")
-    parser.add_argument("--embedding-model", default="TBD", help="Embedding provider/manage-model")
+    parser.add_argument("--embedding-model", default="TBD", help="Embedding provider/model")
     parser.add_argument("--agent-runtime", default="TBD", help="Agent runtime")
     parser.add_argument("--cicd-platform", default="TBD", help="CI/CD platform")
     parser.add_argument("--secrets-management", default="TBD", help="Secrets management")

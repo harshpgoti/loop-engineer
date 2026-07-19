@@ -2,7 +2,7 @@
 
 This folder is the canonical, tool-neutral skill pack.
 
-Adapters for Cursor, Claude Code, Codex, OpenCode, Grok Build, and direct LLM API calls must point here. Do not make any tool-specific folder the source of truth.
+Adapters for Cursor, Claude Code, Codex, OpenCode, Grok Build, and every other coding agent must point here. Do not make any tool-specific folder the source of truth.
 
 ## Skill Index
 
@@ -32,7 +32,6 @@ Adapters for Cursor, Claude Code, Codex, OpenCode, Grok Build, and direct LLM AP
 | `upgrade-loop-engineer` | Safely update tool files while preserving product-state files |
 | `agent-builder` | Design/scaffold an AI agent (or agentic/dynamic workflow) as the product itself |
 | `research-search` | Search arXiv, Research Square, and SSRN to ground claims in evidence |
-| `model-providers` | Configure AI model providers for API-hosted inference |
 | `product-council` | Senior role review across strategy, PM, CTO, engineering, design, QA, security, release |
 | `product-grill` | Ask hard product questions and track doubts |
 | `task-compiler` | Convert plans into tasks, gates, acceptance criteria, and test plans |
@@ -69,7 +68,6 @@ Adapters for Cursor, Claude Code, Codex, OpenCode, Grok Build, and direct LLM AP
 | `/upgrade-loop-engineer` | `skills/upgrade-loop-engineer/SKILL.md` |
 | `/agent-builder` | `skills/agent-builder/SKILL.md` |
 | `/research-search` | `skills/research-search/SKILL.md` |
-| `/manage-model` | `skills/model-providers/SKILL.md` |
 
 ## Adapter Rule
 

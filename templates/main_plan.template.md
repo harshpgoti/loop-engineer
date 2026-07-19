@@ -27,7 +27,7 @@ Captured during `/plan-loop`. Reused by `/deployment-plan` unless the user chang
 | Database hosting | {{DATABASE_HOSTING}} |
 | LLM provider | {{LLM_PROVIDER}} |
 | LLM model(s) | {{LLM_MODELS}} |
-| Embedding provider/manage-model | {{EMBEDDING_MODEL}} |
+| Embedding provider/model | {{EMBEDDING_MODEL}} |
 | Agent runtime | {{AGENT_RUNTIME}} |
 | CI/CD platform | {{CICD_PLATFORM}} |
 | Secrets management | {{SECRETS_MANAGEMENT}} |

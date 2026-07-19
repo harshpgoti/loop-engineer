@@ -25,7 +25,6 @@ This is the human-mind file for the product loop. Every agent must update it aut
   - `CODEX.md`
   - `OPENCODE.md`
   - `GROK.md`
-  - `API_USAGE.md`
   - `ADAPTERS.md`
 - Created `plan/main_plan.md` as an uninitialized product plan template.
 - Created `plan/` for future step plans.

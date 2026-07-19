@@ -59,7 +59,6 @@ Template reset for open-source use. Product-specific data removed. The loop uses
 - `CODEX.md`
 - `OPENCODE.md`
 - `GROK.md`
-- `API_USAGE.md`
 
 Canonical files:
 

@@ -1,6 +1,6 @@
 # Loop Engineering OS
 
-**Loop engineering, not prompt engineering.** A durable, open-source operating system for planning and building products across Codex, Claude Code, Cursor, Grok Build, OpenCode, and direct LLM APIs.
+**Loop engineering, not prompt engineering.** A durable, open-source operating system for planning and building products across Codex, Claude Code, Cursor, Grok Build, OpenCode, and any other coding agent.
 
 ## Three master loops
 
@@ -10,7 +10,7 @@
 | **Step 2 - Build** | `/product-develop` or skill `skills/product-develop` | Implement → review → QA → security/compliance → CI/CD → deploy |
 | **All-in-one** | `/loop-engine` or skill `skills/loop-engine` | Route between planning, task compilation, development, QA, and release gates |
 
-Everything else in this repo (model providers, AI-agent-development scaffolding, research search, feature specs, frontend animation, deployment, release checks, ...) is auto-detected and wired into these three - see [`docs/PROCESS.md`](docs/PROCESS.md) and the full command table in [`AGENTS.md`](AGENTS.md).
+Everything else in this repo (AI-agent-development scaffolding, research search, feature specs, frontend animation, deployment, release checks, ...) is auto-detected and wired into these three - see [`docs/PROCESS.md`](docs/PROCESS.md) and the full command table in [`AGENTS.md`](AGENTS.md).
 
 ## Quick start (any agent)
 
@@ -100,7 +100,7 @@ This is what makes memory durable across chat sessions and tool switches - see
 
 ## Command Usage
 
-In order of a real product journey - every command works the same in Cursor, Claude Code, Codex, OpenCode, Grok Build, or a direct LLM with filesystem access.
+In order of a real product journey - every command works the same in Cursor, Claude Code, Codex, OpenCode, Grok Build, or any other coding agent with filesystem access.
 
 ### 0. Set up once
 
@@ -110,7 +110,6 @@ loop setup                    # same thing from the terminal (global data: ~/.lo
 loop setup --use-cwd --name my-app                  # local data: ./my-app/.loop-engineer/
 loop setup --use-cwd --source /path/to/other-tool          # import MEMORY/USER/skills from another AI tool
 loop setup --use-cwd --source /path/to/other-tool --scan   # different structure? classify every file by content
-loop manage-model setup              # optional: pick the LLM provider for API-hosted inference
 ```
 
 ### 1. Plan - `/plan-loop`
@@ -144,7 +143,6 @@ The primary entry point: routes between planning and development based on gates 
 ```text
 /agent-builder        # design/scaffold an AI agent as the product - auto-activates in /plan-loop + /product-develop
 /research-search      # search arXiv / Research Square / SSRN, e.g. loop research "multi-agent evaluation"
-/manage-model                # AI provider config, e.g. loop manage-model anthropic:<model-id>, loop manage-model doctor
 /feature-new          # new feature spec folder, e.g. loop feature new "auth login" --step plan/step_01.md
 /spec-clarify         # structured clarification on the active feature spec
 /spec-checklist       # spec quality gate before feature-plan
@@ -193,7 +191,7 @@ For recurring Cursor work:
 | Codex | `CODEX.md`, `AGENTS.md` |
 | OpenCode | `OPENCODE.md`, `AGENTS.md` |
 | Grok Build | `GROK.md`, `AGENTS.md` |
-| Direct API | `API_USAGE.md` |
+| Any other agent | `AGENTS.md` (portable interpretation) |
 
 Canonical skills are in `skills/`; adapter files must stay thin.
 
@@ -203,7 +201,7 @@ When someone downloads this repo and runs `/plan-loop`, the agent must:
 
 1. Detect whether `plan/main_plan.md` is still uninitialized.
 2. Ask for product name, target user, problem, constraints, and first product step.
-3. Ask for deployment targets during planning: cloud provider, single vs multi-cloud, LLM provider/manage-model, and related infrastructure choices.
+3. Ask for deployment targets during planning: cloud provider, single vs multi-cloud, LLM provider/model, and related infrastructure choices.
 4. If the user is unavailable, record questions in `DOUBTS.md`.
 5. Create or update `plan/step_01_<slug>.md`.
 6. Update `memories/MEMORY.md`, `TASKS.yml`, `GATES.yml`, `HANDOFF.md`, and `.ai/SESSION_LOG.md`.
@@ -254,7 +252,7 @@ Use:
 /compact-loop
 ```
 
-This updates `COMPACT.md` so Codex, Claude Code, Cursor, OpenCode, Grok Build, or a direct API agent can continue without relying on chat history.
+This updates `COMPACT.md` so Codex, Claude Code, Cursor, OpenCode, Grok Build, or any other agent can continue without relying on chat history.
 
 For parent workspace setup:
 

@@ -23,7 +23,7 @@ Challenge product assumptions, ask hard user questions, record unresolved doubts
 - Differentiation
 - Risk and compliance posture
 - Cloud provider and deployment strategy
-- LLM provider/manage-model and cost posture
+- LLM provider/model and cost posture
 - Distribution path
 - Pilot or validation path
 - What to kill or delay

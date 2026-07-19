@@ -30,7 +30,6 @@ Use these directly in any agent that can access the repo:
 /plan-loop <idea>
 /loop-engine <idea>
 /ultraplan-loop
-/manage-model
 /agent-builder
 /research-search
 ```
@@ -40,11 +39,10 @@ CLI:
 ```bash
 loop setup
 loop doctor
+loop skills install            # wire every coding agent to this app
+loop skills install --project  # or project scope, committed with the repo
+loop team-init required        # make Loop the team standard (auto-bootstrap teammates)
 loop plan-loop "your full product idea here"
-loop manage-model setup
-loop manage-model models anthropic
-loop manage-model anthropic:<model-id>
-loop manage-model doctor
 loop research "your topic"
 loop agent scaffold
 loop session-start --command /loop-engine --tool cursor --text "your idea"
@@ -89,7 +87,6 @@ The agent must route the command through `commands/*.md` and update `memories/ME
 | `/spec-checklist` | `commands/spec-checklist.md` | Spec quality gate before feature-plan |
 | `/feature-converge` | `commands/feature-converge.md` | Drift check after implementation |
 | `/ultraplan-loop` | `commands/ultraplan-loop.md` | Deep planning per step when scale is platform |
-| `/manage-model` | `commands/manage-model.md` | Configure AI model provider for API-hosted inference |
 | `/agent-builder` | `commands/agent-builder.md` | Design/scaffold an AI agent (or agentic/dynamic workflow) as the product |
 | `/research-search` | `commands/research-search.md` | Search arXiv, Research Square, and SSRN to ground a claim |
 | `/upgrade-loop-engineer` | `commands/upgrade-loop-engineer.md` | Safe tool update without overwriting product data |
@@ -102,20 +99,6 @@ The agent must route the command through `commands/*.md` and update `memories/ME
 | `/startup-build-loop` | `/product-develop` |
 | `/develop-product` | `/product-develop` |
 | `/all-in-one` | `/loop-engine` |
-
-## Direct API fallback
-
-If using an API without filesystem access, send the contents of the relevant `commands/*.md` file as the system/developer instruction. This is a fallback, not the normal workflow.
-
-```python
-import anthropic  # or openai
-
-system = open("commands/plan-loop.md").read()
-user = "/plan-loop"
-# call API with system + user content
-```
-
----
 
 ## Step 1 → Step 2 transition prompt
 

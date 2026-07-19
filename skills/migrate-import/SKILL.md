@@ -34,7 +34,7 @@ rules first, no LLM call) and routed:
 | project memory / notes / logs | appended to `memories/MEMORY.md` |
 | how-tos / runbooks / procedures | `skills/imported/<slug>.md` (frontmatter added) |
 | plans / roadmaps / PRDs / specs | `plan/imported/` - absorb via `/plan-loop` next session |
-| secrets / API keys | **never copied** - warned; re-enter via `loop manage-model set-key` |
+| secrets / API keys | **never copied** - warned; re-enter any keys manually |
 | binary / unclassifiable | skipped / staged in `.loop/import-review/` for manual review |
 
 Appends carry an `Imported from <path>` marker, so re-running is idempotent.

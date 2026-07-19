@@ -140,10 +140,10 @@ TOPICS: list[DeploymentTopic] = [
     ),
     DeploymentTopic(
         key="embedding_model",
-        label="Embedding provider/manage-model",
-        question="Which embedding provider/manage-model should production use?",
+        label="Embedding provider/model",
+        question="Which embedding provider/model should production use?",
         doubt_id="DQ-DEP-008",
-        main_plan_label="Embedding provider/manage-model",
+        main_plan_label="Embedding provider/model",
         patterns=[
             r"\btext-embedding[-\w.]+\b",
             r"\bembedding model\b",

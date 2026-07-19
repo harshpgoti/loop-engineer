@@ -9,8 +9,7 @@ Layout (all platforms: ~/.loop-engineer):
     memories/          global product memory (when not using a local folder)
     state.db           global session store
     skills/            global user skills
-    model.yml          active model provider + model id
-    secrets.env        API keys (never commit)
+    secrets.env        user secrets, if any (never commit)
     plan/main_plan.md, ...    global product state files
 
 Local product folders mirror this under <product-folder>/.loop-engineer/ -
@@ -75,8 +74,7 @@ def describe_layout() -> str:
         f"    memories/              #   global MEMORY.md, USER.md, SOUL.md\n"
         f"    state.db               #   global session search\n"
         f"    skills/                #   global procedural skills\n"
-        f"    model.yml              #   active model provider config\n"
-        f"    secrets.env            #   provider API keys (chmod 600)\n"
+        f"    secrets.env            #   user secrets, if any (chmod 600)\n"
         f"    plan/                  #   product plan: main_plan.md + step plans\n"
         f"  <product-dir>/.loop-engineer/  # local memory when working inside a product folder\n"
     )

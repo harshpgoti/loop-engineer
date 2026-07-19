@@ -79,15 +79,34 @@ Imports `MEMORY.md`, `USER.md`, `SOUL.md`, and `skills/` from `--source`. If the
 
 ### After install
 
-Open your agent in `~/.loop-engineer/app/` and run `/plan-loop`.
+The installer wires **every coding agent** you have (Claude, Codex, Cursor,
+Gemini, OpenCode, ...) to this one app, so `/plan-loop` and the rest work in any
+of them — and keep working if you switch agents mid-task. Just open your agent and
+run `/plan-loop` (or describe the task).
 
 ```bash
 loop doctor
 loop bootstrap
-loop update    # updates app only; memory is preserved
+loop skills install     # re-wire agents (also run automatically by setup/update)
+loop update             # updates app only; memory is preserved
 ```
 
-See [`docs/DATA_LAYOUT.md`](docs/DATA_LAYOUT.md).
+**Auto-update:** every `session-start` silently fast-forwards the app once/hour
+(disable with `LOOP_AUTO_UPDATE=off`).
+
+### Team mode (shared repos)
+
+From inside a repo, make Loop the standard for teammates — they get bootstrapped
+automatically when they open any agent, no out-of-band instructions:
+
+```bash
+loop team-init required     # or: optional (nudge instead of block)
+# review, then: git add .agents/ .claude/ CLAUDE.md && git commit -m "require Loop"
+# or one-shot:
+loop team-init required --commit
+```
+
+See [`docs/DATA_LAYOUT.md`](docs/DATA_LAYOUT.md) and [`docs/DISTRIBUTION.md`](docs/DISTRIBUTION.md).
 
 ---
 

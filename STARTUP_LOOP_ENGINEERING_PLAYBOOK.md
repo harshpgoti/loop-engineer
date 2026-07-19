@@ -52,7 +52,7 @@ Use primary sources and standards for product-specific evidence. Use arXiv and R
 
 ## AI agent as the product
 
-If the product itself is, or includes, an AI agent (chatbot, workflow automation, multi-agent system), `skills/agent-builder/SKILL.md` auto-activates during `/plan-loop` and `/product-develop` - see `docs/AGENT_BUILDER.md`. It scaffolds `agent/AGENT_ARCHITECTURE.md`, `agent/skills/`, `agent/tools/`, `agent/evals/` and wires in `skills/model-providers/SKILL.md` for the model choice.
+If the product itself is, or includes, an AI agent (chatbot, workflow automation, multi-agent system), `skills/agent-builder/SKILL.md` auto-activates during `/plan-loop` and `/product-develop` - see `docs/AGENT_BUILDER.md`. It scaffolds `agent/AGENT_ARCHITECTURE.md`, `agent/skills/`, `agent/tools/`, `agent/evals/` and records the agent product's model choice in `agent/AGENT_ARCHITECTURE.md` and `DECISIONS.md`.
 
 ## Current Tasks
 

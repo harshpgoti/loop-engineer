@@ -17,8 +17,8 @@ Filled in by `skills/agent-builder/SKILL.md` during `/plan-loop` or `/product-de
 
 ## Model provider
 
-- Provider/manage-model: see `~/.loop-engineer/data/model.yml` (`loop manage-model status`) - record the chosen provider:model pair here once fixed.
-- Fallback chain (if any): `loop manage-model fallback list`
+- Provider / model: record the chosen provider:model pair for the agent product here (a product decision, logged in `DECISIONS.md`).
+- Fallback chain (if any): record here.
 
 ## Tools
 

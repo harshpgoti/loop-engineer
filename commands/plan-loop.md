@@ -68,7 +68,6 @@ SESSION-START → RECALL → PLAN → GRILL → EVIDENCE → PRD → ARCHITECTUR
 | Start | Session lifecycle | `loop session-start --command /plan-loop --text "<idea>"` |
 | Bootstrap | **Auto plan from idea** | `plan/PLAN_BOOTSTRAP.md` (scale + map + ultraplan route) |
 | Bootstrap | Recall + manifest | `plan/SESSION_MANIFEST.md`, `SESSION_RECALL.md` |
-| Setup | Model provider (API inference) | `loop manage-model setup` → `plan/MODEL_STATUS.md` |
 | Plan | Product grill + council | `product-grill`, `product-council` |
 | Plan | Step plan | `plan/step_XX_*.md` (index; ultraplan for platform) |
 | Plan | Feature spec | `loop feature new` → `/spec-clarify` → `/spec-checklist` → `feature-plan.md` |
@@ -106,7 +105,7 @@ RECALL → DETECT INIT → ASK/INFER (PRODUCT + DEPLOYMENT) → GRILL → COUNCI
    Read `plan/PLAN_BOOTSTRAP.md` then `plan/SESSION_MANIFEST.md`. Do **not** ask the user to run scale/decompose/ultraplan manually.
 1. **Detect initialization.** If `plan/main_plan.md` says `Status: **UNINITIALIZED**`, initialize the user's product plan.
 2. **Ask for required product inputs:** product name, target user, problem, first product step, constraints, sensitive data, preferred stack.
-3. **Ask for deployment inputs during planning:** cloud provider, single vs multi-cloud, primary region(s), compute model, database hosting, LLM provider/manage-model, embedding model, agent runtime, CI/CD platform, secrets management. Use `templates/plan_deployment_questions.md` as the checklist.
+3. **Ask for deployment inputs during planning:** cloud provider, single vs multi-cloud, primary region(s), compute model, database hosting, LLM provider/model, embedding model, agent runtime, CI/CD platform, secrets management. Use `templates/plan_deployment_questions.md` as the checklist.
 4. **Reuse prior answers** from `DECISIONS.md`, resolved `DOUBTS.md`, or existing `plan/main_plan.md` → **Deployment & Infrastructure**. Inform the user when reusing; do not ask again unless they want to change something.
 5. **If the user is unavailable**, record missing inputs in `DOUBTS.md` and do not invent product-specific facts.
 6. **Restate current product state** from `memories/MEMORY.md` and `plan/main_plan.md`, not from chat memory.

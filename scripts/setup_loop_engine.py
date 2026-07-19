@@ -130,7 +130,12 @@ def main() -> int:
     parser.add_argument(
         "--skip-native-commands",
         action="store_true",
-        help="Do not generate native slash-command wrappers for agent CLIs (claude, cursor, codex, opencode).",
+        help="Do not install the skills pack into .agents/skills for agent CLIs.",
+    )
+    parser.add_argument(
+        "--legacy-commands",
+        action="store_true",
+        help="Also generate the deprecated per-tool command wrappers (claude, cursor, codex, opencode).",
     )
     args = parser.parse_args()
 
@@ -238,14 +243,33 @@ def main() -> int:
         print("\nWorkspace detection:")
         subprocess.run([sys.executable, str(detect_script)], cwd=ROOT, check=False)
 
-    gen_script = ROOT / "scripts" / "generate_agent_commands.py"
-    if not args.skip_native_commands and gen_script.exists():
-        print("\nRegistering native slash commands for agent CLIs...")
-        subprocess.run(
-            [sys.executable, str(gen_script), "--tool", "all", "--scope", "user"],
-            cwd=ROOT,
-            check=False,
-        )
+    if not args.skip_native_commands:
+        skills_script = ROOT / "scripts" / "install_skills.py"
+        if skills_script.exists():
+            print("\nInstalling router skills for every coding agent (Claude, Codex, Cursor, Gemini, OpenCode, ...)...")
+            print("Switching agents mid-task needs no further setup - they all point at this app.")
+            # User scope reaches every agent's global skills dir so any tool works
+            # immediately. Project scope too when a local workspace exists.
+            subprocess.run(
+                [sys.executable, str(skills_script), "--user"],
+                cwd=ROOT,
+                check=False,
+            )
+            if memory_mode == "local":
+                subprocess.run(
+                    [sys.executable, str(skills_script), "--project", "--workspace", str(workspace)],
+                    cwd=ROOT,
+                    check=False,
+                )
+        if getattr(args, "legacy_commands", False):
+            gen_script = ROOT / "scripts" / "generate_agent_commands.py"
+            if gen_script.exists():
+                print("\n[legacy] Generating per-tool command wrappers...")
+                subprocess.run(
+                    [sys.executable, str(gen_script), "--tool", "all", "--scope", "user"],
+                    cwd=ROOT,
+                    check=False,
+                )
 
     if memory_mode == "local":
         print("\nWhen you return to this folder, /plan-loop and /loop-engine auto-use local data here.")

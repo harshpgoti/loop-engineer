@@ -53,11 +53,10 @@ loop pending approve --all
 
 | Tool | How |
 |------|-----|
-| **Any LLM + filesystem** | Agent runs `loop session-start` / `loop session-end` per `AGENTS.md` |
 | **Cursor** | Same CLI; optional: Cursor hook on session start (see below) |
 | **Claude Code** | Read `CLAUDE.md`; commands route to `commands/session-start.md` + `session-end.md` |
 | **Codex / OpenCode / Grok** | Read `CODEX.md`, `OPENCODE.md`, `GROK.md` |
-| **Direct API** | `API_USAGE.md` - call lifecycle scripts between API turns |
+| **Any other coding agent** | Read `AGENTS.md`; run the same `loop session-start` / `session-end` CLI |
 
 ### Optional Cursor hook (local)
 

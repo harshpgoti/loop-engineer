@@ -31,7 +31,12 @@ def main() -> int:
     parser.add_argument(
         "--skip-native-commands",
         action="store_true",
-        help="Do not refresh native slash-command wrappers for agent CLIs (claude, cursor, codex, opencode).",
+        help="Do not refresh the skills pack in .agents/skills.",
+    )
+    parser.add_argument(
+        "--legacy-commands",
+        action="store_true",
+        help="Also refresh the deprecated per-tool command wrappers.",
     )
     args = parser.parse_args()
 
@@ -59,12 +64,23 @@ def main() -> int:
         code, out = run([sys.executable, str(migrate), "--workspace", str(workspace)], runtime)
         print(out)
 
-    gen = runtime / "scripts" / "generate_agent_commands.py"
-    if not args.skip_native_commands and gen.exists():
-        print("\nRefreshing native slash commands for agent CLIs...")
-        # app-root defaults to `runtime`, so wrappers re-point at the updated app.
-        code, out = run([sys.executable, str(gen), "--tool", "all", "--scope", "user"], runtime)
-        print(out)
+    if not args.skip_native_commands:
+        skills_script = runtime / "scripts" / "install_skills.py"
+        if skills_script.exists():
+            print("\nRefreshing router skills across all coding agents...")
+            code, out = run([sys.executable, str(skills_script), "--user"], runtime)
+            print(out)
+            # Refresh project-scope routers too when a local workspace is active.
+            if workspace.exists():
+                code, out = run([sys.executable, str(skills_script), "--project", "--workspace", str(workspace)], runtime)
+                print(out)
+        if getattr(args, "legacy_commands", False):
+            gen = runtime / "scripts" / "generate_agent_commands.py"
+            if gen.exists():
+                print("\n[legacy] Refreshing per-tool command wrappers...")
+                # app-root defaults to `runtime`, so wrappers re-point at the updated app.
+                code, out = run([sys.executable, str(gen), "--tool", "all", "--scope", "user"], runtime)
+                print(out)
 
     print("\nProduct memory was not overwritten.")
     print("Next: loop doctor")

@@ -50,7 +50,7 @@ A product's own agent skills use the same `SKILL.md` convention Loop Engineer us
 
 ## Prior art - read-only reference, never vendored
 
-`tools/registry.md`'s "Agent skill hub references" section lists external skill/plugin marketplaces useful for researching how others structure comparable capabilities. Treat any such research as a **read-only reference only** (e.g. via `WebFetch`) - never install, clone, or import another project's packages or runtime into the product. Loop Engineer's own convention is intentionally compatible in shape with the broader ecosystem, not a client of any specific registry. This mirrors the same "no vendoring" rule already applied to model-provider configuration (see `docs/MODEL_PROVIDERS.md`).
+`tools/registry.md`'s "Agent skill hub references" section lists external skill/plugin marketplaces useful for researching how others structure comparable capabilities. Treat any such research as a **read-only reference only** (e.g. via `WebFetch`) - never install, clone, or import another project's packages or runtime into the product. Loop Engineer's own convention is intentionally compatible in shape with the broader ecosystem, not a client of any specific registry.
 
 ## Grounding design decisions in literature
 

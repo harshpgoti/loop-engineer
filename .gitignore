@@ -32,3 +32,6 @@ state.db
 # Python
 __pycache__/
 *.pyc
+
+# Generated skills distribution target (source of truth is skills/)
+/.agents/

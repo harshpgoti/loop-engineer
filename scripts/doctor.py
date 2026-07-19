@@ -52,12 +52,6 @@ SCRIPT_IMPORTS = [
     "skill_resolver",
     "pending_writes",
     "loop_cli",
-    "model_paths",
-    "model_registry",
-    "model_config",
-    "model_doctor",
-    "model_catalog",
-    "model_cli",
     "migrate_import",
     "loop_update",
     "migrate_workspace",
@@ -137,41 +131,6 @@ def bullet(items: list[str]) -> str:
     if not items:
         return "- None."
     return "\n".join(f"- {item}" for item in items)
-
-
-def check_model_provider(errors: list[str], warnings: list[str], passes: list[str]) -> None:
-    scripts_dir = ROOT / "scripts"
-    if str(scripts_dir) not in sys.path:
-        sys.path.insert(0, str(scripts_dir))
-    try:
-        from model_config import load_config
-        from model_doctor import doctor_active
-        from model_paths import model_config_path, secrets_env_path
-    except Exception as exc:  # noqa: BLE001
-        errors.append(f"model provider check: import failed ({exc})")
-        return
-
-    if not model_config_path().parent.exists():
-        warnings.append("LOOP_HOME missing; run `loop setup`.")
-        return
-
-    cfg = load_config()
-    active = cfg.get("active") or {}
-    if not active.get("provider"):
-        warnings.append("No model provider selected - run `loop manage-model setup` for API-hosted inference.")
-    else:
-        passes.append(f"Active model: {active.get('provider')} - {active.get('model', '')}")
-
-    for name, ok, msg in doctor_active():
-        if ok:
-            passes.append(f"model {name}: {msg}")
-        elif name == "active":
-            warnings.append(f"model {name}: {msg}")
-        else:
-            warnings.append(f"model {name}: {msg}")
-
-    if not secrets_env_path().exists():
-        warnings.append("No secrets.env yet - required for API-key providers.")
 
 
 def check_memory_health(workspace: Path, errors: list[str], warnings: list[str], passes: list[str]) -> None:
@@ -289,8 +248,6 @@ def diagnose(workspace: Path | None) -> tuple[str, int]:
 
     if workspace is not None:
         check_memory_health(workspace, errors, warnings, passes)
-
-    check_model_provider(errors, warnings, passes)
 
     healthy = not errors
     status = "HEALTHY" if healthy else "UNHEALTHY"

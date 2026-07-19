@@ -32,7 +32,6 @@ SHAPE_PATTERNS: dict[str, tuple[str, ...]] = {
 
 ALWAYS_READ = (
     "skills/agent-builder/SKILL.md",
-    "skills/model-providers/SKILL.md",
     "skills/research-search/SKILL.md",
 )
 
