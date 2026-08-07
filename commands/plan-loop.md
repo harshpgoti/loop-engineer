@@ -193,6 +193,14 @@ Return:
 12. Memory review status (`plan/MEMORY_REVIEW.md`, pending writes if staged)
 13. Next command: `/plan-loop`, `/ultraplan-loop`, `/product-develop`, or `/loop-engine`
 
+## Continuation
+
+Terminus: **tasks compiled + go/no-go for build.** Run the phase pipeline end to
+end in this session - grill → council → (ultraplan) → spec-clarify → spec-checklist
+→ resolve-doubts → task-compiler - recomputing the phase after each and loading the
+next. Never end a turn telling the user to run the next phase; see
+`docs/CONTINUATION.md`.
+
 ## Stop Conditions
 
 Stop and ask the user when:

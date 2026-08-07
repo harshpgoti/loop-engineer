@@ -26,6 +26,7 @@ Use these directly in any agent that can access the repo:
 /feature-new
 /spec-clarify
 /spec-checklist
+/resolve-doubts
 /feature-converge
 /plan-loop <idea>
 /loop-engine <idea>
@@ -85,6 +86,7 @@ The agent must route the command through `commands/*.md` and update `memories/ME
 | `/feature-new` | `commands/feature-new.md` | Create `plan/features/NNN-slug/` and set active feature |
 | `/spec-clarify` | `commands/spec-clarify.md` | Structured clarification on active feature spec |
 | `/spec-checklist` | `commands/spec-checklist.md` | Spec quality gate before feature-plan |
+| `/resolve-doubts` | `commands/resolve-doubts.md` | Interactively clear all open doubts/blockers plan-wide, ending in a go/no-go for development |
 | `/feature-converge` | `commands/feature-converge.md` | Drift check after implementation |
 | `/ultraplan-loop` | `commands/ultraplan-loop.md` | Deep planning per step when scale is platform |
 | `/agent-builder` | `commands/agent-builder.md` | Design/scaffold an AI agent (or agentic/dynamic workflow) as the product |

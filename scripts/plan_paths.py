@@ -74,6 +74,28 @@ def step_ultraplan_dir(workspace: Path, step_id: str, title: str) -> Path:
     return steps_dir(workspace) / step_folder_name(step_id, title)
 
 
+def find_step_folder(workspace: Path, step_id: str) -> Path | None:
+    """Existing ultraplan folder for this step number, whatever its title slug.
+
+    Step identity is the number, not the title. A revise that reworded the title
+    must reuse (and rename) this folder, not create a sibling under a new slug.
+    """
+    root = steps_dir(workspace)
+    if not root.is_dir():
+        return None
+    matches = sorted(d for d in root.glob(f"{step_id}-*") if d.is_dir())
+    return matches[0] if matches else None
+
+
+def find_step_file(workspace: Path, step_id: str) -> Path | None:
+    """Existing `step_{id}_*.md` index for this step number, whatever its slug."""
+    root = plan_dir(workspace)
+    if not root.is_dir():
+        return None
+    matches = sorted(p for p in root.glob(f"step_{step_id}_*.md") if p.is_file())
+    return matches[0] if matches else None
+
+
 def list_step_files(workspace: Path) -> list[Path]:
     root = plan_dir(workspace)
     if not root.is_dir():

@@ -81,6 +81,7 @@ Reading code is still read-only. Never patch code from this command.
 | A genuine question about the plan/build | Answer it, with citations. |
 | A disguised change request ("shouldn't the target user be X?") | Answer what it currently is, then offer `/revise-plan` to change it. Do not change it yourself. |
 | Asking for something the plan never decided | Say it's undecided, point at the `DOUBTS.md` entry if one exists, offer `/revise-plan` or `/plan-loop` to decide it. |
+| "Are we ready to build?" / many open doubts before dev | Summarize the open items, then point at `/resolve-doubts` to clear them all interactively and get a go/no-go. |
 | Answerable only from code, plan/docs silent | Read code, answer, note the plan/docs gap. |
 | Revealing drift (plan says X, code/tasks say Y) | Report both sides, cite each, recommend `/sync-loop-state` (state drift) or `/feature-converge` (spec-vs-build drift). Do not silently reconcile. |
 | Net-new scope ("can we add feature Z?") | Answer feasibility from context, then point at `/feature-new` - that's not a question about the existing plan. |

@@ -26,6 +26,12 @@ Quality gate on the active feature spec - completeness, testability, alignment w
 - Updated `spec-checklist.md` with verdict
 - Blockers list (if not ready)
 
-## Next phase
+## Continue automatically
 
-`task-compiler` → then `/product-develop`.
+- **Verdict Ready** → continue into `resolve-doubts` (if `DOUBTS.md` has open
+  items) then `phases/task-compiler.md`. Terminus: **tasks compiled + go/no-go**.
+- **Verdict Needs clarify** → go back into `phases/spec-clarify.md` and resolve the
+  listed blockers, then re-run this checklist. Do not hand the loop back to the
+  user mid-cycle.
+
+Do not stop and tell the user to run the next command. See `docs/CONTINUATION.md`.

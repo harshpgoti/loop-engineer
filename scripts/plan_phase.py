@@ -7,7 +7,8 @@ planning phase comes next, from cheap state signals. The orchestrator skill
 matching `phases/<name>.md` file (progressive disclosure).
 
 Phases, in loop order:
-    grill -> council -> [ultraplan if platform] -> spec-clarify -> spec-checklist -> task-compiler
+    grill -> council -> [ultraplan if platform] -> spec-clarify -> spec-checklist
+    -> resolve-doubts (when open doubts remain) -> task-compiler
 """
 from __future__ import annotations
 
@@ -20,6 +21,7 @@ PHASE_FILES = {
     "ultraplan": "skills/plan-loop/phases/ultraplan.md",
     "spec-clarify": "skills/plan-loop/phases/spec-clarify.md",
     "spec-checklist": "skills/plan-loop/phases/spec-checklist.md",
+    "resolve-doubts": "skills/plan-loop/phases/resolve-doubts.md",
     "task-compiler": "skills/plan-loop/phases/task-compiler.md",
 }
 
@@ -65,6 +67,19 @@ def _active_feature(workspace: Path) -> dict | None:
         return None
 
 
+def _has_open_doubts(workspace: Path) -> bool:
+    """True if DOUBTS.md has any entry still marked open."""
+    path = workspace / "DOUBTS.md"
+    if not path.exists():
+        return False
+    try:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return False
+    # Tolerate `- **Status:** open` and `status: open` formats.
+    return "status: open" in text.replace("*", "").lower()
+
+
 def _checklist_ready(feature: dict | None) -> bool:
     if not feature:
         return False
@@ -92,7 +107,10 @@ def compute_plan_phase(workspace: Path) -> dict:
         phase, reason = "ultraplan", "platform scale with an incomplete ultraplan step"
     elif feature:
         if _checklist_ready(feature):
-            phase, reason = "task-compiler", "active feature spec checklist is Ready - compile tasks"
+            if _has_open_doubts(workspace):
+                phase, reason = "resolve-doubts", "planning complete but DOUBTS.md still has open items - clear blockers before task compile / development"
+            else:
+                phase, reason = "task-compiler", "active feature spec checklist is Ready - compile tasks"
         else:
             phase, reason = "spec-clarify", "active feature spec still has open questions"
     else:
@@ -101,7 +119,7 @@ def compute_plan_phase(workspace: Path) -> dict:
     pipeline = ["grill", "council"]
     if platform:
         pipeline.append("ultraplan")
-    pipeline += ["spec-clarify", "spec-checklist", "task-compiler"]
+    pipeline += ["spec-clarify", "spec-checklist", "resolve-doubts", "task-compiler"]
 
     return {
         "phase": phase,

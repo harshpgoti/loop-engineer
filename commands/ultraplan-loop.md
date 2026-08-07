@@ -21,6 +21,18 @@ loop plan-loop ultraplan status
 - `/plan-loop` when `plan/PLAN_SCALE.md` says `platform`
 - `/loop-engine` planning branch when ultraplan incomplete
 
+## Continuation
+
+Terminus: **the active step's pack complete, its feature spec created and clarified.**
+After filling the pack, create the feature spec and continue into `/spec-clarify` -
+do not stop and list those for the user.
+
+**One step per session is a deliberate context Stop Condition**, not chunking:
+ultraplan packs are large, so after finishing one step's pack and spec, report
+progress (`plan/ULTRAPLAN_STATUS.md`), run `/compact-loop`, and continue the next
+step in a fresh session. See `docs/CONTINUATION.md`.
+
 ## Output
 
-One fully detailed step pack under `plan/steps/NN-slug/` per session.
+One fully detailed step pack under `plan/steps/NN-slug/`, its feature spec
+clarified, and `plan/ULTRAPLAN_STATUS.md` showing what remains.

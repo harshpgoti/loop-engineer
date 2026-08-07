@@ -63,6 +63,23 @@ can't be answered from plan/docs. Hands off to `/revise-plan`, `/sync-loop-state
 
 Key skill: `skills/ask-loop/SKILL.md`
 
+## `/resolve-doubts`
+
+```text
+gather open items (DOUBTS.md + spec open questions + blocked pre-dev gates + weak evidence)
+-> classify blocking vs deferrable
+-> walk blocking items with the user, one at a time
+-> record resolutions (DOUBTS.md/DECISIONS.md/spec/EVIDENCE) -> re-check gates
+-> GO (clear to /product-develop) / NO-GO (blockers remain)
+```
+
+Plan-wide, interactive, write-enabled pre-development readiness sweep. Distinct from
+`/spec-clarify` (one feature spec), `/ask-loop` (read-only), and `/prod-gap` (writes a
+report). Runs standalone or as the terminal phase inside `/plan-loop` (the harness emits
+`PHASE: resolve-doubts` when planning is otherwise complete but `DOUBTS.md` has open items).
+
+Key skill: `skills/plan-loop/phases/resolve-doubts.md`
+
 ## `/product-develop`
 
 ```text

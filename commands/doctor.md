@@ -48,6 +48,13 @@ Custom workspace:
 python scripts/doctor.py --workspace ../product
 ```
 
+## Continuation
+
+**Read-only - deliberately does not cascade.** Analysing and reporting is this
+command's product; recommending a next command is correct here, not a
+continuation failure. Any *fix* it identifies belongs to `/revise-plan`,
+`/product-develop`, or a `TASKS.yml` entry. See `docs/CONTINUATION.md`.
+
 ## Output
 
 Return:

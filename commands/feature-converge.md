@@ -23,6 +23,14 @@ loop feature converge
 - `/product-develop` closeout (before session-end)
 - `/loop-engine` development phase closeout
 
+## Continuation
+
+Terminus: **drift resolved or captured.** Detecting drift is not the deliverable -
+for each item, either fix it now (when it is a small, safe reconciliation) or write
+a `TASKS.yml` entry describing the rework. Do not hand the user a drift list with
+nothing tracking it. See `docs/CONTINUATION.md`.
+
 ## Output
 
-`converge-report.md` and handoff next task.
+`converge-report.md`, the drift items fixed or the task IDs created for them, and
+the next task.

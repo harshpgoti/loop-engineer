@@ -12,6 +12,8 @@ from plan_paths import (
     SCALE_PLATFORM,
     TEMPLATE_MAP,
     ULTRAPLAN_ARTIFACTS,
+    find_step_file,
+    find_step_folder,
     list_step_files,
     parse_step_id,
     product_map_file,
@@ -95,6 +97,13 @@ def ensure_product_map_template(workspace: Path, product_name: str) -> Path:
 
 def init_ultraplan_folder(workspace: Path, step_id: str, title: str, module_type: str) -> Path:
     folder = step_ultraplan_dir(workspace, step_id, title)
+    # Step identity is the number, not the title. If a folder for this step already
+    # exists under an older title-slug, rename it to the new slug (preserving its
+    # ultraplan content) instead of creating a duplicate sibling.
+    existing = find_step_folder(workspace, step_id)
+    if existing is not None and existing != folder and not folder.exists():
+        folder.parent.mkdir(parents=True, exist_ok=True)
+        existing.rename(folder)
     folder.mkdir(parents=True, exist_ok=True)
     values = {
         "STEP_ID": step_id,
@@ -147,6 +156,18 @@ Run `skills/plan-loop/phases/ultraplan.md` on this step until all ultraplan docs
 Then `loop feature new "{title}" --step plan/{step_path.name}`.
 """
     step_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Reuse the existing index for this step number instead of duplicating it.
+    existing = find_step_file(workspace, step_id)
+    if existing is not None and existing != step_path:
+        # Preserve any edits: rename to the new slug and repoint folder refs + title.
+        text = existing.read_text(encoding="utf-8", errors="ignore")
+        text = re.sub(rf"plan/steps/{re.escape(step_id)}-[a-z0-9-]+", rel_folder, text)
+        text = re.sub(rf"(?m)^# Step {re.escape(step_id)} - .*$", f"# Step {step_id} - {title}", text, count=1)
+        existing.unlink()
+        step_path.write_text(text, encoding="utf-8")
+        return step_path
+
     if not step_path.exists():
         step_path.write_text(content, encoding="utf-8")
     return step_path

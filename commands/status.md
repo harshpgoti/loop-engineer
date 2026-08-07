@@ -45,6 +45,12 @@ Workspace detection helper:
 python scripts/detect_workspace.py
 ```
 
+## Continuation
+
+**Read-only - deliberately does not cascade.** Reporting state and recommending the
+next command *is* this command's product, not a continuation failure. See the
+read-only exemption in `docs/CONTINUATION.md`.
+
 ## Output
 
 Return:

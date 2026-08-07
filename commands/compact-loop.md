@@ -52,6 +52,13 @@ For a parent workspace setup:
 python loop-engineer/scripts/compact_context.py --workspace product
 ```
 
+## Continuation
+
+**Resume after compacting - do not stop.** `/compact-loop` is mid-flight support:
+once `COMPACT.md` is written, continue the work that triggered it, from the
+compacted context. Ending the turn here strands the loop. Only stop if compacting
+was the user's explicit standalone request. See `docs/CONTINUATION.md`.
+
 ## Output
 
 Return:

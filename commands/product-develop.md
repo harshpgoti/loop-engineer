@@ -149,6 +149,19 @@ Validate structure when plan or task outputs change:
 python scripts/validate_outputs.py
 ```
 
+## Continuation
+
+Terminus: **build slice complete** - task implemented, tests run, reviewed, QA'd,
+security-checked, converged, and prod-gap updated. Run that whole chain in this
+session; do not stop after writing code and list the rest for the user. If tasks
+remain and no Stop Condition fired, continue to the next task.
+
+Stop only on: a human-approval gate (deploy/spend/publish/irreversible), a
+requirement question only the user can answer (resolve via `/spec-clarify` first
+if it is spec-shaped), sensitive-data boundary, failing checks you cannot fix
+without a product decision, or context exhaustion (`/compact-loop` first). Name
+the condition and what you need. See `docs/CONTINUATION.md`.
+
 ## Output
 
 Return:

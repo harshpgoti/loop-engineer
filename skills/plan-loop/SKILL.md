@@ -9,11 +9,15 @@ Turn a product idea into a validated, buildable plan. This skill is a **thin orc
 
 ## Command
 
-`/plan-loop` (also the entry for `/ultraplan-loop`, `/spec-clarify`, `/spec-checklist`, which jump straight to one phase).
+`/plan-loop` (also the entry for `/ultraplan-loop`, `/spec-clarify`, `/spec-checklist`,
+`/resolve-doubts`, which **enter** at one phase and then continue down the pipeline
+to the planning terminus - see `docs/CONTINUATION.md`).
 
 ## Progressive disclosure - the one rule
 
-> Read the orchestrator (this file) every planning session. Load a **phase file** only when the harness or a command selects it. Do not read all `phases/*.md` up front.
+> Read the orchestrator (this file) every planning session. Load a **phase file** only when the harness or a command selects it - **and load the next one as you advance through the pipeline**. Do not read all `phases/*.md` up front.
+
+Progressive disclosure controls *when files are read*, not *how far the loop runs*. Reading one phase at a time is correct; **stopping** after one phase is not.
 
 The harness picks the phase for you: `loop session-start` / `loop plan-loop "<idea>"` writes a **`PHASE:` line** into `plan/PLAN_BOOTSTRAP.md` and `plan/SESSION_MANIFEST.md`, computed from deterministic state (init status, `plan/PLAN_SCALE.md`, ultraplan progress, active feature, checklist verdict). Read that line, then open the matching phase file.
 
@@ -26,7 +30,8 @@ The harness picks the phase for you: `loop session-start` / `loop plan-loop "<id
 | **ultraplan** | `plan/PLAN_SCALE.md` = platform with an incomplete step, `/ultraplan-loop`, or `PHASE: ultraplan` | `phases/ultraplan.md` |
 | **spec-clarify** | active feature spec has open questions, `/spec-clarify`, or `PHASE: spec-clarify` | `phases/spec-clarify.md` |
 | **spec-checklist** | before locking `feature-plan.md`, `/spec-checklist`, or `PHASE: spec-checklist` | `phases/spec-checklist.md` |
-| **task-compiler** | spec checklist Ready → compile tasks, or `PHASE: task-compiler` | `phases/task-compiler.md` |
+| **resolve-doubts** | planning otherwise complete but `DOUBTS.md` has open items, `/resolve-doubts`, or `PHASE: resolve-doubts` | `phases/resolve-doubts.md` |
+| **task-compiler** | spec checklist Ready and no open doubts → compile tasks, or `PHASE: task-compiler` | `phases/task-compiler.md` |
 
 ## Read First (orchestrator only - not the phase files)
 
@@ -48,7 +53,7 @@ Then load the current phase file from the router above.
 ## Loop
 
 ```text
-SESSION-START -> READ PHASE -> [grill -> council] -> (platform: ultraplan/step) -> spec-clarify -> spec-checklist -> task-compiler -> SESSION-END
+SESSION-START -> READ PHASE -> [grill -> council] -> (platform: ultraplan/step) -> spec-clarify -> spec-checklist -> resolve-doubts -> task-compiler -> SESSION-END
 ```
 
 ## Instructions
@@ -60,7 +65,7 @@ SESSION-START -> READ PHASE -> [grill -> council] -> (platform: ultraplan/step) 
 3. **Reuse rule:** if a deployment answer already exists in `DECISIONS.md`, resolved `DOUBTS.md`, or `plan/main_plan.md`, reuse it, inform the user, and do not ask again unless they want to change it.
 4. If the user is unavailable, record missing inputs in `DOUBTS.md` and do not invent product-specific facts.
 5. Restate the product state from `memories/MEMORY.md` and `plan/main_plan.md`.
-6. **Run the current phase** (load its file from the router), then advance along the loop. Validate claims with sources before adding product decisions; for research-grounded claims use `skills/research-search/SKILL.md` (`loop research "<query>"`) and cite in `EVIDENCE_LOG.md`.
+6. **Run the current phase** (load its file from the router), then **immediately advance**: recompute the phase and load the next phase file, repeating until the planning terminus (**tasks compiled + go/no-go**) or a Stop Condition. Do not end the turn asking the user to run the next phase - see `docs/CONTINUATION.md`. Validate claims with sources before adding product decisions; for research-grounded claims use `skills/research-search/SKILL.md` (`loop research "<query>"`) and cite in `EVIDENCE_LOG.md`.
 7. Update `plan/main_plan.md`, `plan/step_XX_<name>.md`, `GATES.yml`, `DECISIONS.md`, and `EVIDENCE_LOG.md` as phases produce them.
 8. Draft `DEPLOYMENT_PLAN.md` with `python scripts/deployment_plan.py --source plan`.
 9. Update `memories/MEMORY.md`, `DOUBTS.md`, `HANDOFF.md`, and `.ai/SESSION_LOG.md`.

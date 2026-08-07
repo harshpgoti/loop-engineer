@@ -22,3 +22,9 @@ Use `--tool` hint when known: `cursor`, `claude`, `codex`, `opencode`, `grok`, `
 ## Wired into
 
 `/plan-loop`, `/product-develop`, `/loop-engine`, and ad-hoc product work - always run this first.
+
+## Continuation
+
+**Bootstrap, then run the command that triggered it.** `session-start` is a bookend,
+never the whole turn: after the manifest is written, execute the active command and
+carry it to its terminus. See `docs/CONTINUATION.md`.

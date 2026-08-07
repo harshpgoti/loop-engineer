@@ -56,3 +56,11 @@ Return:
 2. Reused decisions
 3. Open deployment questions
 4. Whether the user must answer now
+
+## Continuation
+
+Terminus: **deployment plan current, open questions captured.** Reuse every answer
+already in `DECISIONS.md` / `plan/main_plan.md` rather than re-asking, and record
+anything still undecided in `DOUBTS.md` so it is tracked - do not end with loose
+questions that live only in the chat. Ask the user only for choices that block the
+next action. See `docs/CONTINUATION.md`.

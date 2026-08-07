@@ -44,6 +44,13 @@ Custom workspace:
 python scripts/sync_loop_state.py --workspace ../product
 ```
 
+## Continuation
+
+**Reconcile, then resume - do not stop.** `/sync-loop-state` is mid-flight repair:
+after fixing drift, continue the command that was interrupted. A drift report with
+nothing acted on is not a result. Stop only if a conflict needs a user decision.
+See `docs/CONTINUATION.md`.
+
 ## Output
 
 Return:

@@ -134,6 +134,16 @@ def main() -> int:
     main_plan_path = workspace / "plan" / "main_plan.md"
     main_plan_path.parent.mkdir(parents=True, exist_ok=True)
     write_file(main_plan_path, main_plan, args.force)
+
+    # Step identity is the number, not the title. If step 01 already exists under
+    # an older first-step slug, rename it to the new slug instead of creating a
+    # duplicate (write_file then preserves its content unless --force).
+    existing_step = next(
+        (p for p in sorted(step_file.parent.glob("step_01_*.md")) if p.is_file() and p != step_file),
+        None,
+    )
+    if existing_step is not None and not step_file.exists():
+        existing_step.rename(step_file)
     write_file(step_file, step_plan, args.force)
 
     recorded = {

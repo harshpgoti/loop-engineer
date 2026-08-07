@@ -36,6 +36,14 @@ DETECT SIGNALS -> SCAFFOLD (if missing) -> FILL ARCHITECTURE -> PICK MODEL -> AU
 - Destructive/high-risk tools require human approval (AGENTS.md rule 5).
 - Ground non-obvious architecture/eval/safety claims via `skills/research-search/SKILL.md` and cite in `EVIDENCE_LOG.md`.
 
+## Continuation
+
+Terminus: **agent architecture recorded, skills/tools scaffolded, eval plan in place.**
+Scaffolding is the start, not the deliverable - fill `AGENT_ARCHITECTURE.md`, author
+the skills the agent needs, and write the evals in this run. Continue into the
+planning terminus (tasks compiled) when invoked inside `/plan-loop`. Stop only for
+product decisions only the user can make. See `docs/CONTINUATION.md`.
+
 ## Output
 
 `agent/AGENT_ARCHITECTURE.md` status, agent shape, model provider, skills/tools authored, eval status, next command.

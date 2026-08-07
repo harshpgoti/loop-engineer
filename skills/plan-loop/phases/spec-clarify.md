@@ -30,6 +30,13 @@ Turn open questions in the active feature `spec.md` into answered rows in `clari
 - Updated `spec.md`
 - List of still-open questions (if any)
 
-## Next phase
+## Continue automatically
 
-`spec-checklist` - quality-gate the spec before writing `feature-plan.md`.
+**Do not stop here and tell the user to run `/spec-checklist`.** Load
+`phases/spec-checklist.md` and keep going: spec-checklist → resolve-doubts (if
+`DOUBTS.md` has open items) → task-compiler. Terminus: **tasks compiled + go/no-go
+for build**. See `docs/CONTINUATION.md`.
+
+Stop early only on a Stop Condition - a blocking question the user must answer, a
+strategic pivot (→ `phases/council.md`), or a sensitive-data boundary. When you
+stop, report the unanswered question, not a command to run.

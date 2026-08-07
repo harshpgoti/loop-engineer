@@ -43,6 +43,11 @@ Challenge product assumptions, ask hard user questions, record unresolved doubts
 - New doubts
 - Recommended next action
 
-## Next phase
+## Continue automatically
 
-`council` - pressure-test the grilled plan across senior perspectives before locking strategy/architecture.
+Load `phases/council.md` and keep going - pressure-test the grilled plan across
+senior perspectives before locking strategy/architecture. Do not stop and ask the
+user to run council; it is the next thing to execute, not a suggestion.
+
+Stop early only if grilling surfaced a question that genuinely changes product
+direction and only the user can settle it. See `docs/CONTINUATION.md`.

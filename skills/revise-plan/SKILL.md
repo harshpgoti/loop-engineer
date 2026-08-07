@@ -99,6 +99,14 @@ X?", "how does auth work?", "what's built so far?") rather than a correction or 
 that's `/ask-loop` (`skills/ask-loop/SKILL.md`) - the read-only mirror of this command. Route
 there instead of editing. Only stay in `/revise-plan` when something should actually change.
 
+## Continuation
+
+Terminus: **plan consistent again.** The edit is not done until everything it
+invalidated is reconciled in this same run - gates walked back to `blocked`,
+rework tasks written to `TASKS.yml`/`tasks.md`, doubts resolved, decisions logged.
+Never leave the workspace describing the old requirement. See
+`docs/CONTINUATION.md`.
+
 ## Scope boundary
 
 - This command edits **plan, spec, decision, doubt, gate, and task files only**. It never

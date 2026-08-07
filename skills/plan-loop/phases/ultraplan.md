@@ -71,6 +71,15 @@ Before marking a step ultraplan-complete:
 - **`/plan-loop`:** After scale detect - branch here for platform scale
 - **`/loop-engine`:** Routes here when `PLAN_SCALE.md` is platform and ultraplan incomplete
 
-## Next phase
+## Continue automatically
 
-For the active step: create the feature spec, then `spec-clarify`.
+When the active step's pack is complete: create its feature spec
+(`loop feature new "<title>" --step plan/step_NN_*.md`), then load
+`phases/spec-clarify.md` and continue to the planning terminus for that step.
+Do not stop and ask the user to run the next command.
+
+**Deliberate boundary:** deep-plan **one step per session**. Ultraplan packs are
+context-heavy, so after finishing a step's pack and its spec, report progress
+(`plan/ULTRAPLAN_STATUS.md`) rather than starting the next step's pack - run
+`/compact-loop` and continue in a fresh session. This is a context Stop Condition,
+not a chunking habit. See `docs/CONTINUATION.md`.

@@ -24,14 +24,26 @@ loop feature list
 1. Infer title from current step plan or user message.
 2. Run `loop feature new` with `--step` pointing at the related step file.
 3. Fill `spec.md` from PRD / step plan content - do not duplicate entire step plan; link and summarize.
-4. Tell user next steps: `/spec-clarify` → `/spec-checklist` → feature-plan → task-compiler.
+4. **Continue into `/spec-clarify` yourself** - then `/spec-checklist` → resolve-doubts → task-compiler. Do not stop here and list those as steps for the user.
 
 ## Wired From
 
 - `/plan-loop` step 14-15 (after step plan, before task-compiler)
 - `/loop-engine` when entering planning for a new module
 
+## Continuation
+
+Terminus: **tasks compiled + go/no-go for build.** Creating the folder is the
+start of the work, not the end - cascade through spec-clarify → spec-checklist →
+resolve-doubts → task-compiler. See `docs/CONTINUATION.md`.
+
+## Stop Conditions
+
+- The spec needs product input only the user has - ask the question directly.
+
 ## Output
 
 - `plan/features/NNN-slug/`
 - `.loop/active-feature.json`
+- Downstream results of the cascade (clarifications, checklist verdict, tasks) -
+  or the Stop Condition that halted it

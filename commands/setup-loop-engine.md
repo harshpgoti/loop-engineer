@@ -67,6 +67,12 @@ Imports `MEMORY.md`, `USER.md`, `SOUL.md`, and `skills/` from `--source`. On a f
 workspace the import supersedes Loop Engineer's own starter placeholders automatically;
 on an existing workspace, real content is protected unless `--overwrite` is passed.
 
+## Continuation
+
+Terminus: **workspace registered, starter files seeded, agents wired.** Finish all
+of that in one run. Starting product planning is a scope the user opts into, so
+recommending `/plan-loop` here is correct - see `docs/CONTINUATION.md`.
+
 ## Output
 
 1. Workspace path and memory mode

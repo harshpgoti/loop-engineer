@@ -109,7 +109,10 @@ Read `plan/SESSION_MANIFEST.md` before all other reads. Do not skip session-end.
 
 ## Routing logic
 
-After session-start, pick **one branch** per session (or chain plan → develop when gates allow):
+After session-start, pick the **entry** branch from state - then **keep executing
+through it and into the next**, including plan → develop when the gates allow.
+Stop only on a Stop Condition (`docs/CONTINUATION.md`); never end a turn telling
+the user to run the next branch yourself.
 
 | Condition | Action |
 |-----------|--------|

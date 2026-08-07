@@ -33,7 +33,12 @@ loop session-start --command /loop-engine --tool "<tool>"
 loop session-end --command /loop-engine --summary "<progress>"
 ```
 
-## Routing (pick branch per session)
+## Routing (enter here, then **keep going** - do not stop at the branch boundary)
+
+Pick the entry branch from state, then cascade through it and into the next until
+the build slice is complete or a Stop Condition fires (`docs/CONTINUATION.md`).
+Plan work flows into development automatically **when the gates pass** - crossing
+that boundary is this command's job, not the user's.
 
 | State | Delegate to |
 |-------|-------------|
@@ -41,7 +46,7 @@ loop session-end --command /loop-engine --summary "<progress>"
 | Idea scope unknown | `loop plan-loop scale --write` |
 | Scale **platform**, ultraplan incomplete | `skills/plan-loop/phases/ultraplan.md` / `loop plan-loop ultraplan next` |
 | Missing step plan or feature spec | `commands/plan-loop.md` (steps 14-16) |
-| Spec needs clarify/checklist | `/spec-clarify` → `/spec-checklist` |
+| Spec needs clarify/checklist | `/spec-clarify` → `/spec-checklist` → `/resolve-doubts` → compile (run the chain, don't hand it back) |
 | Missing tasks | `skills/plan-loop/phases/task-compiler.md` |
 | Product is/includes an AI agent | `skills/agent-builder/SKILL.md` (`loop auto-agent-skills --write` first) |
 | Build gates pass | `commands/product-develop.md` full flow |
@@ -81,10 +86,20 @@ SESSION-START → MANIFEST → RECALL → AUTO-SKILLS → AUTO-AGENT-SKILLS
 10b. If a script import fails or the workspace doesn't resolve as expected → `loop doctor` (`skills/doctor/SKILL.md`) before continuing.
 11. Closeout → `loop session-end` (memory-review staged; converge on develop).
 
+## Continuation
+
+Terminus: **build slice complete** (task built, reviewed, QA'd, converged,
+prod-gap checked) - or the planning terminus when build gates are still blocked.
+Cascade automatically; stop only on a Stop Condition from `docs/CONTINUATION.md`
+(user decision, human-approval gate, sensitive-data boundary, missing info,
+context exhaustion → `/compact-loop` first). When you stop, name the condition and
+what you need.
+
 ## Output
 
-- Branch ran (plan / develop / both)
+- Branches ran end to end (plan / develop / both)
 - Gate and feature state
 - Session lifecycle + auto-skills status
 - Work completed, gaps, blockers
+- If stopped early: which Stop Condition fired and what is needed
 - Next command

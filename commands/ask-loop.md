@@ -19,6 +19,11 @@ This command is **read-only**: it never edits plan, spec, decision, doubt, gate,
 product-code files. If the answer implies a change the user wants made, hand off to
 `/revise-plan` (plan) or `/product-develop` (code) - do not edit here.
 
+**Deliberately does not cascade.** Recommending a next command *is* this command's
+product, not a continuation failure - the user asked a question, not for work to be
+done. Handing off is correct here; see the read-only exemption in
+`docs/CONTINUATION.md`.
+
 ## Required Reads
 
 Full plan context, always all of it - no progressive disclosure - plus build artifacts and,

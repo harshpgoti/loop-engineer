@@ -18,6 +18,7 @@ Run a reusable product loop that helps any user plan, validate, build, test, sec
 10. **Tests required** - No task marked done without relevant tests or a documented reason tests could not run.
 11. **Handoff required** - Update `memories/MEMORY.md`, `DOUBTS.md`, and `HANDOFF.md` before ending session.
 12. **Always-on lifecycle** - Before loop work: `loop session-start`. Before stopping: `loop session-end`. Read `plan/SESSION_MANIFEST.md` first. Works in any coding agent (Cursor, Claude, Codex, OpenCode, Grok, ...).
+13. **Run to terminus, not to chunk** - A command cascades automatically through its downstream phases until its **terminus** or a **Stop Condition**. Never end a turn by telling the user to run a command you could have run. Reconcile whatever your work invalidates (gates, tasks, specs, decisions) in the same run. When you must stop, name the Stop Condition and what you need. See `docs/CONTINUATION.md`.
 
 ## Always-on session lifecycle (any tool)
 
@@ -81,6 +82,7 @@ The user should be able to type these commands in Cursor, Codex, Claude Code, Gr
 | `/feature-new` | Create numbered feature spec folder (`plan/features/`) | `commands/feature-new.md` + `skills/feature-workflow/SKILL.md` |
 | `/spec-clarify` | Structured clarification on active feature spec | `commands/spec-clarify.md` + `skills/plan-loop/phases/spec-clarify.md` |
 | `/spec-checklist` | Spec quality gate before feature-plan | `commands/spec-checklist.md` + `skills/plan-loop/phases/spec-checklist.md` |
+| `/resolve-doubts` | Interactively clear all open doubts/blockers plan-wide, then give a go/no-go for development | `commands/resolve-doubts.md` + `skills/plan-loop/phases/resolve-doubts.md` |
 | `/feature-converge` | Post-build drift check vs spec/tasks | `commands/feature-converge.md` + `skills/feature-converge/SKILL.md` |
 | `/ultraplan-loop` | Deep per-step planning for platform-scale products | `commands/ultraplan-loop.md` + `skills/plan-loop/phases/ultraplan.md` |
 | `/frontend-animation` | Route to built-in GSAP, Motion.dev, and 3D core skills for frontend work | `commands/frontend-animation.md` + `skills/frontend-animation/SKILL.md` |

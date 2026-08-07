@@ -59,6 +59,15 @@ Each task should include:
 - Acceptance criteria summary
 - Next build task
 
-## Next
+## Continue automatically
 
-Planning is complete for this feature. Hand off to `/product-develop`, then `loop session-end`.
+This is the **planning terminus**: tasks are compiled and the feature is buildable.
+
+- Invoked via `/loop-engine`: continue into `commands/product-develop.md` when the
+  build gates pass - do not stop at the plan/build boundary.
+- Invoked via `/plan-loop` (or a phase command that cascaded here): report the
+  go/no-go and the compiled tasks, then run `loop session-end`. Starting the build
+  is a scope change the user opts into with `/product-develop` or `/loop-engine`.
+
+Either way, finish the run: update `TASKS.yml`, `HANDOFF.md`, and memory before
+ending. See `docs/CONTINUATION.md`.

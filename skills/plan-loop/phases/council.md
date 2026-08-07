@@ -51,7 +51,16 @@ Make planning decisions sharper by forcing multiple senior perspectives before t
 - Open questions
 - Gate recommendation
 
-## Next phase
+## Continue automatically
 
-- **Platform scale** (`plan/PLAN_SCALE.md` = platform) → `ultraplan` for the active step.
-- **Convenient scale** → create the feature spec, then `spec-clarify`.
+Execute the branch - do not report it and stop:
+
+- **Platform scale** (`plan/PLAN_SCALE.md` = platform) → load `phases/ultraplan.md`
+  for the active step.
+- **Convenient scale** → create the feature spec (`loop feature new "<title>"`),
+  then load `phases/spec-clarify.md` and continue to the planning terminus
+  (tasks compiled + go/no-go).
+
+Stop early only when the council verdict is **block and ask user** or **kill/rethink**
+- those are genuine user decisions. Report the verdict and what you need. See
+`docs/CONTINUATION.md`.

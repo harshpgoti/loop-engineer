@@ -36,6 +36,13 @@ READ FULL PLAN CONTEXT -> PARSE STATEMENT INTO FACTS -> ROUTE EACH FACT TO ITS F
 -> UPDATE HANDOFF/MEMORY
 ```
 
+## Continuation
+
+Terminus: **plan consistent again.** The edit isn't done until everything it
+invalidated is reconciled in the same run - gates walked back to `blocked`, rework
+tasks written, doubts resolved, decisions logged. Never leave the workspace
+describing the old requirement. See `docs/CONTINUATION.md`.
+
 ## Output
 
 1. Which fact(s) changed and in which file(s)

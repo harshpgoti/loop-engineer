@@ -46,3 +46,7 @@ Tell the user the next command and any human blockers that need attention.
 `/status` is a fixed snapshot, not a Q&A. If the user wants detail - "why did we decide X?",
 "how does Y work?", "what's built vs pending?" - point them at `/ask-loop`
 (`skills/ask-loop/SKILL.md`), which answers from full plan and build context.
+
+If open doubts (`DOUBTS.md`) or blocked pre-development gates remain, point the user at
+`/resolve-doubts` (`skills/plan-loop/phases/resolve-doubts.md`) to clear them interactively
+before starting development.
