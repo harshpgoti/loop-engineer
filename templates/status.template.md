@@ -16,6 +16,10 @@
 - **Active task:** {{ACTIVE_TASK}}
 - **Open doubts:** {{OPEN_DOUBTS_COUNT}}
 
+## Product Hierarchy
+
+{{HIERARCHY}}
+
 ## Human Blockers
 
 {{HUMAN_BLOCKERS}}

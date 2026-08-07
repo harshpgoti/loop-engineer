@@ -71,6 +71,16 @@ def run_recall(workspace: Path, query: str | None = None, limit: int = 5) -> int
     return len(hits)
 
 
+def _hierarchy(workspace: Path, *, stage: bool = True) -> dict:
+    """Refresh product-hierarchy links and reports. Never raises - like _auto_update."""
+    try:
+        from hierarchy_sync import run
+
+        return run(workspace, stage=stage)
+    except Exception as exc:  # noqa: BLE001 - a hierarchy problem must not block a session
+        return {"enabled": False, "role": None, "error": f"{exc.__class__.__name__}: {exc}"}
+
+
 def render_manifest(
     workspace: Path,
     *,
@@ -80,6 +90,7 @@ def render_manifest(
     auto_skills: list[str],
     auto_agent_skills: list[str] | None = None,
     update_status: dict | None = None,
+    hierarchy: dict | None = None,
 ) -> str:
     auto_agent_skills = auto_agent_skills or []
     lines = [
@@ -132,6 +143,14 @@ def render_manifest(
         lines.extend(["", "## Auto agent-development skills", ""])
         for name in auto_agent_skills:
             lines.append(f"- `{name}` - see `plan/AUTO_AGENT_SKILLS.md`")
+
+    if hierarchy:
+        try:
+            from hierarchy_sync import manifest_block
+
+            lines.extend(manifest_block(workspace, hierarchy))
+        except Exception:
+            pass
 
     bootstrap = workspace / "plan" / "PLAN_BOOTSTRAP.md"
     if bootstrap.exists():
@@ -212,6 +231,8 @@ def session_start(
     agent_picks = run_agent_router(workspace, extra=text, write=True)
     auto_agent_names = [name for name, _ in agent_picks]
 
+    hierarchy = _hierarchy(workspace)
+
     plan_bootstrap = None
     if text.strip() and command and any(c in (command or "") for c in ("/plan-loop", "/loop-engine", "plan", "loop-engine")):
         try:
@@ -232,6 +253,7 @@ def session_start(
             auto_skills=auto_names,
             auto_agent_skills=auto_agent_names,
             update_status=update_status,
+            hierarchy=hierarchy,
         ),
         encoding="utf-8",
     )
@@ -247,6 +269,8 @@ def session_start(
             "auto_skills": auto_names,
             "auto_agent_skills": auto_agent_names,
             "manifest": MANIFEST,
+            "role": hierarchy.get("role"),
+            "sub_products": hierarchy.get("children", 0),
         }
     )
     write_meta(workspace, meta)
@@ -258,8 +282,12 @@ def session_start(
         workspace=str(workspace),
         command=command or "session-start",
         title="Session started",
-        body=f"manifest={MANIFEST}; recall_hits={hits}; auto_skills={auto_names}; auto_agent_skills={auto_agent_names}",
-        tags="lifecycle start",
+        body=(
+            f"manifest={MANIFEST}; recall_hits={hits}; auto_skills={auto_names}; "
+            f"auto_agent_skills={auto_agent_names}; role={hierarchy.get('role')}; "
+            f"sub_products={hierarchy.get('children', 0)}; drift={hierarchy.get('counts')}"
+        ),
+        tags="lifecycle start hierarchy",
     )
 
     return {
@@ -267,6 +295,7 @@ def session_start(
         "auto_skills": auto_names,
         "auto_agent_skills": auto_agent_names,
         "manifest": str(manifest_path),
+        "hierarchy": hierarchy,
     }
 
 
@@ -335,6 +364,18 @@ def session_end(
     if converge_note:
         actions.append(f"feature converge: {converge_note}")
 
+    # Refresh the roll-up so the next agent inherits a current view of the tree.
+    hierarchy = _hierarchy(workspace, stage=False)
+    if hierarchy.get("children"):
+        counts = hierarchy.get("counts", {})
+        actions.append(
+            f"hierarchy: {hierarchy['children']} sub-product(s), "
+            f"{counts.get('error', 0)} error / {counts.get('warn', 0)} warning finding(s) "
+            "in plan/SUBPRODUCTS.md"
+        )
+    elif hierarchy.get("parent"):
+        actions.append(f"hierarchy: sub-product of `{hierarchy['parent']}` (plan/PARENT_CONTEXT.md refreshed)")
+
     pending = len(list_pending(workspace))
 
     closeout_path = workspace / CLOSEOUT
@@ -368,6 +409,7 @@ def session_end(
         "closeout": str(closeout_path),
         "pending": pending,
         "actions": actions,
+        "hierarchy": hierarchy,
     }
 
 
@@ -400,6 +442,15 @@ def main() -> int:
             print(f"  auto skills: {', '.join(result['auto_skills'])}")
         if result["auto_agent_skills"]:
             print(f"  auto agent skills: {', '.join(result['auto_agent_skills'])}")
+        hier = result.get("hierarchy") or {}
+        if hier.get("children"):
+            counts = hier.get("counts", {})
+            print(
+                f"  hierarchy: main with {hier['children']} sub-product(s); "
+                f"{counts.get('error', 0)} error finding(s) - read plan/SUBPRODUCTS.md"
+            )
+        elif hier.get("parent"):
+            print(f"  hierarchy: sub-product of `{hier['parent']}` - read plan/PARENT_CONTEXT.md")
         print("  read plan/SESSION_MANIFEST.md first")
         return 0
 

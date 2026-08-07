@@ -7,8 +7,9 @@ planning phase comes next, from cheap state signals. The orchestrator skill
 matching `phases/<name>.md` file (progressive disclosure).
 
 Phases, in loop order:
-    grill -> council -> [ultraplan if platform] -> spec-clarify -> spec-checklist
-    -> resolve-doubts (when open doubts remain) -> task-compiler
+    grill -> [hierarchy if sub-products drifted] -> council -> [ultraplan if platform]
+    -> spec-clarify -> spec-checklist -> resolve-doubts (when open doubts remain)
+    -> task-compiler
 """
 from __future__ import annotations
 
@@ -17,6 +18,7 @@ from pathlib import Path
 # Phase name -> phase file, relative to the app's skills dir.
 PHASE_FILES = {
     "grill": "skills/plan-loop/phases/grill.md",
+    "hierarchy": "skills/plan-loop/phases/hierarchy.md",
     "council": "skills/plan-loop/phases/council.md",
     "ultraplan": "skills/plan-loop/phases/ultraplan.md",
     "spec-clarify": "skills/plan-loop/phases/spec-clarify.md",
@@ -56,6 +58,22 @@ def _ultraplan_incomplete(workspace: Path) -> bool:
         return find_next_incomplete(workspace) is not None
     except Exception:
         return False
+
+
+def _hierarchy_errors(workspace: Path) -> int:
+    """Unresolved `error` findings in the sub-product roll-up.
+
+    Read from the already-generated report (session-start writes it) rather than
+    re-scanning - the phase router stays a cheap state signal.
+    """
+    path = workspace / "plan" / "SUBPRODUCTS.md"
+    if not path.exists():
+        return 0
+    try:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return 0
+    return sum(1 for line in text.splitlines() if line.strip().startswith("| error |"))
 
 
 def _active_feature(workspace: Path) -> dict | None:
@@ -100,9 +118,15 @@ def compute_plan_phase(workspace: Path) -> dict:
     initialized = _is_initialized(workspace)
     platform = _is_platform(workspace)
     feature = _active_feature(workspace)
+    hierarchy_errors = _hierarchy_errors(workspace)
 
     if not initialized:
         phase, reason = "grill", "product plan is UNINITIALIZED - grill product inputs first"
+    elif hierarchy_errors:
+        phase, reason = (
+            "hierarchy",
+            f"{hierarchy_errors} sub-product(s) contradict the master plan - reconcile before deeper planning",
+        )
     elif platform and _ultraplan_incomplete(workspace):
         phase, reason = "ultraplan", "platform scale with an incomplete ultraplan step"
     elif feature:
@@ -116,7 +140,10 @@ def compute_plan_phase(workspace: Path) -> dict:
     else:
         phase, reason = "council", "plan initialized, no active feature - council-review before the feature spec"
 
-    pipeline = ["grill", "council"]
+    pipeline = ["grill"]
+    if hierarchy_errors or (workspace / "plan" / "SUBPRODUCTS.md").exists():
+        pipeline.append("hierarchy")
+    pipeline.append("council")
     if platform:
         pipeline.append("ultraplan")
     pipeline += ["spec-clarify", "spec-checklist", "resolve-doubts", "task-compiler"]

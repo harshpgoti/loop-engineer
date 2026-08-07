@@ -93,6 +93,16 @@ def bullet(items: list[str]) -> str:
     return "\n".join(f"- {item}" for item in items)
 
 
+def _hierarchy(workspace: Path) -> dict:
+    """Sub-product roll-up for the snapshot. Failure-safe - never blocks /status."""
+    try:
+        from hierarchy_sync import readiness
+
+        return readiness(workspace)
+    except Exception:
+        return {"lines": [], "blockers": []}
+
+
 def summarize(workspace: Path) -> str:
     config = load_config()
     current_name = config.get("current")
@@ -120,6 +130,9 @@ def summarize(workspace: Path) -> str:
     if open_doubt_count == 0 and "open" in doubts.lower():
         open_doubt_count = len([line for line in doubts.splitlines() if line.strip().startswith("- ")])
 
+    hierarchy = _hierarchy(workspace)
+    human_blockers.extend(hierarchy["blockers"])
+
     template = load_template()
     return render(
         template,
@@ -134,6 +147,7 @@ def summarize(workspace: Path) -> str:
             "ACTIVE_TASK": active_task,
             "NEXT_COMMAND": next_command,
             "OPEN_DOUBTS_COUNT": str(open_doubt_count),
+            "HIERARCHY": "\n".join(hierarchy["lines"]) or "- Standalone product (no linked sub-products).",
             "HUMAN_BLOCKERS": bullet(human_blockers),
             "HANDOFF_EXCERPT": handoff or "_No HANDOFF.md yet._",
             "SOURCE_FILES": bullet([f"`{item}`" for item in STATE_FILES]),

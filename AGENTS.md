@@ -84,6 +84,7 @@ The user should be able to type these commands in Cursor, Codex, Claude Code, Gr
 | `/spec-checklist` | Spec quality gate before feature-plan | `commands/spec-checklist.md` + `skills/plan-loop/phases/spec-checklist.md` |
 | `/resolve-doubts` | Interactively clear all open doubts/blockers plan-wide, then give a go/no-go for development | `commands/resolve-doubts.md` + `skills/plan-loop/phases/resolve-doubts.md` |
 | `/feature-converge` | Post-build drift check vs spec/tasks | `commands/feature-converge.md` + `skills/feature-converge/SKILL.md` |
+| `/product-tree` | Show main product ⇄ sub-product workspaces, their roll-up, and where a sub-product's plan contradicts the master plan | `commands/product-tree.md` + `skills/product-tree/SKILL.md` |
 | `/ultraplan-loop` | Deep per-step planning for platform-scale products | `commands/ultraplan-loop.md` + `skills/plan-loop/phases/ultraplan.md` |
 | `/frontend-animation` | Route to built-in GSAP, Motion.dev, and 3D core skills for frontend work | `commands/frontend-animation.md` + `skills/frontend-animation/SKILL.md` |
 | `/agent-builder` | Design/scaffold an AI agent (or agentic/dynamic workflow) as the product itself - auto-activates in `/plan-loop` and `/product-develop` | `commands/agent-builder.md` + `skills/agent-builder/SKILL.md` |
@@ -168,6 +169,26 @@ Use these before major work:
 When you run `/plan-loop`, `/loop-engine`, or any loop command, Loop checks the current folder (and parents) for a `.loop-engineer/` data dir. If found, it uses `<that-folder>/.loop-engineer/`; otherwise it uses `~/.loop-engineer/data/`.
 
 See `docs/DATA_LAYOUT.md`.
+
+## Product hierarchy (main product + sub-products)
+
+Local workspaces nest. A main product folder holding sub-product folders links them into
+a tree (`<workspace>/.loop/workspace.json`, refreshed at every `loop session-start`):
+
+- **main** - reads every sub-product into `plan/SUBPRODUCTS.md`; may still plan and build its own code.
+- **sub** - reads inherited decisions and contracts from `plan/PARENT_CONTEXT.md`.
+- **standalone** - the default; single-product behavior is unchanged.
+
+Sub-products under the main folder are auto-discovered; ones elsewhere use
+`loop workspace link <path>`. Deterministic drift checks compare the master plan against
+each sub-product's real plan state.
+
+**Write rule:** metadata (`.loop/workspace.json`) may be stamped into a sub-product;
+product state (`DOUBTS.md`, `HANDOFF.md`, `plan/*`) is **never** written across
+workspaces - it is staged into that sub-product's `.loop/pending/` and applied there with
+`loop pending approve`.
+
+See `docs/PRODUCT_HIERARCHY.md`.
 
 Canonical skills live in `skills/`. User skills live in the product workspace `skills/` folder.
 

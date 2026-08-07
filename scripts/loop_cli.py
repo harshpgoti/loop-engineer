@@ -24,6 +24,10 @@ def cmd_setup(args: argparse.Namespace) -> int:
         extra.extend(["--name", args.name])
     if getattr(args, "memory_mode", None):
         extra.extend(["--memory-mode", args.memory_mode])
+    if getattr(args, "role", None):
+        extra.extend(["--role", args.role])
+    if getattr(args, "parent", None):
+        extra.extend(["--parent", args.parent])
     if getattr(args, "interactive", False):
         extra.append("--interactive")
     if getattr(args, "use_cwd", False):
@@ -286,6 +290,56 @@ def cmd_session_lifecycle(args: argparse.Namespace) -> int:
     return run_script("session_lifecycle.py", extra)
 
 
+def cmd_workspace(args: argparse.Namespace) -> int:
+    sys.path.insert(0, str(SCRIPTS))
+    from workspace_tree import ROLES, describe_tree, link, refresh, set_role, unlink
+    from workspace_utils import resolve_workspace
+
+    workspace = resolve_workspace(getattr(args, "workspace", None))
+
+    if args.workspace_cmd == "tree":
+        print(describe_tree(workspace))
+        return 0
+
+    if args.workspace_cmd == "refresh":
+        return run_script("hierarchy_sync.py", _workspace_args(args) + (["--no-stage"] if args.no_stage else []))
+
+    if args.workspace_cmd == "link":
+        entry = link(workspace, args.path, name=args.name, map_id=args.map_id)
+        print(f"Linked sub-product '{entry['name']}' -> {entry['path']}")
+        if entry.get("map_id"):
+            print(f"Product map row: {entry['map_id']}")
+        else:
+            print("No PRODUCT_MAP.md row matched - add one so the master plan accounts for it.")
+        print(describe_tree(workspace))
+        return 0
+
+    if args.workspace_cmd == "unlink":
+        if not unlink(workspace, args.name):
+            print(f"No linked sub-product named '{args.name}'.", file=sys.stderr)
+            return 1
+        print(f"Unlinked '{args.name}'. Its own workspace is untouched.")
+        return 0
+
+    if args.workspace_cmd == "role":
+        if not args.role:
+            tree = refresh(workspace)
+            if not tree.get("enabled"):
+                print(f"hierarchy disabled: {tree.get('reason')}")
+                return 0
+            print(f"role={tree.get('role')} pinned={tree.get('pinned', False)}")
+            return 0
+        if args.role not in ROLES:
+            print(f"Unknown role: {args.role} (expected {', '.join(ROLES)})", file=sys.stderr)
+            return 2
+        set_role(workspace, args.role, pinned=True)
+        print(f"Role pinned to '{args.role}' for {workspace}")
+        print(describe_tree(workspace))
+        return 0
+
+    return 2
+
+
 def cmd_feature(args: argparse.Namespace) -> int:
     extra: list[str] = []
     if args.feature_cmd == "new":
@@ -446,6 +500,13 @@ def build_parser() -> argparse.ArgumentParser:
     setup = sub.add_parser("setup", help="First-time setup and workspace registration.")
     setup.add_argument("--name", default=None)
     setup.add_argument("--memory-mode", choices=("local", "global"), default=None)
+    setup.add_argument(
+        "--role",
+        choices=("main", "sub", "standalone"),
+        default=None,
+        help="Product hierarchy role (default: auto-detect).",
+    )
+    setup.add_argument("--parent", default=None, help="With --role sub: the main product folder.")
     setup.add_argument("--interactive", action="store_true")
     setup.add_argument("--use-cwd", action="store_true", help="Use current directory as local product workspace.")
     setup.add_argument(
@@ -571,6 +632,35 @@ def build_parser() -> argparse.ArgumentParser:
     skill_installed.add_argument("--project", action="store_true")
     skill_installed.add_argument("--host", action="append", dest="hosts")
     skill_installed.set_defaults(func=cmd_skills)
+
+    workspace_p = sub.add_parser(
+        "workspace",
+        help="Product hierarchy: main product workspace and its sub-product workspaces.",
+    )
+    workspace_sub = workspace_p.add_subparsers(dest="workspace_cmd", required=True)
+    ws_tree = workspace_sub.add_parser("tree", help="Show this workspace's role, parent, and sub-products.")
+    ws_tree.add_argument("--workspace", default=argparse.SUPPRESS)
+    ws_tree.set_defaults(func=cmd_workspace)
+    ws_refresh = workspace_sub.add_parser(
+        "refresh", help="Re-scan links and rewrite plan/SUBPRODUCTS.md or plan/PARENT_CONTEXT.md."
+    )
+    ws_refresh.add_argument("--workspace", default=argparse.SUPPRESS)
+    ws_refresh.add_argument("--no-stage", action="store_true", help="Report drift without staging notes into sub-products.")
+    ws_refresh.set_defaults(func=cmd_workspace)
+    ws_link = workspace_sub.add_parser("link", help="Link a sub-product workspace (use for folders outside this one).")
+    ws_link.add_argument("path", help="Path to the sub-product folder.")
+    ws_link.add_argument("--name", default=None, help="Name in the roll-up (default: folder name).")
+    ws_link.add_argument("--map-id", default=None, help="PRODUCT_MAP.md row id, e.g. 02.")
+    ws_link.add_argument("--workspace", default=argparse.SUPPRESS)
+    ws_link.set_defaults(func=cmd_workspace)
+    ws_unlink = workspace_sub.add_parser("unlink", help="Forget a linked sub-product (its workspace is untouched).")
+    ws_unlink.add_argument("name")
+    ws_unlink.add_argument("--workspace", default=argparse.SUPPRESS)
+    ws_unlink.set_defaults(func=cmd_workspace)
+    ws_role = workspace_sub.add_parser("role", help="Show or pin this workspace's role (main, sub, standalone).")
+    ws_role.add_argument("role", nargs="?", default=None, choices=["main", "sub", "standalone"])
+    ws_role.add_argument("--workspace", default=argparse.SUPPRESS)
+    ws_role.set_defaults(func=cmd_workspace)
 
     feature = sub.add_parser("feature", help="Feature spec folders under plan/features/.")
     feature_sub = feature.add_subparsers(dest="feature_cmd", required=True)

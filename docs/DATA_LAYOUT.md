@@ -65,6 +65,25 @@ When you run `/plan-loop`, `/loop-engine`, or any loop command:
 
 Example: set up `H:/POC/QEAutoAI` once with local mode, close the terminal, come back later - `/plan-loop` automatically uses `H:/POC/QEAutoAI/.loop-engineer/` again, from anywhere inside that product folder (including subdirectories).
 
+## Nested products (main product + sub-products)
+
+Local workspaces nest. A main product folder can contain sub-product folders that each
+have their own `.loop-engineer/`, and resolution still picks the **nearest** one - working
+inside `auth-svc/` uses `auth-svc/.loop-engineer/`, never the parent's.
+
+```text
+main-product/
+├── .loop-engineer/          role: main   (plan/SUBPRODUCTS.md rolls the children up)
+├── auth-svc/
+│   └── .loop-engineer/      role: sub    (plan/PARENT_CONTEXT.md holds what it inherits)
+└── portal/
+    └── .loop-engineer/      role: sub
+```
+
+The link between them lives in `<workspace>/.loop/workspace.json` and is refreshed at
+every `loop session-start`. No file means `standalone`, the unchanged single-product
+behavior. See [`docs/PRODUCT_HIERARCHY.md`](PRODUCT_HIERARCHY.md).
+
 ## Central tool + local product (multiple products)
 
 ```text
@@ -123,7 +142,8 @@ except the three known Loop-Engineer-generated files under `docs/`.
 4. `memories/MEMORY.md`
 5. `CONTEXT.md`
 6. `plan/main_plan.md`, `HANDOFF.md`, active feature `spec.md` / `tasks.md` (when set)
-7. `plan/SESSION_RECALL.md`, `plan/AUTO_SKILLS.md`, `plan/AUTO_AGENT_SKILLS.md`
+7. `plan/SUBPRODUCTS.md` (main product) or `plan/PARENT_CONTEXT.md` (sub-product)
+8. `plan/SESSION_RECALL.md`, `plan/AUTO_SKILLS.md`, `plan/AUTO_AGENT_SKILLS.md`
 
 All paths above are relative to the resolved data root (`~/.loop-engineer/data/`
 or `<product-folder>/.loop-engineer/`).

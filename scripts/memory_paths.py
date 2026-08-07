@@ -161,6 +161,8 @@ def session_bootstrap_paths(workspace: Path) -> list[Path]:
         workspace / "plan" / "PLAN_SCALE.md",
         workspace / "plan" / "IDEA.md",
         workspace / "plan" / "PRODUCT_MAP.md",
+        workspace / "plan" / "SUBPRODUCTS.md",
+        workspace / "plan" / "PARENT_CONTEXT.md",
         workspace / "plan" / "ULTRAPLAN_STATUS.md",
     ]
     ordered.extend(session_bootstrap_feature_paths(workspace))

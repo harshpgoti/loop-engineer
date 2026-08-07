@@ -58,6 +58,11 @@ SCRIPT_IMPORTS = [
     "prod_gap",
     "compact_context",
     "source_tree_scan",
+    "workspace_tree",
+    "hierarchy_drift",
+    "hierarchy_sync",
+    "subproducts_report",
+    "parent_context",
 ]
 
 
@@ -204,6 +209,50 @@ def check_memory_health(workspace: Path, errors: list[str], warnings: list[str],
     reg = registry_path()
     if reg.exists():
         passes.append(f"LOOP_HOME registry present: `{loop_home()}`")
+
+    check_hierarchy_health(workspace, errors, warnings, passes)
+
+
+def check_hierarchy_health(workspace: Path, errors: list[str], warnings: list[str], passes: list[str]) -> None:
+    """Broken links and one-way parent/child relationships."""
+    try:
+        from workspace_tree import ROLE_STANDALONE, read_meta, refresh, resolve_children
+    except ImportError as exc:  # pragma: no cover - defensive
+        errors.append(f"hierarchy check: cannot import workspace_tree ({exc})")
+        return
+
+    try:
+        tree = refresh(workspace)
+    except Exception as exc:  # noqa: BLE001
+        errors.append(f"hierarchy check failed: {exc}")
+        return
+
+    if not tree.get("enabled") or tree.get("role") == ROLE_STANDALONE:
+        return
+
+    for child in tree.get("children") or []:
+        if child.get("missing"):
+            errors.append(
+                f"Sub-product `{child['name']}` is linked but missing at `{child['path']}` - "
+                f"run `loop workspace unlink {child['name']}` or restore the folder."
+            )
+            continue
+        if not child.get("map_id"):
+            warnings.append(f"Sub-product `{child['name']}` has no `plan/PRODUCT_MAP.md` row.")
+
+    parent = tree.get("parent")
+    if parent:
+        siblings = {c["folder"] for c in resolve_children(parent["data_dir"])}
+        if tree["folder"].resolve() not in siblings:
+            warnings.append(
+                f"Parent `{parent['name']}` does not list this workspace - the link is one-way. "
+                f"Run `loop workspace link {tree['folder']}` in the parent."
+            )
+        elif read_meta(workspace).get("parent"):
+            passes.append(f"Hierarchy link healthy: sub-product of `{parent['name']}`.")
+
+    if tree.get("children"):
+        passes.append(f"Hierarchy link healthy: {len(tree['children'])} sub-product(s) resolved.")
 
 
 def diagnose(workspace: Path | None) -> tuple[str, int]:

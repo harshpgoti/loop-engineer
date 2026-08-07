@@ -1,0 +1,437 @@
+"""Deterministic drift checks between a main product plan and its sub-products.
+
+Rules first, AI second (`AGENTS.md` non-negotiable #4): every finding here comes
+from parsing structured plan files - tables, map rows, plan status lines - never
+from a model. The agent reasons on top of the findings; it does not produce them.
+
+Each finding:
+
+    {"id": "decision-conflict:auth-svc:datastore",   # stable - used to dedupe
+     "kind": "decision-conflict",
+     "level": "error" | "warn" | "info",
+     "sub": "auth-svc",
+     "detail": "...",
+     "note": "...text staged into the sub's DOUBTS.md..."}
+"""
+
+from __future__ import annotations
+
+import re
+from datetime import datetime, timezone
+from pathlib import Path
+
+from plan_paths import slugify
+
+
+PLACEHOLDERS = {"", "tbd", "n/a", "na", "none", "unknown", "-", "unset", "todo"}
+
+LEVEL_ERROR = "error"
+LEVEL_WARN = "warn"
+LEVEL_INFO = "info"
+
+STALE_DAYS = 14
+
+
+# ---------------------------------------------------------------------------
+# small readers
+# ---------------------------------------------------------------------------
+
+
+def read_text(path: Path, limit: int = 40000) -> str:
+    if not path.exists() or not path.is_file():
+        return ""
+    try:
+        return path.read_text(encoding="utf-8", errors="ignore")[:limit]
+    except OSError:
+        return ""
+
+
+def is_placeholder(value: str) -> bool:
+    cleaned = value.strip().strip("*_`").lower()
+    cleaned = re.sub(r"\{\{.*?\}\}", "", cleaned).strip()
+    return cleaned in PLACEHOLDERS
+
+
+def table_pairs(text: str, *, skip_sections: tuple[str, ...] = ()) -> dict[str, str]:
+    """Normalized key -> value. See `labelled_pairs` for the display labels."""
+    return {key: value for key, (_label, value) in labelled_pairs(text, skip_sections=skip_sections).items()}
+
+
+def labelled_pairs(text: str, *, skip_sections: tuple[str, ...] = ()) -> dict[str, tuple[str, str]]:
+    """`| Key | Value |` rows and `- **Key:** value` bullets.
+
+    Returns normalized key -> (original label, value). Comparisons use the
+    normalized key; anything shown to a user uses the label as it was written.
+
+    Header and separator rows are dropped. Sections whose heading contains any
+    `skip_sections` token are ignored (e.g. "Pending decisions" - not decided yet).
+    """
+    pairs: dict[str, tuple[str, str]] = {}
+    skipping = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("#"):
+            heading = stripped.lstrip("#").strip().lower()
+            skipping = any(token in heading for token in skip_sections)
+            continue
+        if skipping:
+            continue
+        if stripped.startswith("|"):
+            cells = [c.strip() for c in stripped.strip("|").split("|")]
+            if len(cells) < 2:
+                continue
+            if re.match(r"^[-:\s|]+$", stripped.strip("|")):
+                continue
+            key, value = cells[0], cells[1]
+            if key.lower() in ("item", "topic", "key", "decision", "id", "name", "step"):
+                continue
+            if not key or is_placeholder(value):
+                continue
+            pairs.setdefault(normalize_key(key), (key.strip(), value.strip()))
+            continue
+        bullet = re.match(r"^[-*]\s+\*\*(.+?):?\*\*:?\s*(.+)$", stripped)
+        if bullet:
+            key, value = bullet.group(1), bullet.group(2)
+            if not is_placeholder(value):
+                pairs.setdefault(normalize_key(key), (key.strip(), value.strip()))
+    return pairs
+
+
+def normalize_key(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", value.strip().lower()).strip("-")
+
+
+def normalize_value(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", value.strip().lower()).strip()
+
+
+def _deployment_section(workspace: Path) -> str:
+    from memory_paths import main_plan_file
+
+    text = read_text(main_plan_file(workspace))
+    match = re.search(r"(?ims)^##\s+Deployment\s*&?\s*Infrastructure\s*$(.*?)(?=^##\s|\Z)", text)
+    return match.group(1) if match else ""
+
+
+def deployment_table(workspace: Path) -> dict[str, str]:
+    return table_pairs(_deployment_section(workspace))
+
+
+def deployment_labels(workspace: Path) -> dict[str, tuple[str, str]]:
+    return labelled_pairs(_deployment_section(workspace))
+
+
+def decisions_table(workspace: Path) -> dict[str, str]:
+    return table_pairs(read_text(workspace / "DECISIONS.md"), skip_sections=("pending",))
+
+
+def decisions_labels(workspace: Path) -> dict[str, tuple[str, str]]:
+    return labelled_pairs(read_text(workspace / "DECISIONS.md"), skip_sections=("pending",))
+
+
+def is_uninitialized(workspace: Path) -> bool:
+    from memory_paths import main_plan_file
+
+    text = read_text(main_plan_file(workspace))
+    return not text.strip() or "Status: **UNINITIALIZED**" in text
+
+
+def plan_corpus(workspace: Path, limit: int = 120000) -> str:
+    """Everything a sub-product planned, as one lowercase blob for mention checks."""
+    from memory_paths import main_plan_file
+
+    chunks = [read_text(main_plan_file(workspace)), read_text(workspace / "DECISIONS.md")]
+    plan_dir = workspace / "plan"
+    if plan_dir.is_dir():
+        for path in sorted(plan_dir.rglob("*.md")):
+            if path.name in ("SESSION_MANIFEST.md", "SESSION_RECALL.md", "SESSION_CLOSEOUT.md"):
+                continue
+            chunks.append(read_text(path, 8000))
+            if sum(len(c) for c in chunks) > limit:
+                break
+    return "\n".join(chunks).lower()
+
+
+def mentions(corpus: str, name: str) -> bool:
+    slug = slugify(name)
+    if not slug:
+        return False
+    words = [w for w in slug.split("-") if len(w) > 2]
+    if not words:
+        return slug in corpus
+    plain = " ".join(words)
+    return slug in corpus or plain in corpus
+
+
+def last_session_at(workspace: Path) -> datetime | None:
+    from session_lifecycle import read_meta
+
+    meta = read_meta(workspace)
+    stamp = meta.get("ended_at") or meta.get("started_at")
+    if not stamp:
+        return None
+    try:
+        parsed = datetime.fromisoformat(str(stamp))
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+
+
+def _finding(kind: str, level: str, sub: str, key: str, detail: str, note: str) -> dict:
+    return {
+        "id": f"{kind}:{slugify(sub) or 'main'}:{normalize_key(key) or 'x'}",
+        "kind": kind,
+        "level": level,
+        "sub": sub,
+        "detail": detail,
+        "note": note,
+    }
+
+
+# ---------------------------------------------------------------------------
+# checks
+# ---------------------------------------------------------------------------
+
+
+def check_children(main_ws: Path, children: list[dict]) -> list[dict]:
+    """All hierarchy drift between a main workspace and its sub-products."""
+    from ultraplan_harness import parse_product_map
+
+    findings: list[dict] = []
+    rows = parse_product_map(main_ws)
+    parent_name = main_ws.parent.name if main_ws.name == ".loop-engineer" else main_ws.name
+
+    if children and not rows:
+        findings.append(
+            _finding(
+                "missing-product-map",
+                LEVEL_WARN,
+                "-",
+                "product-map",
+                f"{len(children)} sub-product workspace(s) exist but `plan/PRODUCT_MAP.md` has no rows - "
+                "the master plan cannot say what each one owns.",
+                "",
+            )
+        )
+
+    bound_ids = {c.get("map_id") for c in children if c.get("map_id")}
+    for row in rows:
+        if row.get("id") not in bound_ids:
+            findings.append(
+                _finding(
+                    "unbuilt-row",
+                    LEVEL_WARN,
+                    row.get("title", row.get("id", "?")),
+                    f"row-{row.get('id')}",
+                    f"Product map row {row.get('id')} ({row.get('title')}) has no sub-product workspace. "
+                    "Plan it here, or run `loop setup --use-cwd` in its folder.",
+                    "",
+                )
+            )
+
+    parent_deploy = deployment_labels(main_ws)
+    parent_decisions = decisions_labels(main_ws)
+
+    for child in children:
+        name = child["name"]
+        child_ws = child["data_dir"]
+
+        if child.get("missing"):
+            findings.append(
+                _finding(
+                    "missing-link",
+                    LEVEL_ERROR,
+                    name,
+                    "path",
+                    f"Linked sub-product `{name}` is no longer at `{child['path']}`. "
+                    f"Run `loop workspace unlink {name}` or restore the folder.",
+                    "",
+                )
+            )
+            continue
+
+        if rows and not child.get("map_id"):
+            findings.append(
+                _finding(
+                    "unmapped-sub",
+                    LEVEL_ERROR,
+                    name,
+                    "map-row",
+                    f"Sub-product `{name}` has no row in the main `plan/PRODUCT_MAP.md`. "
+                    "The master plan does not know it exists.",
+                    f"Parent `{parent_name}` has no PRODUCT_MAP row for this sub-product. "
+                    "Confirm what this sub-product owns so the master plan can map it.",
+                )
+            )
+
+        if is_uninitialized(child_ws):
+            findings.append(
+                _finding(
+                    "uninitialized-sub",
+                    LEVEL_WARN,
+                    name,
+                    "main-plan",
+                    f"Sub-product `{name}` has no initialized plan yet (`plan/main_plan.md` is UNINITIALIZED).",
+                    "",
+                )
+            )
+            continue
+
+        findings.extend(
+            _conflicts(name, parent_name, parent_deploy, deployment_labels(child_ws), "deployment-conflict")
+        )
+        findings.extend(
+            _conflicts(name, parent_name, parent_decisions, decisions_labels(child_ws), "decision-conflict")
+        )
+        findings.extend(_dependency_gaps(main_ws, rows, child, parent_name))
+        findings.extend(_contract_gaps(main_ws, rows, child, parent_name))
+        findings.extend(_staleness(main_ws, child))
+
+    order = {LEVEL_ERROR: 0, LEVEL_WARN: 1, LEVEL_INFO: 2}
+    findings.sort(key=lambda f: (order.get(f["level"], 3), f["sub"], f["kind"]))
+    return findings
+
+
+def _conflicts(
+    name: str,
+    parent_name: str,
+    parent_pairs: dict[str, tuple[str, str]],
+    child_pairs: dict[str, tuple[str, str]],
+    kind: str,
+) -> list[dict]:
+    source = "Deployment & Infrastructure" if kind == "deployment-conflict" else "DECISIONS.md"
+    findings: list[dict] = []
+    for key, (label, parent_value) in parent_pairs.items():
+        child_entry = child_pairs.get(key)
+        if not child_entry:
+            continue
+        child_value = child_entry[1]
+        if normalize_value(child_value) == normalize_value(parent_value):
+            continue
+        findings.append(
+            _finding(
+                kind,
+                LEVEL_ERROR,
+                name,
+                key,
+                f"{label}: main says **{parent_value}**, `{name}` says **{child_value}** ({source}).",
+                f"Conflict with parent `{parent_name}` ({source}): **{label}** is **{parent_value}** at "
+                f"platform level but **{child_value}** here. Parent decisions are constraints - resolve "
+                "before the next `/product-develop`, or raise it with the platform plan.",
+            )
+        )
+    return findings
+
+
+def _row_for(rows: list[dict], map_id: str | None) -> dict | None:
+    if not map_id:
+        return None
+    for row in rows:
+        if row.get("id") == map_id:
+            return row
+    return None
+
+
+def _dependency_gaps(main_ws: Path, rows: list[dict], child: dict, parent_name: str) -> list[dict]:
+    row = _row_for(rows, child.get("map_id"))
+    if not row:
+        return []
+    depends = [d.strip() for d in re.split(r"[,;/]| and ", row.get("depends", "")) if d.strip()]
+    if not depends:
+        return []
+    corpus = plan_corpus(child["data_dir"])
+    findings: list[dict] = []
+    for dep in depends:
+        dep_row = _row_for(rows, dep.zfill(2) if dep.isdigit() else dep)
+        dep_name = dep_row.get("title") if dep_row else dep
+        if mentions(corpus, dep_name):
+            continue
+        findings.append(
+            _finding(
+                "dependency-gap",
+                LEVEL_WARN,
+                child["name"],
+                f"depends-{normalize_key(dep_name)}",
+                f"Product map says `{child['name']}` depends on **{dep_name}**, but its plan never mentions it.",
+                f"Parent `{parent_name}` maps this sub-product as depending on **{dep_name}**, but nothing "
+                "in this plan references it. Add the dependency (contract, data flow, or sequencing) or ask "
+                "for the map row to be corrected.",
+            )
+        )
+    return findings
+
+
+def _contract_gaps(main_ws: Path, rows: list[dict], child: dict, parent_name: str) -> list[dict]:
+    """Parent wrote a cross-module integration spec the sub-product never picked up."""
+    from plan_paths import find_step_folder
+
+    row = _row_for(rows, child.get("map_id"))
+    if not row:
+        return []
+    folder = find_step_folder(main_ws, str(row.get("id")))
+    if folder is None:
+        return []
+    spec = read_text(folder / "integrations.md")
+    if not spec.strip():
+        return []
+
+    spec_lower = spec.lower()
+    counterparts = [
+        other.get("title", "")
+        for other in rows
+        if other.get("id") != row.get("id") and other.get("title") and mentions(spec_lower, other["title"])
+    ]
+    if not counterparts:
+        return []
+
+    corpus = plan_corpus(child["data_dir"])
+    missing = [c for c in counterparts if not mentions(corpus, c)]
+    if not missing:
+        return []
+    joined = ", ".join(f"**{m}**" for m in missing)
+    return [
+        _finding(
+            "contract-gap",
+            LEVEL_ERROR,
+            child["name"],
+            "integrations",
+            f"Main `{folder.name}/integrations.md` defines contracts with {joined}, "
+            f"but `{child['name']}`'s plan does not mention them.",
+            f"Parent `{parent_name}` defines integration contracts with {joined} in "
+            f"`plan/steps/{folder.name}/integrations.md`. This plan does not cover them - "
+            "add the contracts before building, or flag the parent spec as wrong.",
+        )
+    ]
+
+
+def _staleness(main_ws: Path, child: dict) -> list[dict]:
+    from memory_paths import main_plan_file
+
+    plan = main_plan_file(main_ws)
+    if not plan.exists():
+        return []
+    changed = datetime.fromtimestamp(plan.stat().st_mtime, tz=timezone.utc)
+    seen = last_session_at(child["data_dir"])
+    if seen is None or seen >= changed:
+        return []
+    days = (changed - seen).days
+    if days < 1:
+        return []
+    return [
+        _finding(
+            "stale-sub",
+            LEVEL_INFO,
+            child["name"],
+            "stale",
+            f"Main plan changed {days} day(s) after `{child['name']}`'s last session - its roll-up may be behind.",
+            "",
+        )
+    ]
+
+
+def summarize(findings: list[dict]) -> dict[str, int]:
+    counts = {LEVEL_ERROR: 0, LEVEL_WARN: 0, LEVEL_INFO: 0}
+    for item in findings:
+        counts[item["level"]] = counts.get(item["level"], 0) + 1
+    counts["total"] = len(findings)
+    return counts

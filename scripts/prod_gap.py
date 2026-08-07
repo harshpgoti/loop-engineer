@@ -179,6 +179,23 @@ def analyze(workspace: Path) -> str:
         p1.append(f"Source tree contains {source_findings.fixme_count} FIXME marker(s).")
         agent_solvable.append("Agent can triage FIXME markers and convert urgent ones into tasks.")
 
+    # Sub-product gaps are platform gaps: a mapped sub-product that is unplanned or
+    # contradicts the master plan blocks the whole product, not just its own folder.
+    try:
+        from hierarchy_sync import readiness
+
+        hierarchy = readiness(workspace)
+    except Exception:
+        hierarchy = {"children": 0, "blockers": [], "lines": []}
+    if hierarchy["blockers"]:
+        p0.extend(hierarchy["blockers"])
+        production_readiness.append(
+            "Reconcile sub-product plans with the master plan - see `plan/SUBPRODUCTS.md` and `/product-tree`."
+        )
+        recommended.append("Run `/product-tree`, then `/plan-loop` (hierarchy phase) to clear sub-product drift.")
+    if hierarchy["children"]:
+        source_files += f"\n- Sub-products: {hierarchy['children']} (see `plan/SUBPRODUCTS.md`)"
+
     template = load_template()
     return render(
         template,

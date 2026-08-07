@@ -78,6 +78,38 @@ def copy_missing_file(relative_path: str, workspace: Path) -> str:
     return "created"
 
 
+def apply_hierarchy(workspace: Path, *, role: str | None, parent: str | None) -> list[str]:
+    """Pin a role / parent link when asked, then resolve the tree. Never fatal."""
+    try:
+        from workspace_tree import describe_tree, link, product_folder, refresh, set_role
+    except ImportError as exc:  # pragma: no cover - defensive
+        return [f"skipped ({exc})"]
+
+    lines: list[str] = []
+    try:
+        if parent:
+            parent_folder = Path(parent).expanduser()
+            folder = product_folder(workspace)
+            if folder is not None and not parent_folder.is_absolute():
+                parent_folder = (folder / parent_folder).resolve()
+            from workspace_resolver import has_local_loop_data
+            from workspace_tree import data_dir_for
+
+            if not has_local_loop_data(parent_folder):
+                lines.append(f"parent {parent_folder} has no loop data - run setup there first")
+            else:
+                link(data_dir_for(parent_folder), folder or workspace)
+                lines.append(f"linked as sub-product of {parent_folder}")
+        if role:
+            set_role(workspace, role, pinned=True)
+            lines.append(f"role pinned to '{role}'")
+        refresh(workspace)
+        lines.extend(describe_tree(workspace).splitlines())
+    except Exception as exc:  # noqa: BLE001 - setup must finish either way
+        lines.append(f"hierarchy detection skipped: {exc}")
+    return lines
+
+
 def resolve_memory_mode(args: argparse.Namespace, workspace: Path) -> str:
     if args.memory_mode:
         if args.memory_mode not in MEMORY_MODES:
@@ -126,6 +158,17 @@ def main() -> int:
         "--scan",
         action="store_true",
         help="With --source: classify arbitrary files by content and route them to the right homes.",
+    )
+    parser.add_argument(
+        "--role",
+        choices=("main", "sub", "standalone"),
+        default=None,
+        help="Product hierarchy role. Omit to auto-detect (sub-product folders are found by scan).",
+    )
+    parser.add_argument(
+        "--parent",
+        default=None,
+        help="With --role sub: the main product folder this one belongs to.",
     )
     parser.add_argument(
         "--skip-native-commands",
@@ -237,6 +280,10 @@ def main() -> int:
             cwd=ROOT,
             check=False,
         )
+
+    print("\nProduct hierarchy:")
+    for line in apply_hierarchy(workspace, role=args.role, parent=args.parent):
+        print(f"  {line}")
 
     detect_script = ROOT / "scripts" / "detect_workspace.py"
     if detect_script.exists():

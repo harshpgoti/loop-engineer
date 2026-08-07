@@ -148,8 +148,35 @@ The primary entry point: routes between planning and development based on gates 
 /spec-checklist       # spec quality gate before feature-plan
 /feature-converge     # post-build drift check vs spec/tasks
 /ultraplan-loop            # deep per-step planning for platform-scale products
+/product-tree         # main product <-> sub-product workspaces, roll-up, and drift vs the master plan
 /frontend-animation   # route to built-in GSAP / Motion.dev / 3D skills
 ```
+
+### Big product split into sub-products
+
+A product too big for one folder gets a main folder with the master plan and sub-product
+folders that plan and build on their own - each with its own `.loop-engineer/`:
+
+```text
+main-product/
+├── .loop-engineer/          role: main -> plan/SUBPRODUCTS.md rolls up every sub-product
+├── auth-svc/.loop-engineer/ role: sub  -> plan/PARENT_CONTEXT.md holds what it inherits
+└── portal/.loop-engineer/   role: sub
+```
+
+Sub-products under the main folder are found automatically; ones in another repo are
+linked with `loop workspace link ../billing`. Working inside a sub-product still uses that
+sub-product's workspace - the difference is that the main plan can now see them, and says
+when a sub-product's plan contradicts it (conflicting cloud, datastore, or decision;
+unmapped sub-product; missing contract). Corrections are **staged** into the sub-product
+for approval, never written into it. Single-product workspaces are unaffected.
+
+```bash
+loop workspace tree      # role, parent, sub-products
+loop workspace refresh   # rewrite the roll-up and stage drift notes
+```
+
+Details: [`docs/PRODUCT_HIERARCHY.md`](docs/PRODUCT_HIERARCHY.md)
 
 ### Operations & maintenance
 

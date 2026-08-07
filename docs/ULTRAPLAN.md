@@ -55,6 +55,22 @@ User: /plan-loop <idea>  OR  /loop-engine <idea>
   → /product-develop
 ```
 
+## When a step becomes its own workspace
+
+A `PRODUCT_MAP.md` row can stay planned inside this workspace, or bind to a **sub-product
+workspace** in its own folder once it is big enough to plan and build on its own:
+
+```bash
+cd main-product/auth-svc && loop setup --use-cwd     # the row now has a real workspace
+```
+
+The row stays the platform-level contract; the sub-product owns its own PRD, tasks, and
+gates. The main workspace rolls all of them into `plan/SUBPRODUCTS.md` and reports where a
+sub-product's plan contradicts the master plan. A row with no workspace is `unbuilt-row`;
+a workspace with no row is `unmapped-sub`.
+
+See [`docs/PRODUCT_HIERARCHY.md`](PRODUCT_HIERARCHY.md).
+
 ## Agent-only advanced CLI
 
 Not for users - debugging or recovery only:

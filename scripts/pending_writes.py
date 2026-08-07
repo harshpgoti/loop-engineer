@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import shutil
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from uuid import uuid4
 
 
@@ -21,8 +21,41 @@ def pending_skills_dir(workspace: Path) -> Path:
     return pending_root(workspace) / "skills"
 
 
+def pending_files_dir(workspace: Path) -> Path:
+    return pending_root(workspace) / "files"
+
+
+# Product-state files another workspace may *propose* a change to. Nothing else is
+# writable across workspaces, and the guard is re-checked at approve time so a
+# hand-edited pending file cannot widen it.
+PENDING_FILE_ALLOWLIST = {
+    "DOUBTS.md",
+    "HANDOFF.md",
+    "DECISIONS.md",
+    "CURRENT_STATE.md",
+}
+PENDING_FILE_ALLOWED_PREFIXES = ("plan/",)
+
+
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def normalize_file_target(relative_path: str) -> str:
+    """Validate a staged file target. Raises ValueError when it is not allowed."""
+    raw = str(relative_path or "").strip().replace("\\", "/").lstrip("/")
+    if not raw:
+        raise ValueError("empty target path")
+    path = PurePosixPath(raw)
+    if path.is_absolute() or any(part in ("..", "") for part in path.parts):
+        raise ValueError(f"target path must stay inside the workspace: {relative_path}")
+    normalized = path.as_posix()
+    if normalized in PENDING_FILE_ALLOWLIST:
+        return normalized
+    if any(normalized.startswith(prefix) for prefix in PENDING_FILE_ALLOWED_PREFIXES):
+        return normalized
+    allowed = ", ".join(sorted(PENDING_FILE_ALLOWLIST)) + ", plan/*"
+    raise ValueError(f"target not allowed for cross-workspace writes: {normalized} (allowed: {allowed})")
 
 
 def stage_memory_write(workspace: Path, *, target: str, action: str, content: str, reason: str) -> str:
@@ -58,9 +91,52 @@ def stage_skill_write(workspace: Path, *, relative_path: str, content: str, reas
     return write_id
 
 
+def stage_file_write(
+    workspace: Path,
+    *,
+    relative_path: str,
+    action: str,
+    content: str,
+    reason: str,
+    origin: dict | None = None,
+) -> str | None:
+    """Propose a change to a product-state file - typically from another workspace.
+
+    Returns the write id, or None when the same `origin.finding_id` is already
+    staged, so a repeated session never piles up duplicate notes.
+    """
+    target = normalize_file_target(relative_path)
+    origin = dict(origin or {})
+    finding_id = origin.get("finding_id")
+    if finding_id:
+        for item in list_pending(workspace):
+            if item.get("kind") == "file" and (item.get("origin") or {}).get("finding_id") == finding_id:
+                return None
+
+    pending_files_dir(workspace).mkdir(parents=True, exist_ok=True)
+    write_id = uuid4().hex[:12]
+    payload = {
+        "id": write_id,
+        "created_at": _now(),
+        "relative_path": target,
+        "action": action if action in ("append", "replace") else "append",
+        "content": content,
+        "reason": reason,
+        "origin": origin,
+        "status": "pending",
+    }
+    path = pending_files_dir(workspace) / f"{write_id}.json"
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    return write_id
+
+
 def list_pending(workspace: Path) -> list[dict]:
     items: list[dict] = []
-    for folder, kind in ((pending_memory_dir(workspace), "memory"), (pending_skills_dir(workspace), "skill")):
+    for folder, kind in (
+        (pending_memory_dir(workspace), "memory"),
+        (pending_skills_dir(workspace), "skill"),
+        (pending_files_dir(workspace), "file"),
+    ):
         if not folder.exists():
             continue
         for path in sorted(folder.glob("*.json")):
@@ -100,6 +176,31 @@ def approve_pending(workspace: Path, write_id: str | None = None, approve_all: b
                 sep = "\n§\n" if existing.strip() else ""
                 target_path.write_text(existing.rstrip() + sep + entry + "\n", encoding="utf-8")
             results.append(f"approved memory write {item['id']}")
+        elif item["kind"] == "file":
+            try:
+                target = normalize_file_target(str(item.get("relative_path", "")))
+            except ValueError as exc:
+                results.append(f"rejected file write {item['id']}: {exc}")
+                Path(item["_path"]).unlink(missing_ok=True)
+                if not approve_all:
+                    break
+                continue
+            target_path = (workspace / target).resolve()
+            if not str(target_path).startswith(str(workspace.resolve())):
+                results.append(f"rejected file write {item['id']}: resolves outside workspace")
+                Path(item["_path"]).unlink(missing_ok=True)
+                if not approve_all:
+                    break
+                continue
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            if item.get("action") == "replace":
+                target_path.write_text(item["content"], encoding="utf-8")
+            else:
+                existing = target_path.read_text(encoding="utf-8") if target_path.exists() else ""
+                entry = item["content"].strip()
+                sep = "\n\n" if existing.strip() else ""
+                target_path.write_text(existing.rstrip() + sep + entry + "\n", encoding="utf-8")
+            results.append(f"approved file write {item['id']} -> {target}")
         else:
             rel = item.get("relative_path", f"draft-{item['id']}.md")
             dest = user_skills_dir(workspace) / rel

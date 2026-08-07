@@ -42,6 +42,28 @@ cd H:/POC/QEAutoAI
 loop setup --use-cwd --name qeautoai
 ```
 
+## Main product with sub-products
+
+A product split into sub-products keeps one workspace per folder, linked into a tree:
+
+```text
+main-product/
+├── .loop-engineer/        role: main  - master plan + plan/SUBPRODUCTS.md
+├── auth-svc/.loop-engineer/   role: sub  - own plan + plan/PARENT_CONTEXT.md
+└── portal/.loop-engineer/     role: sub
+```
+
+Sub-products under the main folder are auto-detected; ones elsewhere are linked:
+
+```bash
+loop workspace tree
+loop workspace link ../billing --map-id 03
+loop workspace role standalone     # opt a folder out
+```
+
+No file means `standalone` - single-product workspaces are unaffected. Full behavior:
+[`docs/PRODUCT_HIERARCHY.md`](PRODUCT_HIERARCHY.md).
+
 ## Switch registered local products
 
 ```bash

@@ -28,6 +28,7 @@ Use these directly in any agent that can access the repo:
 /spec-checklist
 /resolve-doubts
 /feature-converge
+/product-tree
 /plan-loop <idea>
 /loop-engine <idea>
 /ultraplan-loop
@@ -44,6 +45,8 @@ loop skills install            # wire every coding agent to this app
 loop skills install --project  # or project scope, committed with the repo
 loop team-init required        # make Loop the team standard (auto-bootstrap teammates)
 loop plan-loop "your full product idea here"
+loop workspace tree            # main product <-> sub-product workspaces
+loop workspace link ../billing # sub-product that lives outside the main folder
 loop research "your topic"
 loop agent scaffold
 loop session-start --command /loop-engine --tool cursor --text "your idea"
@@ -88,6 +91,7 @@ The agent must route the command through `commands/*.md` and update `memories/ME
 | `/spec-checklist` | `commands/spec-checklist.md` | Spec quality gate before feature-plan |
 | `/resolve-doubts` | `commands/resolve-doubts.md` | Interactively clear all open doubts/blockers plan-wide, ending in a go/no-go for development |
 | `/feature-converge` | `commands/feature-converge.md` | Drift check after implementation |
+| `/product-tree` | `commands/product-tree.md` | Show sub-product workspaces, their roll-up, and drift vs the master plan |
 | `/ultraplan-loop` | `commands/ultraplan-loop.md` | Deep planning per step when scale is platform |
 | `/agent-builder` | `commands/agent-builder.md` | Design/scaffold an AI agent (or agentic/dynamic workflow) as the product |
 | `/research-search` | `commands/research-search.md` | Search arXiv, Research Square, and SSRN to ground a claim |

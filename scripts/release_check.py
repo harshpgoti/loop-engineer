@@ -43,6 +43,16 @@ def render(template: str, values: dict[str, str]) -> str:
     return template
 
 
+def _hierarchy(workspace: Path) -> dict:
+    """Sub-product readiness. Failure-safe - never blocks the release check."""
+    try:
+        from hierarchy_sync import readiness
+
+        return readiness(workspace)
+    except Exception:
+        return {"children": 0, "blockers": []}
+
+
 def analyze(workspace: Path) -> str:
     from memory_paths import main_plan_file
 
@@ -84,6 +94,14 @@ def analyze(workspace: Path) -> str:
 
     if "## P0 Gaps" in prod_gap and "- None" not in prod_gap:
         warnings.append("Review P0 gaps in `plan/PROD-GAP.md` before release.")
+
+    # A platform is not releasable while a sub-product it maps is unplanned or
+    # contradicts the master plan.
+    hierarchy = _hierarchy(workspace)
+    if hierarchy["blockers"]:
+        blockers.extend(hierarchy["blockers"])
+    elif hierarchy["children"]:
+        passed.append(f"All {hierarchy['children']} linked sub-product(s) align with the master plan.")
 
     for label, items in (
         ("Tests", [item for item in findings.technical if "test" in item.lower()]),
