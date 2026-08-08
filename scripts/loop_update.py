@@ -68,11 +68,13 @@ def main() -> int:
         skills_script = runtime / "scripts" / "install_skills.py"
         if skills_script.exists():
             print("\nRefreshing router skills across all coding agents...")
-            code, out = run([sys.executable, str(skills_script), "--user"], runtime)
+            # Opting into legacy wrappers below means keeping them here.
+            keep = ["--keep-legacy-commands"] if getattr(args, "legacy_commands", False) else []
+            code, out = run([sys.executable, str(skills_script), "--user", *keep], runtime)
             print(out)
             # Refresh project-scope routers too when a local workspace is active.
             if workspace.exists():
-                code, out = run([sys.executable, str(skills_script), "--project", "--workspace", str(workspace)], runtime)
+                code, out = run([sys.executable, str(skills_script), "--project", "--workspace", str(workspace), *keep], runtime)
                 print(out)
         if getattr(args, "legacy_commands", False):
             gen = runtime / "scripts" / "generate_agent_commands.py"

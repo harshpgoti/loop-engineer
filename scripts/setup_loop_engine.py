@@ -297,14 +297,16 @@ def main() -> int:
             print("Switching agents mid-task needs no further setup - they all point at this app.")
             # User scope reaches every agent's global skills dir so any tool works
             # immediately. Project scope too when a local workspace exists.
+            # Opting into legacy wrappers below means keeping them here.
+            keep = ["--keep-legacy-commands"] if getattr(args, "legacy_commands", False) else []
             subprocess.run(
-                [sys.executable, str(skills_script), "--user"],
+                [sys.executable, str(skills_script), "--user", *keep],
                 cwd=ROOT,
                 check=False,
             )
             if memory_mode == "local":
                 subprocess.run(
-                    [sys.executable, str(skills_script), "--project", "--workspace", str(workspace)],
+                    [sys.executable, str(skills_script), "--project", "--workspace", str(workspace), *keep],
                     cwd=ROOT,
                     check=False,
                 )

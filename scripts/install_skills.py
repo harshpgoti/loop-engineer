@@ -27,6 +27,13 @@ Claude Code needs no plugin: its skills and slash commands are unified, so the
 router in `~/.claude/skills/` is directly invokable as `/plan-loop`. See
 `docs/DISTRIBUTION.md`.
 
+Exactly one router per command must be visible to each agent, or every command
+shows up twice in its menu. Two sources of doubles are handled at install time:
+`~/.agents/skills` is skipped at user scope, since the agents that read it
+(codex, gemini, ...) also have their own global dir; and the flat wrappers from
+the deprecated `generate_agent_commands.py` are pruned unless
+`--keep-legacy-commands` is passed.
+
 Standard library only, so it runs in fresh clones and direct-agent environments.
 """
 from __future__ import annotations
@@ -62,6 +69,20 @@ HOSTS: dict[str, dict[str, str]] = {
     "kiro": {"user": "~/.kiro/skills", "project": ".agents/skills"},
     "slate": {"user": "~/.slate/skills", "project": ".agents/skills"},
     "hermes": {"user": "~/.hermes/skills", "project": ".agents/skills"},
+}
+
+# Loop <= v2 also generated flat command wrappers via the now-deprecated
+# `generate_agent_commands.py`. Claude Code unifies slash commands and skills in
+# one namespace, so a leftover `~/.claude/commands/plan-loop.md` next to the
+# `loop-plan-loop` router lists `/plan-loop` twice; for the others the wrappers
+# are dead weight pointing at the same app. Install prunes any file carrying our
+# marker, and never touches hand-written commands. Codex's legacy wrappers went
+# to `~/.codex/skills/<name>/SKILL.md` (bare, unprefixed) and are already caught
+# by the stale-router prune in `install_dest`.
+LEGACY_COMMAND_DIRS: dict[str, dict[str, str]] = {
+    "claude": {"user": "~/.claude/commands", "project": ".claude/commands"},
+    "cursor": {"user": "~/.cursor/commands", "project": ".cursor/commands"},
+    "opencode": {"user": "~/.config/opencode/commands", "project": ".opencode/commands"},
 }
 
 
@@ -160,11 +181,29 @@ def host_selection(hosts: list[str] | None, detected_only: bool, project_root: P
     return [h for h in picked if h in names and not (h in seen or seen.add(h))]
 
 
-def _dest_for(host: str, scope: str, project_root: Path) -> Path:
-    raw = HOSTS[host][scope]
+def _resolve(raw: str, project_root: Path) -> Path:
     if raw.startswith("~"):
         return Path(raw).expanduser().resolve()
     return (project_root / raw).resolve()
+
+
+def _dest_for(host: str, scope: str, project_root: Path) -> Path:
+    return _resolve(HOSTS[host][scope], project_root)
+
+
+def install_hosts(hosts: list[str], scope: str) -> list[str]:
+    """Drop the redundant `universal` destination at user scope.
+
+    Every host in HOSTS has its own global skills dir, and the universal-dir
+    readers (codex, gemini, factory, kiro, slate, hermes - the rows whose
+    project path is `.agents/skills`) read `~/.agents/skills` *as well as*
+    their own. Writing both lists every command twice in those tools. At project
+    scope the paths already collapse in `iter_destinations`, so nothing changes
+    there; `--host universal` still installs it when asked for explicitly.
+    """
+    if scope != "user" or "universal" not in hosts or hosts == ["universal"]:
+        return hosts
+    return [h for h in hosts if h != "universal"]
 
 
 def iter_destinations(hosts: list[str], scope: str, project_root: Path):
@@ -262,6 +301,28 @@ def install_dest(dest: Path, names: list[str], *, dry_run: bool) -> tuple[int, i
     return written, skipped, pruned
 
 
+def prune_legacy_commands(host: str, scope: str, project_root: Path, *, dry_run: bool) -> tuple[Path | None, int]:
+    """Delete this host's marker-carrying wrappers from the deprecated generator."""
+    cfg = LEGACY_COMMAND_DIRS.get(host)
+    if cfg is None:
+        return None, 0
+    dest = _resolve(cfg[scope], project_root)
+    if not dest.is_dir():
+        return None, 0
+    removed = 0
+    for path in sorted(dest.glob("*.md")):
+        try:
+            body = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        if MARKER not in body:
+            continue  # never touch hand-written commands
+        if not dry_run:
+            path.unlink()
+        removed += 1
+    return dest, removed
+
+
 def uninstall_dest(dest: Path, *, dry_run: bool) -> int:
     manifest = read_manifest(dest)
     owned = set(manifest.get("installed", [])) if manifest.get("generator") == GENERATOR else set()
@@ -277,13 +338,14 @@ def uninstall_dest(dest: Path, *, dry_run: bool) -> int:
     return removed
 
 
-def cmd_install(hosts: list[str], scope: str, project_root: Path, *, dry_run: bool) -> int:
+def cmd_install(hosts: list[str], scope: str, project_root: Path, *, dry_run: bool, keep_legacy: bool = False) -> int:
     names = command_names()
     if not names:
         print(f"No command files found in {COMMANDS_DIR}", file=sys.stderr)
         return 1
+    selected = install_hosts(hosts, scope)
     total_w = total_s = total_p = dests = 0
-    for host, dest in iter_destinations(hosts, scope, project_root):
+    for host, dest in iter_destinations(selected, scope, project_root):
         w, s, p = install_dest(dest, names, dry_run=dry_run)
         dests += 1
         total_w += w
@@ -291,6 +353,25 @@ def cmd_install(hosts: list[str], scope: str, project_root: Path, *, dry_run: bo
         total_p += p
         flag = " (skipped some pre-existing)" if s else ""
         print(f"  [{host}] {w} router(s) -> {dest}{flag}")
+
+    # A previous version installed the universal dir at user scope too; sweep it
+    # so the tools that read both stop listing every command twice.
+    for host in hosts:
+        if host in selected:
+            continue
+        dest = _dest_for(host, scope, project_root)
+        n = uninstall_dest(dest, dry_run=dry_run)
+        total_p += n
+        if n:
+            print(f"  [{host}] removed {n} duplicate router(s) -> {dest}  (covered by each agent's own dir)")
+
+    if not keep_legacy:
+        for host in hosts:
+            legacy_dest, n = prune_legacy_commands(host, scope, project_root, dry_run=dry_run)
+            total_p += n
+            if n:
+                print(f"  [{host}] removed {n} legacy command wrapper(s) -> {legacy_dest}  (superseded by routers)")
+
     verb = "Would install" if dry_run else "Installed"
     print(f"{verb} routers to {dests} location(s); {total_w} written, {total_p} pruned, {total_s} skipped.")
     print("Routers point at the installed app; canonical command/skill edits need no reinstall.")
@@ -307,6 +388,12 @@ def cmd_uninstall(hosts: list[str], scope: str, project_root: Path, *, dry_run: 
             dests += 1
             total += n
             print(f"  [{host}] removed {n} -> {dest}")
+    for host in hosts:
+        legacy_dest, n = prune_legacy_commands(host, scope, project_root, dry_run=dry_run)
+        if n:
+            dests += 1
+            total += n
+            print(f"  [{host}] removed {n} legacy command wrapper(s) -> {legacy_dest}")
     verb = "Would remove" if dry_run else "Removed"
     print(f"{verb} {total} router(s) from {dests} location(s).")
     return 0
@@ -338,6 +425,7 @@ def main() -> int:
     parser.add_argument("--uninstall", action="store_true", help="Remove Loop-installed routers.")
     parser.add_argument("--list", action="store_true", help="Show what Loop installed.")
     parser.add_argument("--dry-run", action="store_true", help="Show what would change; write nothing.")
+    parser.add_argument("--keep-legacy-commands", action="store_true", help="Keep wrappers from the deprecated generate_agent_commands.py instead of pruning them.")
     args = parser.parse_args()
 
     scope = "project" if args.project else "user"
@@ -348,7 +436,9 @@ def main() -> int:
         return cmd_list(hosts, scope, project_root)
     if args.uninstall:
         return cmd_uninstall(hosts, scope, project_root, dry_run=args.dry_run)
-    return cmd_install(hosts, scope, project_root, dry_run=args.dry_run)
+    return cmd_install(
+        hosts, scope, project_root, dry_run=args.dry_run, keep_legacy=args.keep_legacy_commands
+    )
 
 
 if __name__ == "__main__":
