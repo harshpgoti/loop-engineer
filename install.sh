@@ -141,9 +141,9 @@ Installed.
   Data:         $WORKSPACE
   CLI:          loop
 
-Native slash commands registered for Claude Code, Cursor, Codex, and OpenCode.
+Router skills registered for every supported coding agent.
 Restart your agent (new session) so it picks up the new /commands.
-Re-run any time with: loop commands install
+Re-run any time with: loop skills install
 
 Open your agent in: $APP
 Then run: /plan-loop

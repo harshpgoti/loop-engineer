@@ -30,9 +30,10 @@ router in `~/.claude/skills/` is directly invokable as `/plan-loop`. See
 Exactly one router per command must be visible to each agent, or every command
 shows up twice in its menu. Two sources of doubles are handled at install time:
 `~/.agents/skills` is skipped at user scope, since the agents that read it
-(codex, gemini, ...) also have their own global dir; and the flat wrappers from
-the deprecated `generate_agent_commands.py` are pruned unless
-`--keep-legacy-commands` is passed.
+(codex, gemini, ...) also have their own global dir; and the flat command
+wrappers written by Loop <= v2 are pruned unless `--keep-legacy-commands` is
+passed. That prune is the migration path off the old generator (removed in v3)
+and must outlive it - installs from before the switch still have those files.
 
 Standard library only, so it runs in fresh clones and direct-agent environments.
 """
@@ -71,8 +72,8 @@ HOSTS: dict[str, dict[str, str]] = {
     "hermes": {"user": "~/.hermes/skills", "project": ".agents/skills"},
 }
 
-# Loop <= v2 also generated flat command wrappers via the now-deprecated
-# `generate_agent_commands.py`. Claude Code unifies slash commands and skills in
+# Loop <= v2 also generated flat command wrappers via a per-tool generator that
+# v3 removed. Claude Code unifies slash commands and skills in
 # one namespace, so a leftover `~/.claude/commands/plan-loop.md` next to the
 # `loop-plan-loop` router lists `/plan-loop` twice; for the others the wrappers
 # are dead weight pointing at the same app. Install prunes any file carrying our
@@ -245,6 +246,19 @@ def _remove(path: Path) -> None:
         shutil.rmtree(path, ignore_errors=True)
 
 
+def _is_bootstrap(skill_dir: Path) -> bool:
+    """`loop team-init` writes a `loop-engineer` bootstrap skill that carries the
+    same generated marker but is not a router - it is a committed team artifact
+    describing how to install Loop. It must survive install and uninstall."""
+    skill_md = skill_dir / "SKILL.md"
+    if not skill_md.is_file():
+        return False
+    try:
+        return "kind=bootstrap" in skill_md.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return False
+
+
 def _owned_by_loop(skill_dir: Path) -> bool:
     """A dir is ours if its SKILL.md carries the generated marker."""
     skill_md = skill_dir / "SKILL.md"
@@ -290,7 +304,7 @@ def install_dest(dest: Path, names: list[str], *, dry_run: bool) -> tuple[int, i
         for entry in list(dest.iterdir()):
             if not entry.is_dir() or entry.name in want_dirs:
                 continue
-            stale = entry.name in owned or _owned_by_loop(entry)
+            stale = (entry.name in owned or _owned_by_loop(entry)) and not _is_bootstrap(entry)
             if stale:
                 if not dry_run:
                     _remove(entry)
@@ -329,7 +343,7 @@ def uninstall_dest(dest: Path, *, dry_run: bool) -> int:
     removed = 0
     if dest.exists():
         for entry in list(dest.iterdir()):
-            if entry.is_dir() and (entry.name in owned or _owned_by_loop(entry)):
+            if entry.is_dir() and (entry.name in owned or _owned_by_loop(entry)) and not _is_bootstrap(entry):
                 if not dry_run:
                     _remove(entry)
                 removed += 1
@@ -425,7 +439,7 @@ def main() -> int:
     parser.add_argument("--uninstall", action="store_true", help="Remove Loop-installed routers.")
     parser.add_argument("--list", action="store_true", help="Show what Loop installed.")
     parser.add_argument("--dry-run", action="store_true", help="Show what would change; write nothing.")
-    parser.add_argument("--keep-legacy-commands", action="store_true", help="Keep wrappers from the deprecated generate_agent_commands.py instead of pruning them.")
+    parser.add_argument("--keep-legacy-commands", action="store_true", help="Keep pre-router command wrappers left by Loop <= v2 instead of pruning them.")
     args = parser.parse_args()
 
     scope = "project" if args.project else "user"

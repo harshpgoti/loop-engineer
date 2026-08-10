@@ -97,21 +97,18 @@ instruction, not the runtime. Add `--commit` to stage and commit in one step.
 > independently of `~/.loop-engineer/app` — reintroducing the one-copy-per-tool
 > drift the router model exists to avoid. So Loop ships no plugin.
 
-## 2. Legacy: per-tool command wrappers (deprecated)
+## 2. Removed: per-tool command wrappers
 
-The old approach generated a thin `/command` wrapper file inside each tool's
-private command directory (`~/.claude/commands/`, `~/.cursor/commands/`,
-`~/.config/opencode/commands/`, `~/.codex/skills/`). It still works for tool
-versions that predate SKILL.md support, but it is no longer run by default:
+Loop <= v2 generated a thin `/command` wrapper file inside each tool's private
+command directory (`~/.claude/commands/`, `~/.cursor/commands/`,
+`~/.config/opencode/commands/`, `~/.codex/skills/`). Every supported tool reads
+SKILL.md now, so v3 removed the generator along with `loop commands install` and
+the `--legacy-commands` flags.
 
-```bash
-loop setup --legacy-commands
-loop update --legacy-commands
-loop commands install --tool all --scope user   # direct invocation
-```
-
-Prefer the router skills (1). The wrapper generator will be removed after a
-deprecation window.
+Where slash commands and skills share one namespace (Claude Code), a leftover
+wrapper listed every command **twice**. So `loop skills install` prunes any
+wrapper carrying the `loop-engineer:generated` marker - hand-written commands are
+never touched. Keep them with `loop skills install --keep-legacy-commands`.
 
 ## What about MCP?
 

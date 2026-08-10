@@ -65,11 +65,11 @@ once/hour (`LOOP_AUTO_UPDATE=pull|check|off`). `loop team-init [required|optiona
 commits a path-free bootstrap so teammates auto-get Loop on first session. Detail:
 `docs/DISTRIBUTION.md`.
 
-**3. Legacy per-tool wrappers (deprecated).** The old `loop commands install`
-generated a thin `/command` file inside each tool's private command dir. Still
-works for tool versions predating SKILL.md support, but no longer run by default -
-opt in with `loop setup --legacy-commands` / `loop update --legacy-commands`. Will
-be removed after a deprecation window.
+**3. Legacy per-tool wrappers (removed in v3).** Loop <= v2 generated a thin
+`/command` file inside each tool's private command dir. Every supported tool reads
+SKILL.md now, so the generator, `loop commands install`, and the
+`--legacy-commands` flags are gone. `loop skills install` prunes leftover wrappers,
+which otherwise listed every command twice in Claude Code.
 
 Portable interpretation still works everywhere: type any command from **`AGENTS.md`'s
 Portable Commands table** and the agent routes it via `commands/<name>.md`, even
