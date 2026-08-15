@@ -39,14 +39,17 @@ Produces:
 | File | Purpose |
 |------|---------|
 | `plan/MEMORY_REVIEW.md` | Curator report, usage vs limits |
-| `plan/SESSION_CLOSEOUT.md` | Pending writes, next steps |
-| `.loop/pending/memory/*.json` | Staged memory updates (default) |
+| `plan/SESSION_CLOSEOUT.md` | What closeout wrote, what still needs a human |
+| `.loop/pending/**` | Writes awaiting a human decision - **not** this workspace's own memory |
 
-Approve memory:
+Closeout writes this workspace's `memories/MEMORY.md` itself. The queue holds
+only writes a human must judge: a parent workspace proposing into a sub-product,
+and agent-authored skill files. A normal single-product loop never fills it.
 
 ```bash
-loop pending list
-loop pending approve --all
+loop pending list             # what is actually waiting
+loop pending dedupe           # collapse identical proposals from older versions
+loop pending approve <id>     # decide one at a time
 ```
 
 ## Tool integration

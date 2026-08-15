@@ -36,11 +36,13 @@ loop session-end --summary "Built hero section; next: API wiring"
 
 1. Curates memory (dedupe, trim, closeout proposals)
 2. Writes `plan/MEMORY_REVIEW.md`
-3. **Stages** memory updates in `.loop/pending/` (default - user approval via `loop pending approve`)
+3. **Writes** `memories/MEMORY.md` for this workspace - no approval step
 4. Writes `plan/SESSION_CLOSEOUT.md`
 5. Logs closeout to `state.db`
 
-User approves staged memory: `loop pending approve --all`
+Nothing is left for the user to run. `.loop/pending/` collects only writes that
+need a human decision - a parent workspace proposing into a sub-product, and
+agent-authored skill files - and a single-product loop never fills it.
 
 ## Agent rules (all tools)
 

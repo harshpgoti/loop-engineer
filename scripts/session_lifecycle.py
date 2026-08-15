@@ -193,7 +193,7 @@ def render_manifest(
             "",
             "- Reuse `plan/SESSION_RECALL.md` - do not re-ask settled decisions.",
             "- Update `HANDOFF.md`, `DOUBTS.md`, `memories/MEMORY.md` before `loop session-end`.",
-            "- Memory curator stages writes; user approves via `loop pending approve --all` when ready.",
+            "- Memory curator writes this workspace's memory directly; only cross-workspace and skill writes wait for `loop pending approve`.",
             "",
         ]
     )
@@ -319,7 +319,7 @@ def render_closeout(workspace: Path, report: dict, actions: list[str], pending: 
     if actions:
         lines.extend(f"- {a}" for a in actions)
     else:
-        lines.append("- Memory within limits; closeout proposals staged if any.")
+        lines.append("- Memory within limits; nothing to curate.")
     lines.extend(
         [
             "",
@@ -328,9 +328,12 @@ def render_closeout(workspace: Path, report: dict, actions: list[str], pending: 
         ]
     )
     if pending:
-        lines.append("Run `loop pending list` and `loop pending approve --all` when the user accepts staged memory.")
+        lines.append(
+            "These need a human decision (cross-workspace or skill writes). "
+            "Run `loop pending list`, then approve or reject by id."
+        )
     else:
-        lines.append("No pending memory writes.")
+        lines.append("Nothing waiting on a human.")
     lines.extend(["", "## Next agent", "", "Read `plan/SESSION_MANIFEST.md` after the next `loop session-start`.", ""])
     return "\n".join(lines)
 
@@ -340,7 +343,8 @@ def session_end(
     *,
     command: str | None = None,
     summary: str = "",
-    apply: bool = False,
+    apply: bool = True,
+    stage: bool = False,
 ) -> dict:
     ensure_memory_layout(workspace)
     report = propose_updates(workspace)
@@ -348,8 +352,10 @@ def session_end(
     review_path.parent.mkdir(parents=True, exist_ok=True)
     review_path.write_text(render_report(workspace, report), encoding="utf-8")
 
-    stage_only = not apply
-    actions = apply_report(workspace, report, stage_only=stage_only)
+    # This workspace's own memory applies directly - see apply_report(). Only
+    # cross-workspace and skill writes go through the approval queue, so a
+    # closeout no longer leaves work for the user to remember to do.
+    actions = apply_report(workspace, report, stage_only=stage)
 
     converge_note = ""
     if command and "product-develop" in (command or ""):
@@ -421,7 +427,8 @@ def main() -> int:
     parser.add_argument("--tool", default=None, help="Tool hint e.g. cursor, claude, codex")
     parser.add_argument("--text", default="", help="Extra context for routers (user message).")
     parser.add_argument("--skip-recall", action="store_true")
-    parser.add_argument("--apply", action="store_true", help="Apply memory directly on end (default: stage).")
+    parser.add_argument("--apply", action="store_true", help="Apply memory directly on end (default).")
+    parser.add_argument("--stage", action="store_true", help="Stage this workspace's memory writes for approval instead of applying.")
     parser.add_argument("--summary", default="", help="Optional closeout summary for state.db")
     args = parser.parse_args()
 
@@ -454,7 +461,7 @@ def main() -> int:
         print("  read plan/SESSION_MANIFEST.md first")
         return 0
 
-    result = session_end(workspace, command=args.command, summary=args.summary, apply=args.apply)
+    result = session_end(workspace, command=args.command, summary=args.summary, stage=args.stage)
     print("session-end ok")
     print(f"  review: {result['review']}")
     print(f"  closeout: {result['closeout']}")

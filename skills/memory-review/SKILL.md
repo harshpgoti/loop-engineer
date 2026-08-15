@@ -26,13 +26,13 @@ Keep `memories/MEMORY.md` and `memories/USER.md` within bounded char limits, ded
 
 - `memories/MEMORY.md`: ~2,200 chars
 - `memories/USER.md`: ~1,375 chars
-- Entries separated by `§`
+- Entries separated by `Â§`
 
 ## Script
 
 ```bash
 python scripts/memory_curator.py --stage
-loop memory review --stage
+loop memory review
 ```
 
 ## Closeout Rules

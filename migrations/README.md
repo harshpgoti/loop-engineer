@@ -48,7 +48,7 @@ Prefer the unified CLI when available:
 ```bash
 loop doctor
 loop recall
-loop memory review --stage
+loop memory review
 loop migrate workspace
 ```
 

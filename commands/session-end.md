@@ -12,12 +12,13 @@ loop session-end --command "<active-command>" --summary "<one-line progress>"
 
 ## Default behavior
 
-Memory curation **stages** writes for approval (`loop pending list` / `loop pending approve --all`).
+Memory curation **writes** this workspace's `memories/MEMORY.md` directly. The loop
+maintains its own memory; the user is never left with a queue to drain.
 
-Direct apply (only when user asks):
+Stage for approval instead (only when the user asks):
 
 ```bash
-loop session-end --apply
+loop session-end --stage
 ```
 
 ## Required reads

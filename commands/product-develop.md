@@ -58,7 +58,7 @@ Do not process real sensitive or regulated data until the relevant gate passes.
 ## Loop
 
 ```text
-SESSION-START → RECALL → AUTO-SKILLS → SELECT TASK → IMPLEMENTATION PLAN → BUILD → TEST → REVIEW → CONVERGE → PROD-GAP → SESSION-END
+SESSION-START â†’ RECALL â†’ AUTO-SKILLS â†’ SELECT TASK â†’ IMPLEMENTATION PLAN â†’ BUILD â†’ TEST â†’ REVIEW â†’ CONVERGE â†’ PROD-GAP â†’ SESSION-END
 ```
 
 ## Cycle checklist (all develop features)
@@ -74,7 +74,7 @@ SESSION-START → RECALL → AUTO-SKILLS → SELECT TASK → IMPLEMENTATION PLAN
 | Quality | Review + QA + security | `code-reviewer`, `qa-validation`, `security-compliance` |
 | Sync | Tasks + converge | Update `tasks.md`; `loop feature converge` |
 | Release | Gaps + deploy | `/prod-gap`, `/deployment-plan` |
-| End | Memory + compact | `memory review --stage`, `/compact-loop` if long |
+| End | Memory + compact | `memory review`, `/compact-loop` if long |
 | End | Session lifecycle | `loop session-end --command /product-develop` |
 
 ## Always-on lifecycle (first and last step)
@@ -124,7 +124,7 @@ For each task:
 12. At loop closeout, run `/deployment-plan` (or `scripts/deployment_plan.py`) to write `DEPLOYMENT_PLAN.md`. Reuse cloud, LLM, and deployment answers already recorded in `DECISIONS.md`, resolved `DOUBTS.md`, or `plan/main_plan.md`. Ask the user only for unresolved deployment questions.
 13. Run `/memory-review` at closeout (default `--stage`):
     ```bash
-    loop memory review --stage
+    loop memory review
     ```
 14. Run `/compact-loop` when development is long, many files changed, tests generated substantial context, the user may switch tools, or the context is getting heavy. At minimum, ensure `COMPACT.md` is current before ending a large `/product-develop` session.
 15. **Session end** (mandatory - runs memory-review staging + feature converge):

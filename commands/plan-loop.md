@@ -15,7 +15,7 @@ loop session-start --command /plan-loop --tool "<tool>" --text "<user's full pro
 loop plan-loop "<user's full product idea>"
 ```
 
-Both run the same auto-bootstrap → read **`plan/PLAN_BOOTSTRAP.md`** before other plan reads.
+Both run the same auto-bootstrap â†’ read **`plan/PLAN_BOOTSTRAP.md`** before other plan reads.
 
 Advanced (agent-only, not for users): `loop plan-loop scale`, `loop plan-loop decompose`, `loop plan-loop ultraplan next`.
 
@@ -58,7 +58,7 @@ Product-state files (`plan/main_plan.md`, `plan/`, `memories/MEMORY.md`, `TASKS.
 ## Loop
 
 ```text
-SESSION-START → RECALL → PLAN → GRILL → EVIDENCE → PRD → ARCHITECTURE → FEATURE SPEC → TASKS → SESSION-END
+SESSION-START â†’ RECALL â†’ PLAN â†’ GRILL â†’ EVIDENCE â†’ PRD â†’ ARCHITECTURE â†’ FEATURE SPEC â†’ TASKS â†’ SESSION-END
 ```
 
 ## Cycle checklist (all plan features)
@@ -70,11 +70,11 @@ SESSION-START → RECALL → PLAN → GRILL → EVIDENCE → PRD → ARCHITECTUR
 | Bootstrap | Recall + manifest | `plan/SESSION_MANIFEST.md`, `SESSION_RECALL.md` |
 | Plan | Product grill + council | `product-grill`, `product-council` |
 | Plan | Step plan | `plan/step_XX_*.md` (index; ultraplan for platform) |
-| Plan | Feature spec | `loop feature new` → `/spec-clarify` → `/spec-checklist` → `feature-plan.md` |
-| Plan | Tasks | `task-compiler` → `tasks.md` + `TASKS.yml` |
+| Plan | Feature spec | `loop feature new` â†’ `/spec-clarify` â†’ `/spec-checklist` â†’ `feature-plan.md` |
+| Plan | Tasks | `task-compiler` â†’ `tasks.md` + `TASKS.yml` |
 | Plan | Deployment | `deployment_plan.py --source plan` |
 | Plan | Validate | `validate_outputs.py` |
-| End | Memory + compact | `memory review --stage`, `/compact-loop` if long |
+| End | Memory + compact | `memory review`, `/compact-loop` if long |
 | End | Session lifecycle | `loop session-end --command /plan-loop` |
 
 ## Always-on lifecycle (first and last step)
@@ -92,7 +92,7 @@ loop session-end --command /plan-loop --summary "<progress>"
 ```
 
 ```text
-RECALL → DETECT INIT → ASK/INFER (PRODUCT + DEPLOYMENT) → GRILL → COUNCIL → RESEARCH → PLAN → COMPILE TASKS → DEPLOYMENT PLAN DRAFT → VALIDATE → MEMORY → MEMORY REVIEW → COMPACT IF NEEDED
+RECALL â†’ DETECT INIT â†’ ASK/INFER (PRODUCT + DEPLOYMENT) â†’ GRILL â†’ COUNCIL â†’ RESEARCH â†’ PLAN â†’ COMPILE TASKS â†’ DEPLOYMENT PLAN DRAFT â†’ VALIDATE â†’ MEMORY â†’ MEMORY REVIEW â†’ COMPACT IF NEEDED
 ```
 
 ## Steps
@@ -106,7 +106,7 @@ RECALL → DETECT INIT → ASK/INFER (PRODUCT + DEPLOYMENT) → GRILL → COUNCI
 1. **Detect initialization.** If `plan/main_plan.md` says `Status: **UNINITIALIZED**`, initialize the user's product plan.
 2. **Ask for required product inputs:** product name, target user, problem, first product step, constraints, sensitive data, preferred stack.
 3. **Ask for deployment inputs during planning:** cloud provider, single vs multi-cloud, primary region(s), compute model, database hosting, LLM provider/model, embedding model, agent runtime, CI/CD platform, secrets management. Use `templates/plan_deployment_questions.md` as the checklist.
-4. **Reuse prior answers** from `DECISIONS.md`, resolved `DOUBTS.md`, or existing `plan/main_plan.md` → **Deployment & Infrastructure**. Inform the user when reusing; do not ask again unless they want to change something.
+4. **Reuse prior answers** from `DECISIONS.md`, resolved `DOUBTS.md`, or existing `plan/main_plan.md` â†’ **Deployment & Infrastructure**. Inform the user when reusing; do not ask again unless they want to change something.
 5. **If the user is unavailable**, record missing inputs in `DOUBTS.md` and do not invent product-specific facts.
 6. **Restate current product state** from `memories/MEMORY.md` and `plan/main_plan.md`, not from chat memory.
 7. **Review `DOUBTS.md`**. Ask any open blocking questions. If unavailable, keep doubts open and continue only safe planning work.
@@ -167,7 +167,7 @@ Already bootstrapped: `PRODUCT_MAP.md`, step stubs, `plan/steps/NN-slug/` folder
 23. **Run `/memory-review` at closeout** (default `--stage` for production workspaces):
    ```bash
    python scripts/memory_curator.py --stage
-   loop memory review --stage
+   loop memory review
    ```
 24. **Run `/compact-loop` when planning is long, many files changed, the user may switch tools, or the context is getting heavy.** At minimum, ensure `COMPACT.md` is current before ending a large `/plan-loop` session.
 25. **Session end** (mandatory - runs memory-review staging):
@@ -196,8 +196,8 @@ Return:
 ## Continuation
 
 Terminus: **tasks compiled + go/no-go for build.** Run the phase pipeline end to
-end in this session - grill → council → (ultraplan) → spec-clarify → spec-checklist
-→ resolve-doubts → task-compiler - recomputing the phase after each and loading the
+end in this session - grill â†’ council â†’ (ultraplan) â†’ spec-clarify â†’ spec-checklist
+â†’ resolve-doubts â†’ task-compiler - recomputing the phase after each and loading the
 next. Never end a turn telling the user to run the next phase; see
 `docs/CONTINUATION.md`.
 

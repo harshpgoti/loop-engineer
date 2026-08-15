@@ -32,7 +32,7 @@ The harness picks the phase for you: `loop session-start` / `loop plan-loop "<id
 | **spec-clarify** | active feature spec has open questions, `/spec-clarify`, or `PHASE: spec-clarify` | `phases/spec-clarify.md` |
 | **spec-checklist** | before locking `feature-plan.md`, `/spec-checklist`, or `PHASE: spec-checklist` | `phases/spec-checklist.md` |
 | **resolve-doubts** | planning otherwise complete but `DOUBTS.md` has open items, `/resolve-doubts`, or `PHASE: resolve-doubts` | `phases/resolve-doubts.md` |
-| **task-compiler** | spec checklist Ready and no open doubts → compile tasks, or `PHASE: task-compiler` | `phases/task-compiler.md` |
+| **task-compiler** | spec checklist Ready and no open doubts â†’ compile tasks, or `PHASE: task-compiler` | `phases/task-compiler.md` |
 
 ## Read First (orchestrator only - not the phase files)
 
@@ -61,7 +61,7 @@ SESSION-START -> READ PHASE -> [grill -> (hierarchy) -> council] -> (platform: u
 
 0. Run `loop session-start --command /plan-loop --text "<user idea>"` (or `loop plan-loop "<idea>"`) and read `plan/PLAN_BOOTSTRAP.md` + `plan/SESSION_MANIFEST.md`. Note the `PHASE:` line.
 1. `session-start` auto-detects agent-development signals - if `plan/AUTO_AGENT_SKILLS.md` was written, read it and `skills/agent-builder/SKILL.md` before drafting architecture.
-2. **If product is uninitialized**, ask for product name, target user, problem, first product step, constraints, sensitive data, preferred stack, and deployment targets. Capture deployment choices in `plan/main_plan.md` → **Deployment & Infrastructure**:
+2. **If product is uninitialized**, ask for product name, target user, problem, first product step, constraints, sensitive data, preferred stack, and deployment targets. Capture deployment choices in `plan/main_plan.md` â†’ **Deployment & Infrastructure**:
    - cloud provider; single-cloud vs multi-cloud; primary region(s); compute model; database hosting; LLM provider and model(s); embedding provider/model; agent runtime; CI/CD platform; secrets management.
 3. **Reuse rule:** if a deployment answer already exists in `DECISIONS.md`, resolved `DOUBTS.md`, or `plan/main_plan.md`, reuse it, inform the user, and do not ask again unless they want to change it.
 4. If the user is unavailable, record missing inputs in `DOUBTS.md` and do not invent product-specific facts.
@@ -70,7 +70,7 @@ SESSION-START -> READ PHASE -> [grill -> (hierarchy) -> council] -> (platform: u
 7. Update `plan/main_plan.md`, `plan/step_XX_<name>.md`, `GATES.yml`, `DECISIONS.md`, and `EVIDENCE_LOG.md` as phases produce them.
 8. Draft `DEPLOYMENT_PLAN.md` with `python scripts/deployment_plan.py --source plan`.
 9. Update `memories/MEMORY.md`, `DOUBTS.md`, `HANDOFF.md`, and `.ai/SESSION_LOG.md`.
-10. Run `memory-review` at closeout with `--stage` by default (`loop memory review --stage`).
+10. Run `memory-review` at closeout with `--stage` by default (`loop memory review`).
 11. Run `compact-loop` when planning is long, many files changed, the user may switch tools, or the context is getting heavy.
 12. Run `loop session-end --command /plan-loop` (mandatory closeout).
 

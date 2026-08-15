@@ -26,25 +26,29 @@ ENSURE LAYOUT -> SCAN STATE -> CURATE -> WRITE MEMORY_REVIEW -> STAGE OR APPLY -
 
 ## Script
 
-Review only (writes `plan/MEMORY_REVIEW.md`):
+Curate and write this workspace's memory (default):
 
 ```bash
 python scripts/memory_curator.py
 loop memory review
 ```
 
-Stage writes for approval (production-safe default):
+This workspace's own memory applies directly - it is rule-derived, reversible,
+and not a "high-risk external action" under AGENTS.md non-negotiable #5. The
+approval queue is reserved for writes a human must judge: a parent workspace
+proposing into a sub-product, and agent-authored skill files.
+
+Report only, change nothing:
+
+```bash
+python scripts/memory_curator.py --review-only
+```
+
+Stage for approval instead of writing (opt-in):
 
 ```bash
 python scripts/memory_curator.py --stage
 loop memory review --stage
-```
-
-Apply directly:
-
-```bash
-python scripts/memory_curator.py --apply
-loop memory review --apply
 ```
 
 ## When To Run

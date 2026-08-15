@@ -35,11 +35,13 @@ loop session-end --summary "<progress>"
 |------|--------|
 | **Start** | Recall → manifest → auto-skills → read manifest |
 | **Work** | Follow active command (`/plan-loop`, `/product-develop`, etc.) |
-| **End** | Update handoff/memory → stage memory review → log `state.db` |
+| **End** | Update handoff/memory → memory review writes memory → log `state.db` |
 
 Details: `docs/SESSION_LIFECYCLE.md` + `skills/session-lifecycle/SKILL.md`.
 
-User does **not** run these manually - the agent runs them. Staged memory: `loop pending approve --all`.
+User does **not** run these manually - the agent runs them, and closeout writes this
+workspace's memory itself. `loop pending` holds only cross-workspace and skill writes
+that need a human decision.
 
 ## App root resolution
 

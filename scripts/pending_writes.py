@@ -1,10 +1,24 @@
-"""Stage memory and skill writes for human approval."""
+"""Queue for writes that need a human decision.
+
+Deliberately narrow. A workspace's own memory is written directly at closeout -
+routing it here made every session end with a chore, so nobody ever drained the
+queue and memory stopped updating. What lands here is what a human actually has
+to judge:
+
+- a parent workspace proposing a change into a sub-product (which plan is wrong
+  is a judgment call, and one workspace must never silently rewrite another)
+- agent-authored skill files
+
+Staging is idempotent by content, so a repeated session is a no-op rather than a
+new copy (AGENTS.md non-negotiable #8).
+"""
 
 from __future__ import annotations
 
 import json
 import shutil
 from datetime import datetime, timezone
+from hashlib import sha256
 from pathlib import Path, PurePosixPath
 from uuid import uuid4
 
@@ -58,7 +72,26 @@ def normalize_file_target(relative_path: str) -> str:
     raise ValueError(f"target not allowed for cross-workspace writes: {normalized} (allowed: {allowed})")
 
 
-def stage_memory_write(workspace: Path, *, target: str, action: str, content: str, reason: str) -> str:
+def content_key(target: str, action: str, content: str) -> str:
+    """Stable identity for a proposed write, so re-proposing it is a no-op."""
+    digest = sha256("\x00".join((target, action, content.strip())).encode("utf-8"))
+    return digest.hexdigest()[:16]
+
+
+def stage_memory_write(workspace: Path, *, target: str, action: str, content: str, reason: str) -> str | None:
+    """Propose a memory write.
+
+    Returns None when an identical proposal is already queued. Staging runs at
+    every closeout, and an unapproved proposal is by definition not yet in
+    MEMORY.md - so without this guard the same entry re-stages every session and
+    the queue grows without bound (AGENTS.md non-negotiable #8, idempotent
+    workflows). Identity is the content itself, not a caller-supplied id.
+    """
+    key = content_key(target, action, content)
+    for item in list_pending(workspace):
+        if item.get("kind") == "memory" and item.get("content_key") == key:
+            return None
+
     pending_memory_dir(workspace).mkdir(parents=True, exist_ok=True)
     write_id = uuid4().hex[:12]
     payload = {
@@ -67,6 +100,7 @@ def stage_memory_write(workspace: Path, *, target: str, action: str, content: st
         "target": target,
         "action": action,
         "content": content,
+        "content_key": key,
         "reason": reason,
         "status": "pending",
     }
@@ -158,11 +192,18 @@ def _memory_target_path(workspace: Path, target: str) -> Path:
     return memory_file(workspace)
 
 
-def approve_pending(workspace: Path, write_id: str | None = None, approve_all: bool = False) -> list[str]:
+def approve_pending(
+    workspace: Path,
+    write_id: str | None = None,
+    approve_all: bool = False,
+    kind: str | None = None,
+) -> list[str]:
     from memory_paths import user_skills_dir
 
     results: list[str] = []
     for item in list_pending(workspace):
+        if kind and item.get("kind") != kind:
+            continue
         if not approve_all and item.get("id") != write_id:
             continue
         if item["kind"] == "memory":
@@ -213,9 +254,47 @@ def approve_pending(workspace: Path, write_id: str | None = None, approve_all: b
     return results
 
 
-def reject_pending(workspace: Path, write_id: str | None = None, reject_all: bool = False) -> list[str]:
+def dedupe_pending(workspace: Path, *, dry_run: bool = False) -> list[str]:
+    """Collapse queued writes that propose identical content, keeping the oldest.
+
+    Queues built before staging became idempotent hold the same proposal dozens
+    of times. Dropping the copies loses no information and makes the remainder
+    reviewable, which is the point of a queue that needs a human.
+    """
+    results: list[str] = []
+    seen: set[tuple[str, str]] = set()
+    for item in sorted(list_pending(workspace), key=lambda i: str(i.get("created_at", ""))):
+        kind = str(item.get("kind", ""))
+        if kind == "memory":
+            key = item.get("content_key") or content_key(
+                str(item.get("target", "")), str(item.get("action", "")), str(item.get("content", ""))
+            )
+        elif kind == "file":
+            key = content_key(
+                str(item.get("relative_path", "")), str(item.get("action", "")), str(item.get("content", ""))
+            )
+        else:
+            key = content_key(str(item.get("relative_path", "")), "skill", str(item.get("content", "")))
+
+        if (kind, key) in seen:
+            if not dry_run:
+                Path(item["_path"]).unlink(missing_ok=True)
+            results.append(f"{'would drop' if dry_run else 'dropped'} duplicate {kind} write {item['id']}")
+            continue
+        seen.add((kind, key))
+    return results
+
+
+def reject_pending(
+    workspace: Path,
+    write_id: str | None = None,
+    reject_all: bool = False,
+    kind: str | None = None,
+) -> list[str]:
     results: list[str] = []
     for item in list_pending(workspace):
+        if kind and item.get("kind") != kind:
+            continue
         if not reject_all and item.get("id") != write_id:
             continue
         Path(item["_path"]).unlink(missing_ok=True)

@@ -167,7 +167,7 @@ def cmd_migrate(args: argparse.Namespace) -> int:
 
 def cmd_pending(args: argparse.Namespace) -> int:
     sys.path.insert(0, str(SCRIPTS))
-    from pending_writes import approve_pending, list_pending, reject_pending
+    from pending_writes import approve_pending, dedupe_pending, list_pending, reject_pending
     from workspace_utils import resolve_workspace
 
     workspace = resolve_workspace(args.workspace)
@@ -180,13 +180,19 @@ def cmd_pending(args: argparse.Namespace) -> int:
             print(f"{item['kind']} {item['id']} -> {item.get('target') or item.get('relative_path')}")
             print(f"  reason: {item.get('reason', '')}")
         return 0
+    if args.pending_cmd == "dedupe":
+        results = dedupe_pending(workspace, dry_run=args.dry_run)
+        for line in results:
+            print(line)
+        print(f"{len(results)} duplicate(s); {len(list_pending(workspace))} write(s) remain.")
+        return 0
     if args.pending_cmd == "approve":
-        results = approve_pending(workspace, write_id=args.id, approve_all=args.all)
+        results = approve_pending(workspace, write_id=args.id, approve_all=args.all, kind=args.kind)
         for line in results:
             print(line)
         return 0 if results else 1
     if args.pending_cmd == "reject":
-        results = reject_pending(workspace, write_id=args.id, reject_all=args.all)
+        results = reject_pending(workspace, write_id=args.id, reject_all=args.all, kind=args.kind)
         for line in results:
             print(line)
         return 0 if results else 1
@@ -574,11 +580,16 @@ def build_parser() -> argparse.ArgumentParser:
     approve = pending_sub.add_parser("approve", help="Approve a pending write.")
     approve.add_argument("id", nargs="?", default=None)
     approve.add_argument("--all", action="store_true")
+    approve.add_argument("--kind", choices=("memory", "file", "skill"), default=None, help="Limit to one class, e.g. --kind memory.")
     approve.set_defaults(func=cmd_pending)
     reject = pending_sub.add_parser("reject", help="Reject a pending write.")
     reject.add_argument("id", nargs="?", default=None)
     reject.add_argument("--all", action="store_true")
+    reject.add_argument("--kind", choices=("memory", "file", "skill"), default=None, help="Limit to one class.")
     reject.set_defaults(func=cmd_pending)
+    dedupe = pending_sub.add_parser("dedupe", help="Drop queued writes proposing identical content.")
+    dedupe.add_argument("--dry-run", action="store_true", help="Show what would be dropped.")
+    dedupe.set_defaults(func=cmd_pending)
 
     skills = sub.add_parser("skills", help="List, resolve, or install skills for coding agents.")
     skills_sub = skills.add_subparsers(dest="skills_cmd", required=True)

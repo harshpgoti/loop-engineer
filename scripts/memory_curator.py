@@ -90,6 +90,14 @@ def propose_closeout_entries(workspace: Path, memory_text: str) -> list[str]:
     """Rule-based closeout proposals from recent state-file bullets."""
     proposals: list[str] = []
     memory_lower = memory_text.lower()
+    # An entry sitting unapproved in the queue is not in MEMORY.md yet, so the
+    # memory check alone would re-propose it every session. Treat queued content
+    # as already proposed.
+    queued = {
+        re.sub(r"\s+", " ", str(item.get("content", "")).strip().lower())
+        for item in list_pending(workspace)
+        if item.get("kind") == "memory"
+    }
     for rel in ("DECISIONS.md", "HANDOFF.md"):
         path = workspace / rel
         if not path.exists():
@@ -102,7 +110,7 @@ def propose_closeout_entries(workspace: Path, memory_text: str) -> list[str]:
             if len(body) < 20:
                 continue
             key = re.sub(r"\s+", " ", body.lower())
-            if key in memory_lower:
+            if key in memory_lower or key in queued:
                 continue
             proposals.append(body)
     return proposals[:5]
@@ -176,7 +184,22 @@ def render_report(workspace: Path, report: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
-def apply_report(workspace: Path, report: dict, stage_only: bool) -> list[str]:
+def apply_report(workspace: Path, report: dict, stage_only: bool = False) -> list[str]:
+    """Write this workspace's own memory.
+
+    Memory curation and closeout entries are same-workspace, rule-derived, and
+    reversible - the loop maintaining itself. They are not the "high-risk
+    external actions" that AGENTS.md non-negotiable #5 gates on human approval,
+    so they apply directly. Routing them through the approval queue is what
+    stalled the loop: closeout runs every session, nobody approves 100+ notices,
+    and memory silently stops updating.
+
+    The approval queue still guards writes that genuinely need a human: a parent
+    workspace proposing into a sub-product (which plan is wrong is a judgment
+    call) and agent-authored skill files. Those never come through here.
+
+    `stage_only` keeps the old behavior for callers that want a dry gate.
+    """
     actions: list[str] = []
     mem_path = memory_file(workspace)
     user_path = user_file(workspace)
@@ -203,9 +226,19 @@ def apply_report(workspace: Path, report: dict, stage_only: bool) -> list[str]:
         return actions
 
     mem_path.parent.mkdir(parents=True, exist_ok=True)
-    mem_path.write_text(report["memory_output"], encoding="utf-8")
+    memory_output = report["memory_output"]
+    closeout = report.get("closeout_proposals", [])
+    if closeout:
+        # Curation alone only rewrites what is already there; without this the
+        # closeout entries are computed, reported, and then dropped on the floor.
+        body = memory_output.rstrip()
+        for entry in closeout:
+            body = (body + ENTRY_SEP + entry.strip()) if body.strip() else entry.strip()
+        memory_output = body + "\n"
+    mem_path.write_text(memory_output, encoding="utf-8")
     actions.append(f"updated `{mem_path.relative_to(workspace)}`")
-
+    if closeout:
+        actions.append(f"appended {len(closeout)} closeout memory entry(ies)")
 
     if report["user_dropped"]:
         user_path.write_text(report["user_output"], encoding="utf-8")
@@ -217,8 +250,9 @@ def apply_report(workspace: Path, report: dict, stage_only: bool) -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Curate bounded product memory files.")
     parser.add_argument("--workspace", default=None)
-    parser.add_argument("--apply", action="store_true", help="Apply curation directly.")
+    parser.add_argument("--apply", action="store_true", help="Apply curation directly (default).")
     parser.add_argument("--stage", action="store_true", help="Stage writes for approval instead of applying.")
+    parser.add_argument("--review-only", action="store_true", help="Write plan/MEMORY_REVIEW.md and change nothing.")
     args = parser.parse_args()
 
     workspace = resolve_workspace(args.workspace)
@@ -227,8 +261,8 @@ def main() -> int:
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(render_report(workspace, report), encoding="utf-8")
 
-    stage_only = args.stage or not args.apply
-    if args.apply or args.stage:
+    stage_only = args.stage
+    if not args.review_only:
         actions = apply_report(workspace, report, stage_only=stage_only)
         for action in actions:
             print(action)
