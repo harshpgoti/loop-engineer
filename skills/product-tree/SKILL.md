@@ -71,14 +71,26 @@ loop workspace unlink billing
 | `unbuilt-row` | warn | A map row has no sub-product workspace |
 | `uninitialized-sub` | warn | Sub-product exists but its `plan/main_plan.md` is UNINITIALIZED |
 | `dependency-gap` | warn | Map says this sub-product depends on another; its plan never references it |
+| `parent-added` | warn / error | Master plan gained a constraint this sub-product has never synced |
+| `parent-changed` | warn / error | A synced constraint now has a different value upstream (both values reported) |
+| `parent-removed` | warn / error | A constraint was dropped upstream and may still be honored here |
 | `stale-sub` | info | Main plan changed after the sub-product's last session |
+
+The three `parent-*` kinds answer "what changed upstream", which the conflict
+checks cannot: they compare current values, so a *new* platform constraint
+contradicts nothing. Each sub-product keeps a watermark of the parent surface it
+last synced (`.loop/parent-sync.json`), the parent diffs against it, and the
+sub-product advances it at its own `loop session-start`. Level rises to `error`
+when the sub-product has an in-progress task in `TASKS.yml`. See
+`docs/PRODUCT_HIERARCHY.md`.
 
 ## Write policy (do not violate)
 
 - **Metadata** (`.loop/workspace.json`) may be written into a sub-product directly.
 - **Product state** (`DOUBTS.md`, `HANDOFF.md`, `plan/*`) is **never** written across
-  workspaces. `error` findings are staged into the sub-product's `.loop/pending/`; the
-  user applies them there with `loop pending approve --all`.
+  workspaces. `error` findings and every `parent-*` update are staged into the
+  sub-product's `.loop/pending/`; the user decides there with `loop pending list`
+  then `loop pending approve <id>`.
 - Anything staged is listed in `plan/SUBPRODUCTS.md` with its write id.
 
 ## Reading a finding

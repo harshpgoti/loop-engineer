@@ -177,7 +177,7 @@ def last_session_at(workspace: Path) -> datetime | None:
     return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
 
 
-def _finding(kind: str, level: str, sub: str, key: str, detail: str, note: str) -> dict:
+def _finding(kind: str, level: str, sub: str, key: str, detail: str, note: str, *, stage: bool = False) -> dict:
     return {
         "id": f"{kind}:{slugify(sub) or 'main'}:{normalize_key(key) or 'x'}",
         "kind": kind,
@@ -185,6 +185,10 @@ def _finding(kind: str, level: str, sub: str, key: str, detail: str, note: str) 
         "sub": sub,
         "detail": detail,
         "note": note,
+        # Errors always reach the sub-product. `stage` lets a non-error finding
+        # do the same - a parent update is news the sub-product must see even
+        # when nothing yet contradicts.
+        "stage": stage,
     }
 
 
@@ -285,6 +289,7 @@ def check_children(main_ws: Path, children: list[dict]) -> list[dict]:
         )
         findings.extend(_dependency_gaps(main_ws, rows, child, parent_name))
         findings.extend(_contract_gaps(main_ws, rows, child, parent_name))
+        findings.extend(_parent_updates(main_ws, child, parent_name))
         findings.extend(_staleness(main_ws, child))
 
     order = {LEVEL_ERROR: 0, LEVEL_WARN: 1, LEVEL_INFO: 2}
@@ -402,6 +407,54 @@ def _contract_gaps(main_ws: Path, rows: list[dict], child: dict, parent_name: st
             "add the contracts before building, or flag the parent spec as wrong.",
         )
     ]
+
+
+def _parent_updates(main_ws: Path, child: dict, parent_name: str) -> list[dict]:
+    """What the master plan changed since this sub-product last synced.
+
+    The conflict checks above only fire when both sides carry the same key, so a
+    *new* platform constraint - the case that most often invalidates in-flight
+    work - is invisible to them. This compares the parent against the watermark
+    the sub-product recorded at its last session and reports the delta itself.
+    """
+    import parent_watermark as wm
+
+    child_ws = child["data_dir"]
+    previous = wm.read_watermark(child_ws, main_ws)
+    if previous is None:
+        # No baseline yet: the sub-product records one at its next session-start.
+        # Reporting here would surface every decision the parent ever made.
+        return []
+
+    changes = wm.diff(previous, wm.snapshot(main_ws, map_id=child.get("map_id")))
+    if not changes:
+        return []
+
+    in_flight = wm.has_work_in_flight(child_ws)
+    level = LEVEL_ERROR if in_flight else LEVEL_WARN
+    urgency = (
+        "This sub-product has work in progress - re-check the active tasks before continuing."
+        if in_flight
+        else "Fold it into the plan before the next build slice."
+    )
+    seen = str(previous.get("taken_at", ""))[:10]
+
+    findings: list[dict] = []
+    for change in changes:
+        findings.append(
+            _finding(
+                f"parent-{change['change']}",
+                level,
+                child["name"],
+                f"{change['surface']}-{change['key']}",
+                f"{wm.describe(change)} (`{child['name']}` last synced {seen or 'unknown'})",
+                f"Parent `{parent_name}` updated the master plan since this workspace last "
+                f"synced ({seen or 'unknown'}). {wm.describe(change)} {urgency} "
+                "If the master plan is the wrong side, fix it there and reject this note.",
+                stage=True,
+            )
+        )
+    return findings
 
 
 def _staleness(main_ws: Path, child: dict) -> list[dict]:

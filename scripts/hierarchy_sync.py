@@ -47,7 +47,9 @@ def stage_findings(main_workspace: Path, children: list[dict], findings: list[di
     parent_label = main_workspace.parent.name if main_workspace.name == ".loop-engineer" else main_workspace.name
 
     for item in findings:
-        if item["level"] != drift.LEVEL_ERROR or not item.get("note"):
+        if not item.get("note"):
+            continue
+        if item["level"] != drift.LEVEL_ERROR and not item.get("stage"):
             continue
         child = by_name.get(item["sub"])
         if child is None:
@@ -94,6 +96,24 @@ def run(workspace: Path, *, stage: bool = True) -> dict:
         path = write_context(workspace, tree)
         if path is not None:
             result["parent_context_file"] = str(path)
+        # This workspace has just read its parent's current state into
+        # PARENT_CONTEXT.md, so it has "seen" the parent as of now. The parent
+        # computes the diff but must never advance this, or a change would be
+        # reported once and then forgotten before anyone acted on it.
+        if stage:
+            try:
+                import parent_watermark as wm
+
+                from workspace_tree import read_meta
+
+                parent_ws = tree["parent"].get("data_dir")
+                if parent_ws:
+                    map_id = tree.get("map_id") or read_meta(workspace).get("map_id")
+                    result["parent_watermark"] = str(
+                        wm.sync(workspace, Path(parent_ws), map_id=map_id)
+                    )
+            except Exception as exc:  # noqa: BLE001 - never block a session on this
+                result["parent_watermark_error"] = f"{exc.__class__.__name__}: {exc}"
     else:
         # No parent any more (unlinked, moved, or pinned standalone). A stale report
         # would keep feeding a session inherited constraints that no longer apply -

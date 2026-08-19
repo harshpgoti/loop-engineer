@@ -77,6 +77,9 @@ Deterministic, parsed from structured plan files - never model-generated
 
 | Kind | Level | Fires when |
 |------|-------|-----------|
+| `parent-added` | warn / error | The master plan gained a constraint this sub-product has never seen |
+| `parent-changed` | warn / error | A constraint this sub-product had synced now has a different value upstream |
+| `parent-removed` | warn / error | A constraint was dropped upstream and may still be honored here |
 | `decision-conflict` | error | Same topic decided differently in the parent's and sub-product's `DECISIONS.md` |
 | `deployment-conflict` | error | Same **Deployment & Infrastructure** row differs between main plan and sub plan |
 | `contract-gap` | error | Parent's `plan/steps/NN-slug/integrations.md` names modules the sub-product's plan never mentions |
@@ -90,6 +93,37 @@ Deterministic, parsed from structured plan files - never model-generated
 `error` findings also gate planning: `plan_phase.py` routes `/plan-loop` to
 `skills/plan-loop/phases/hierarchy.md` before council or ultraplan, and
 `/release-check` treats them as launch blockers.
+
+## What changed upstream (not just what conflicts)
+
+The conflict checks compare current values on both sides, so they can only speak
+about a key **both** sides already carry. A new platform constraint - the change
+most likely to invalidate work already underway - contradicts nothing and would
+otherwise be silent.
+
+So each sub-product keeps a watermark of the parent surface it last synced, in
+`<sub-product>/.loop/parent-sync.json`, keyed by parent. `scripts/parent_watermark.py`
+diffs the parent against it and reports the delta with both values:
+
+```text
+Parent `platform` updated the master plan since this workspace last synced
+(2026-08-11). DECISIONS.md: **Tracing** is new at platform level - now
+**All services must emit OpenTelemetry spans**. This sub-product has work in
+progress - re-check the active tasks before continuing.
+```
+
+Two rules make it trustworthy:
+
+- **The parent computes the diff but never advances the watermark.** A sub-product
+  advances its own at `loop session-start`, the moment it has actually read the
+  refreshed `PARENT_CONTEXT.md`. So a change keeps reporting until the sub-product
+  has genuinely seen it, instead of being announced once into a queue.
+- **A sub-product with no watermark is baselined silently**, so adopting this does
+  not bury existing sub-products in a finding per historical decision.
+
+Level is `warn` normally and `error` when the sub-product has an in-progress task
+in `TASKS.yml` - a platform change landing mid-build is a different problem from
+one landing between slices. Both stage into the sub-product's `DOUBTS.md`.
 
 ## Write policy
 
