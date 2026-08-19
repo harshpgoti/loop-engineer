@@ -42,6 +42,8 @@ that boundary is this command's job, not the user's.
 
 | State | Delegate to |
 |-------|-------------|
+| Unanswered findings from the parent product | `skills/plan-loop/phases/parent-findings.md` / `loop findings ask` |
+| Blocking doubts open | `skills/plan-loop/phases/resolve-doubts.md` / `loop doubts ask` |
 | Uninitialized / init gates blocked | `commands/plan-loop.md` full flow |
 | Idea scope unknown | `loop plan-loop scale --write` |
 | Scale **platform**, ultraplan incomplete | `skills/plan-loop/phases/ultraplan.md` / `loop plan-loop ultraplan next` |

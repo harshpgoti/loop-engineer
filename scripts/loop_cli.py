@@ -292,6 +292,32 @@ def cmd_session_lifecycle(args: argparse.Namespace) -> int:
     return run_script("session_lifecycle.py", extra)
 
 
+def cmd_findings(args: argparse.Namespace) -> int:
+    cmd = getattr(args, "findings_cmd", None) or "list"
+    extra = _workspace_args(args)
+    if cmd == "resolve":
+        extra = ["resolve", args.finding_id, args.decision] + (["--note", args.note] if args.note else []) + extra
+    elif cmd == "ask":
+        extra = ["ask"] + extra
+    else:
+        extra = ["list"] + (["--verbose"] if getattr(args, "verbose", False) else []) + extra
+    return run_script("parent_inbox.py", extra)
+
+
+def cmd_doubts(args: argparse.Namespace) -> int:
+    cmd = getattr(args, "doubts_cmd", None) or "list"
+    extra = _workspace_args(args)
+    if cmd == "resolve":
+        extra = ["resolve", args.doubt_id, args.answer] + (["--decision", args.decision] if args.decision else []) + extra
+    elif cmd == "defer":
+        extra = ["defer", args.doubt_id, args.reason] + extra
+    elif cmd == "list":
+        extra = ["list"] + (["--verbose"] if getattr(args, "verbose", False) else []) + extra
+    else:
+        extra = [cmd] + extra
+    return run_script("doubts.py", extra)
+
+
 def cmd_workspace(args: argparse.Namespace) -> int:
     sys.path.insert(0, str(SCRIPTS))
     from workspace_tree import ROLES, describe_tree, link, refresh, set_role, unlink
@@ -305,6 +331,9 @@ def cmd_workspace(args: argparse.Namespace) -> int:
 
     if args.workspace_cmd == "refresh":
         return run_script("hierarchy_sync.py", _workspace_args(args) + (["--no-stage"] if args.no_stage else []))
+
+    if args.workspace_cmd == "sync":
+        return run_script("tree_sync.py", _workspace_args(args) + (["--no-stage"] if args.no_stage else []))
 
     if args.workspace_cmd == "link":
         entry = link(workspace, args.path, name=args.name, map_id=args.map_id)
@@ -636,6 +665,12 @@ def build_parser() -> argparse.ArgumentParser:
     ws_refresh.add_argument("--workspace", default=argparse.SUPPRESS)
     ws_refresh.add_argument("--no-stage", action="store_true", help="Report drift without staging notes into sub-products.")
     ws_refresh.set_defaults(func=cmd_workspace)
+    ws_sync = workspace_sub.add_parser(
+        "sync", help="Sync main product and sub-products from either folder (backs /product-tree-sync)."
+    )
+    ws_sync.add_argument("--workspace", default=argparse.SUPPRESS)
+    ws_sync.add_argument("--no-stage", action="store_true", help="Report drift without staging notes into sub-products.")
+    ws_sync.set_defaults(func=cmd_workspace)
     ws_link = workspace_sub.add_parser("link", help="Link a sub-product workspace (use for folders outside this one).")
     ws_link.add_argument("path", help="Path to the sub-product folder.")
     ws_link.add_argument("--name", default=None, help="Name in the roll-up (default: folder name).")
@@ -650,6 +685,50 @@ def build_parser() -> argparse.ArgumentParser:
     ws_role.add_argument("role", nargs="?", default=None, choices=["main", "sub", "standalone"])
     ws_role.add_argument("--workspace", default=argparse.SUPPRESS)
     ws_role.set_defaults(func=cmd_workspace)
+
+    findings = sub.add_parser(
+        "findings", help="Findings from the parent product this workspace has not answered."
+    )
+    findings_sub = findings.add_subparsers(dest="findings_cmd")
+    f_list = findings_sub.add_parser("list", help="Open findings from the parent product.")
+    f_list.add_argument("--verbose", action="store_true", help="Include the recommended answer.")
+    f_list.add_argument("--workspace", default=argparse.SUPPRESS)
+    f_list.set_defaults(func=cmd_findings)
+    f_ask = findings_sub.add_parser("ask", help="Open findings as questions with recommended answers.")
+    f_ask.add_argument("--workspace", default=argparse.SUPPRESS)
+    f_ask.set_defaults(func=cmd_findings)
+    f_resolve = findings_sub.add_parser("resolve", help="Record a decision about one finding.")
+    f_resolve.add_argument("finding_id")
+    f_resolve.add_argument("decision", choices=("accepted", "declined", "deferred"))
+    f_resolve.add_argument("--note", default="")
+    f_resolve.add_argument("--workspace", default=argparse.SUPPRESS)
+    f_resolve.set_defaults(func=cmd_findings)
+
+    doubts_p = sub.add_parser("doubts", help="Read and update DOUBTS.md deterministically.")
+    doubts_sub = doubts_p.add_subparsers(dest="doubts_cmd")
+    d_list = doubts_sub.add_parser("list", help="Open doubts, blocking first.")
+    d_list.add_argument("--verbose", action="store_true")
+    d_list.add_argument("--workspace", default=argparse.SUPPRESS)
+    d_list.set_defaults(func=cmd_doubts)
+    for name, helptext in (
+        ("ask", "Open blocking doubts as questions with recommended answers."),
+        ("lint", "Entries whose status contradicts their content."),
+        ("counts", "One authoritative count for every command to use."),
+    ):
+        parser_obj = doubts_sub.add_parser(name, help=helptext)
+        parser_obj.add_argument("--workspace", default=argparse.SUPPRESS)
+        parser_obj.set_defaults(func=cmd_doubts)
+    d_resolve = doubts_sub.add_parser("resolve", help="Mark a doubt resolved, recording the answer.")
+    d_resolve.add_argument("doubt_id")
+    d_resolve.add_argument("answer")
+    d_resolve.add_argument("--decision", default="", help="DECISIONS.md id to cross-link, e.g. D-014")
+    d_resolve.add_argument("--workspace", default=argparse.SUPPRESS)
+    d_resolve.set_defaults(func=cmd_doubts)
+    d_defer = doubts_sub.add_parser("defer", help="Mark a doubt deferred, recording why.")
+    d_defer.add_argument("doubt_id")
+    d_defer.add_argument("reason")
+    d_defer.add_argument("--workspace", default=argparse.SUPPRESS)
+    d_defer.set_defaults(func=cmd_doubts)
 
     feature = sub.add_parser("feature", help="Feature spec folders under plan/features/.")
     feature_sub = feature.add_subparsers(dest="feature_cmd", required=True)

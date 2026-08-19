@@ -192,17 +192,27 @@ def _map_rows(workspace: Path) -> list[dict]:
 
 
 def map_id_for(workspace: Path, child_name: str) -> str | None:
-    """PRODUCT_MAP row id whose title matches this sub-product's folder name."""
+    """PRODUCT_MAP row id bound to this sub-product folder.
+
+    Two sources, both exact: a row whose `Workspace` column names the folder, or a
+    row whose `Title` slug equals the folder name. A substring fallback used to sit
+    here and would bind a folder named `api` to whichever of `api-gateway` or
+    `public-api` appeared first in the map. A silent mis-binding is worse than none:
+    every downstream check then reads a row that belongs to a different sub-product.
+    When neither matches, bind it explicitly - `loop workspace link <path> --map-id NN`.
+    """
     from plan_paths import slugify
 
     target = slugify(child_name)
+    if not target:
+        return None
     rows = _map_rows(workspace)
     for row in rows:
-        if slugify(row.get("title", "")) == target:
+        declared = str(row.get("workspace", "")).strip().strip("`/")
+        if declared and slugify(Path(declared).name) == target:
             return row.get("id")
     for row in rows:
-        title = slugify(row.get("title", ""))
-        if title and (target in title or title in target):
+        if slugify(row.get("title", "")) == target:
             return row.get("id")
     return None
 

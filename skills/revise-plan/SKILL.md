@@ -66,8 +66,10 @@ touches `plan/main_plan.md` AND may resolve a `DOUBTS.md` entry AND invalidate a
 4. For each fact, find its current home (it may already be stated elsewhere and need
    correcting, not just appending) using the routing table.
 5. Before writing, check whether the fact's target area is **locked**:
-   - a `GATES.yml` entry whose `status:` is anything other than `blocked` (i.e. already
-     passed) and whose criteria this fact would invalidate, or
+   - an unanswered finding from the parent product covering the same ground
+     (`loop findings list`). The master plan already moved here - resolve that first
+     with `loop findings ask`, or the revision is written against a stale constraint
+     and will simply be re-raised next session, or
    - a feature already implemented (its tasks in `TASKS.yml` / `tasks.md` are `done`, or
      `/feature-converge` has run against it).
    - **If locked:** tell the user which gate/decision this reopens and get a go-ahead before
@@ -86,8 +88,12 @@ touches `plan/main_plan.md` AND may resolve a `DOUBTS.md` entry AND invalidate a
 8. Log every applied revision in `DECISIONS.md` under a `## Revision Log` entry: date, what
    changed, why (from the user's own words), files touched, and whether it reopened a gate
    or created new tasks.
-9. If the fact resolves an open `DOUBTS.md` question, mark it `resolved` and cross-link the
-   `DECISIONS.md` entry.
+9. If the fact resolves an open `DOUBTS.md` question, close it with the command so the
+   count every other command reads actually moves - never hand-edit the status:
+
+   ```bash
+   loop doubts resolve DQ-007 "<the answer this fact gives>" --decision D-014
+   ```
 10. Update `memories/MEMORY.md` and `HANDOFF.md` with what changed and any new outstanding
     tasks.
 11. `loop session-end --command /revise-plan --summary "<what changed>"`.

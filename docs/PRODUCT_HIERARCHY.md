@@ -80,12 +80,12 @@ Deterministic, parsed from structured plan files - never model-generated
 | `parent-added` | warn / error | The master plan gained a constraint this sub-product has never seen |
 | `parent-changed` | warn / error | A constraint this sub-product had synced now has a different value upstream |
 | `parent-removed` | warn / error | A constraint was dropped upstream and may still be honored here |
-| `decision-conflict` | error | Same topic decided differently in the parent's and sub-product's `DECISIONS.md` |
+| `decision-conflict` | error | Same decision **topic** resolved differently in the parent's and sub-product's `DECISIONS.md` |
 | `deployment-conflict` | error | Same **Deployment & Infrastructure** row differs between main plan and sub plan |
 | `contract-gap` | error | Parent's `plan/steps/NN-slug/integrations.md` names modules the sub-product's plan never mentions |
 | `unmapped-sub` | error | A sub-product workspace has no `plan/PRODUCT_MAP.md` row |
 | `missing-link` | error | A linked sub-product folder no longer exists |
-| `unbuilt-row` | warn | A map row has no sub-product workspace |
+| `unbuilt-row` | warn | A row **typed `sub-product`** has no workspace |
 | `uninitialized-sub` | warn | Sub-product exists but its plan is UNINITIALIZED |
 | `dependency-gap` | warn | Map says this sub-product depends on another; its plan never references it |
 | `stale-sub` | info | Main plan changed after the sub-product's last session |
@@ -132,34 +132,75 @@ folders you were not working in:
 
 - **Metadata** (`.loop/workspace.json`) is stamped into a sub-product directly.
 - **Product state** (`DOUBTS.md`, `HANDOFF.md`, `plan/*`) is **never** written across
-  workspaces. An `error` finding is *staged* into the sub-product's `.loop/pending/files/`.
+  workspaces - not directly, and not into a queue either.
+
+Findings are **derived**, so nothing needs to cross. The sub-product recomputes its own
+share from its side and raises them during its next command:
 
 ```bash
 cd auth-svc
-loop pending list             # see what the parent proposed, and why
-loop pending approve --all    # apply it to this workspace's DOUBTS.md
-loop pending reject --all     # or drop it, when the master plan was the wrong side
+loop findings ask                          # each open finding as a question, with a recommendation
+loop findings resolve <id> accepted        # fold it into this plan
+loop findings resolve <id> declined        # the master plan is the side that is wrong
+loop findings resolve <id> deferred        # not now - records a doubt with what it blocks
 ```
 
-Staged targets are restricted to `DOUBTS.md`, `HANDOFF.md`, `DECISIONS.md`,
-`CURRENT_STATE.md`, and `plan/*` - re-checked at approve time, so a hand-edited pending
-file cannot widen it. Each finding stages at most once, however many sessions run.
+`/plan-loop`, `/product-develop`, `/loop-engine` and `/revise-plan` run this for you and
+ask about each one - you should not have to go looking.
+
+Only the **decision** is stored (`.loop/finding-log.json`), bound to the values it was
+made about. If the master plan changes that value again, the finding comes back for a
+fresh answer, so a stale "no" can never suppress a new constraint. Answering also
+releases the parent watermark: until the inbox is empty, the same change keeps being
+raised rather than being silently marked as seen.
+
+> **Why not a queue.** Staged notes were frozen copies of derived state. They could not
+> update when the values moved, and they outlived the disagreement - this repo's own
+> sub-product held six of them for conflicts that no longer existed, in a queue nobody
+> remembered to drain. `loop pending` still exists for the opt-in `--stage` memory path.
 
 ## Reading a finding
 
 A finding says the two plans disagree. It does **not** say which one is wrong:
 
-- **Sub-product wrong** → the staged note is the correction; approve it there.
-- **Master plan wrong** → fix it in the main workspace, run `loop workspace refresh`, and
-  reject the stale note in the sub-product.
+- **Sub-product wrong** → `loop findings resolve <id> accepted`, and make the change.
+- **Master plan wrong** → `loop findings resolve <id> declined`, then fix it in the main
+  workspace with `/revise-plan` and run `loop workspace sync`.
 
-`skills/plan-loop/phases/hierarchy.md` walks this decision with the user.
+Two phase files walk this with the user: `skills/plan-loop/phases/hierarchy.md` from the
+main product's side, `skills/plan-loop/phases/parent-findings.md` from the sub-product's.
+
+## Retiring a sub-product's question from the master plan
+
+A platform decision sometimes does not *answer* a sub-product's open question - it
+removes the reason the question existed. Record that on the decision:
+
+```markdown
+## D-M-003: Pricing is flat / per-claim fee only
+- **Supersedes:** sub-product `DQ-007` and `DQ-020` are superseded, not answered.
+```
+
+Those doubts stop being raised in the sub-product, with the reason attached:
+
+```
+DQ-007: superseded by D-M-003 (parent product) - not asked
+```
+
+Without this the sub-product keeps asking a dead question and offering a default that
+now contradicts platform policy - a real case in this repo, where `DQ-007` still asked
+"20%, 25% or 30%?" and recommended 25% after the platform had banned percentage pricing.
+
+- **One direction.** A main product retires questions in a sub-product; never the reverse.
+- **Only questions, never answers.** It marks a doubt as no longer worth asking. It
+  cannot change what a sub-product decided.
+- **Derived, so reversible.** Delete the `Supersedes:` line and the doubt reopens.
 
 ## Commands
 
 ```bash
+loop workspace sync                  # THE one to remember - sync from either folder
 loop workspace tree                  # role, parent, sub-products
-loop workspace refresh               # rewrite reports, stage drift notes
+loop workspace refresh               # rewrite this workspace's reports only
 loop workspace refresh --no-stage    # report only
 loop workspace link <path> [--map-id NN] [--name NAME]
 loop workspace unlink <name>
@@ -168,19 +209,54 @@ loop workspace role [main|sub|standalone]
 loop setup --use-cwd --role sub --parent ..    # explicit at setup time
 ```
 
-Chat: `/product-tree` (`commands/product-tree.md` + `skills/product-tree/SKILL.md`).
+Chat: `/product-tree` to **see** the tree, `/product-tree-sync` to **make it current**.
+
+### Keeping the tree current
+
+`loop session-start` already syncs the workspace it runs in, both directions. What it
+cannot do is update the *other* end - so a sub-product could be several sessions ahead of
+the roll-up that describes it. `/product-tree-sync` (`loop workspace sync`) closes that
+from wherever the user is standing:
+
+| Run from | Effect |
+|----------|--------|
+| Main product | Re-scans and re-binds sub-products, rewrites `plan/SUBPRODUCTS.md`, stages drift notes |
+| Sub-product | Rewrites its `plan/PARENT_CONTEXT.md`, advances its parent watermark, **and** refreshes the parent's roll-up |
+
+Only *generated* reports cross a workspace boundary this way - there is no authored
+content in them to lose. Authored state never crosses, and **staging still originates
+from the main product only**, so a sub-product can never queue work into its siblings.
 
 ## Relationship to ultraplan
 
 `plan/PRODUCT_MAP.md` is the bridge. Platform-scale planning (`docs/ULTRAPLAN.md`) already
-gives each sub-product a map row and a `plan/steps/NN-slug/` ultraplan pack **inside the
-main workspace**. A row binds to a real sub-product workspace by matching its folder name
-to the row title, or explicitly with `--map-id`:
+gives every row a `plan/steps/NN-slug/` ultraplan pack **inside the main workspace**. Most
+rows stop there: a `module` is planned and built here, and a `program` is not a product at
+all. Only a row typed **`sub-product`** is expected to get its own workspace.
 
-- Row **with** a bound workspace → that sub-product plans and builds itself; the row and
-  its ultraplan pack stay the platform-level contract.
-- Row **without** one → `unbuilt-row`: the next sub-product to start.
+- Row typed `sub-product` **with** a bound workspace → that sub-product plans and builds
+  itself; the row and its ultraplan pack stay the platform-level contract.
+- Row typed `sub-product` **without** one → `unbuilt-row`: the next sub-product to start.
+- Any other type → planned and built in this workspace. Never a finding.
 - Workspace **without** a row → `unmapped-sub`: work the master plan cannot account for.
+
+### Binding a row to a workspace
+
+Two exact sources, tried in order — no fuzzy matching:
+
+1. A `Workspace` column naming the folder.
+2. The row **Title**, slug-equal to the folder name.
+
+Otherwise bind it explicitly:
+
+```bash
+loop workspace link "Denial and Underpayment Recovery Engine" --map-id 01
+```
+
+The map is parsed **by column name**, so a map may carry extra columns and more than one
+table. Verify a binding took with `loop workspace tree` — a sub-product showing no `map`
+flag is unbound, and every check that reads its row (`dependency-gap`, `contract-gap`,
+and the parent-update watermark) is silently inactive until it is.
 
 ## Backward compatibility
 

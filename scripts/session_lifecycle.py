@@ -81,6 +81,20 @@ def _hierarchy(workspace: Path, *, stage: bool = True) -> dict:
         return {"enabled": False, "role": None, "error": f"{exc.__class__.__name__}: {exc}"}
 
 
+def _parent_findings(workspace: Path) -> dict:
+    """What this sub-product still owes its parent an answer about. Never raises.
+
+    Computed once here and its count persisted, so `plan_phase` stays a cheap
+    state signal rather than re-running the drift checks to route a phase.
+    """
+    try:
+        import parent_inbox
+
+        return parent_inbox.inbox(workspace)
+    except Exception:
+        return {"parent": None, "ask": [], "report": [], "total": 0}
+
+
 def render_manifest(
     workspace: Path,
     *,
@@ -91,6 +105,7 @@ def render_manifest(
     auto_agent_skills: list[str] | None = None,
     update_status: dict | None = None,
     hierarchy: dict | None = None,
+    findings: dict | None = None,
 ) -> str:
     auto_agent_skills = auto_agent_skills or []
     lines = [
@@ -152,6 +167,17 @@ def render_manifest(
         except Exception:
             pass
 
+    # Placed right after the hierarchy block: every command reads the manifest first,
+    # so this is the one channel that reaches /plan-loop, /product-develop,
+    # /loop-engine and /revise-plan without wiring each of them separately.
+    if findings:
+        try:
+            from parent_inbox import manifest_block as findings_block
+
+            lines.extend(findings_block(workspace, findings))
+        except Exception:
+            pass
+
     bootstrap = workspace / "plan" / "PLAN_BOOTSTRAP.md"
     if bootstrap.exists():
         lines.extend(
@@ -200,6 +226,49 @@ def render_manifest(
     return "\n".join(lines)
 
 
+def _auto_maintenance(workspace: Path) -> list[str]:
+    """Chores that used to be separate commands the user had to remember.
+
+    Only work that is deterministic, idempotent, and creates no new plan content
+    belongs here - it runs on every `loop session-start`, so anything that authors
+    content would author it again every session. That rules out
+    `loop plan-loop decompose` (it creates a step pack per map row, including rows
+    the plan has deliberately deferred) and `loop sync` (it appends dated notes to
+    MEMORY.md and HANDOFF.md). Both stay explicit.
+    """
+    actions: list[str] = []
+
+    try:  # was: loop plan-loop ultraplan status
+        from plan_paths import product_map_file
+        from ultraplan_harness import update_ultraplan_status
+
+        if product_map_file(workspace).exists():
+            update_ultraplan_status(workspace)
+            actions.append("ultraplan status refreshed")
+    except Exception:
+        pass
+
+    try:  # was: loop pending dedupe
+        from pending_writes import dedupe_pending
+
+        dropped = dedupe_pending(workspace)
+        if dropped:
+            actions.append(f"dropped {len(dropped)} duplicate pending write(s)")
+    except Exception:
+        pass
+
+    try:  # one-time cleanup of the retired drift-note queue
+        from parent_inbox import drop_legacy_queue
+
+        stale = drop_legacy_queue(workspace)
+        if stale:
+            actions.append(f"cleared {stale} staged drift note(s) - findings are derived now")
+    except Exception:
+        pass
+
+    return actions
+
+
 def _auto_update() -> dict:
     """Silent, throttled app self-update. Never raises."""
     try:
@@ -232,6 +301,8 @@ def session_start(
     auto_agent_names = [name for name, _ in agent_picks]
 
     hierarchy = _hierarchy(workspace)
+    findings = _parent_findings(workspace)
+    maintenance = _auto_maintenance(workspace)
 
     plan_bootstrap = None
     if text.strip() and command and any(c in (command or "") for c in ("/plan-loop", "/loop-engine", "plan", "loop-engine")):
@@ -254,6 +325,7 @@ def session_start(
             auto_agent_skills=auto_agent_names,
             update_status=update_status,
             hierarchy=hierarchy,
+            findings=findings,
         ),
         encoding="utf-8",
     )
@@ -271,6 +343,11 @@ def session_start(
             "manifest": MANIFEST,
             "role": hierarchy.get("role"),
             "sub_products": hierarchy.get("children", 0),
+            "maintenance": maintenance,
+            # Read by plan_phase to route the parent-findings phase without
+            # re-running the drift checks.
+            "open_parent_findings": findings.get("total", 0),
+            "parent_findings_ask": len(findings.get("ask") or []),
         }
     )
     write_meta(workspace, meta)
@@ -296,6 +373,8 @@ def session_start(
         "auto_agent_skills": auto_agent_names,
         "manifest": str(manifest_path),
         "hierarchy": hierarchy,
+        "maintenance": maintenance,
+        "findings": findings,
     }
 
 
@@ -449,6 +528,8 @@ def main() -> int:
             print(f"  auto skills: {', '.join(result['auto_skills'])}")
         if result["auto_agent_skills"]:
             print(f"  auto agent skills: {', '.join(result['auto_agent_skills'])}")
+        for action in result.get("maintenance", []):
+            print(f"  auto: {action}")
         hier = result.get("hierarchy") or {}
         if hier.get("children"):
             counts = hier.get("counts", {})
@@ -458,6 +539,12 @@ def main() -> int:
             )
         elif hier.get("parent"):
             print(f"  hierarchy: sub-product of `{hier['parent']}` - read plan/PARENT_CONTEXT.md")
+        found = result.get("findings") or {}
+        if found.get("total"):
+            print(
+                f"  parent findings: {found['total']} open "
+                f"({len(found.get('ask') or [])} need a decision) - run `loop findings ask`"
+            )
         print("  read plan/SESSION_MANIFEST.md first")
         return 0
 

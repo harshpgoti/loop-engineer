@@ -53,27 +53,109 @@ def read_scale(workspace: Path) -> str:
     return "convenient"
 
 
+MAP_COLUMNS = {
+    "id": "id",
+    "step file": "step",
+    "step": "step",
+    "type": "type",
+    "kind": "type",
+    "title": "title",
+    "name": "title",
+    "module": "title",
+    "scope": "scope",
+    "depends on": "depends",
+    "depends": "depends",
+    "dependencies": "depends",
+    "ultraplan status": "status",
+    "status": "status",
+    "workspace": "workspace",
+    "code folder": "code",
+    "code": "code",
+}
+
+# Column order assumed for a table written without a header row.
+LEGACY_MAP_COLUMNS = ("id", "step", "type", "title", "depends", "status")
+
+
+def _is_separator(line: str) -> bool:
+    return bool(re.match(r"^\|[-:\s|]+\|$", line.strip()))
+
+
+def _split_row(line: str) -> list[str]:
+    return [cell.strip() for cell in line.strip().strip("|").split("|")]
+
+
+def map_columns(cells: list[str]) -> dict[str, int] | None:
+    """Column name -> index, or None when this header is not a product-map table.
+
+    A map table is recognized by naming both an `ID` and a `Title` column. Other
+    tables in the same file - a canonical-paths index, a binding note - are then
+    skipped instead of being read as rows.
+    """
+    mapping: dict[str, int] = {}
+    for index, cell in enumerate(cells):
+        name = MAP_COLUMNS.get(re.sub(r"[*_`]", "", cell).strip().lower())
+        if name and name not in mapping:
+            mapping[name] = index
+    return mapping if "id" in mapping and "title" in mapping else None
+
+
 def parse_product_map(workspace: Path) -> list[dict]:
+    """Rows of `plan/PRODUCT_MAP.md`, read by column *name*.
+
+    A real map carries extra columns (a founder ranking, a scope note) and often
+    more than one table - company programs and product modules kept in a single ID
+    space. Both break positional parsing, which silently shifts `title` into
+    `depends`; every downstream binding then points at the wrong text, and the
+    sub-product that owns the row reports as unmapped. Columns are therefore taken
+    from each table's own header, and a table that does not name `ID` and `Title`
+    is skipped rather than misread.
+    """
     path = product_map_file(workspace)
     if not path.exists():
         return []
+
+    lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
     rows: list[dict] = []
-    for line in path.read_text(encoding="utf-8", errors="ignore").splitlines():
-        if not line.strip().startswith("|"):
+    columns: dict[str, int] | None = None
+    saw_header = False
+
+    for index, line in enumerate(lines):
+        stripped = line.strip()
+        if not stripped.startswith("|") or _is_separator(stripped):
             continue
-        if re.match(r"^\|\s*ID\s*\|", line, re.I) or re.match(r"^\|[-:\s|]+\|$", line):
+
+        following = lines[index + 1] if index + 1 < len(lines) else ""
+        if _is_separator(following):
+            # A header row - it names this table's columns, or marks it as not a map.
+            columns = map_columns(_split_row(stripped))
+            saw_header = True
             continue
-        parts = [p.strip() for p in line.strip("|").split("|")]
-        if len(parts) < 4:
+
+        if columns is None:
+            if saw_header:
+                continue  # inside a table that is not the product map
+            columns = {name: i for i, name in enumerate(LEGACY_MAP_COLUMNS)}
+
+        cells = _split_row(stripped)
+
+        def cell(name: str) -> str:
+            idx = columns.get(name)
+            return cells[idx] if idx is not None and idx < len(cells) else ""
+
+        raw_id, title = cell("id"), cell("title")
+        if not raw_id or not title:
             continue
-        step_id = parts[0].zfill(2) if parts[0].isdigit() else parts[0]
         rows.append(
             {
-                "id": step_id,
-                "type": parts[2] if len(parts) > 2 else "module",
-                "title": parts[3] if len(parts) > 3 else parts[1],
-                "depends": parts[4] if len(parts) > 4 else "",
-                "status": parts[5] if len(parts) > 5 else "outline",
+                "id": raw_id.zfill(2) if raw_id.isdigit() else raw_id,
+                "type": cell("type") or "module",
+                "title": title,
+                "depends": cell("depends"),
+                "status": cell("status") or "outline",
+                "scope": cell("scope"),
+                "workspace": cell("workspace"),
+                "code": cell("code"),
             }
         )
     return rows

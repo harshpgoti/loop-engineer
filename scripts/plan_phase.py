@@ -18,6 +18,7 @@ from pathlib import Path
 # Phase name -> phase file, relative to the app's skills dir.
 PHASE_FILES = {
     "grill": "skills/plan-loop/phases/grill.md",
+    "parent-findings": "skills/plan-loop/phases/parent-findings.md",
     "hierarchy": "skills/plan-loop/phases/hierarchy.md",
     "council": "skills/plan-loop/phases/council.md",
     "ultraplan": "skills/plan-loop/phases/ultraplan.md",
@@ -86,16 +87,37 @@ def _active_feature(workspace: Path) -> dict | None:
 
 
 def _has_open_doubts(workspace: Path) -> bool:
-    """True if DOUBTS.md has any entry still marked open."""
-    path = workspace / "DOUBTS.md"
-    if not path.exists():
-        return False
+    """True if a *blocking* doubt is still open.
+
+    Was a substring test for `status: open` over the whole file, which fired on any
+    open item at all - so a single commercial question explicitly annotated "does not
+    block the build" pinned a workspace before `task-compiler` indefinitely. Both of
+    this repo's real workspaces were stuck that way. `doubts.has_blocking` reads the
+    same file with one parser every command shares.
+    """
     try:
-        text = path.read_text(encoding="utf-8", errors="ignore")
-    except OSError:
+        from doubts import has_blocking
+
+        return has_blocking(workspace)
+    except Exception:
         return False
-    # Tolerate `- **Status:** open` and `status: open` formats.
-    return "status: open" in text.replace("*", "").lower()
+
+
+def _open_parent_findings(workspace: Path) -> int:
+    """Findings from the parent product this sub-product has not answered.
+
+    Read from the count `loop session-start` recorded, not recomputed - the router
+    stays a cheap state signal, the same rule `_hierarchy_errors` follows.
+    """
+    path = workspace / ".loop" / "session.json"
+    if not path.exists():
+        return 0
+    try:
+        import json
+
+        return int(json.loads(path.read_text(encoding="utf-8")).get("open_parent_findings") or 0)
+    except Exception:
+        return 0
 
 
 def _checklist_ready(feature: dict | None) -> bool:
@@ -119,9 +141,18 @@ def compute_plan_phase(workspace: Path) -> dict:
     platform = _is_platform(workspace)
     feature = _active_feature(workspace)
     hierarchy_errors = _hierarchy_errors(workspace)
+    parent_findings = _open_parent_findings(workspace)
 
     if not initialized:
         phase, reason = "grill", "product plan is UNINITIALIZED - grill product inputs first"
+    elif parent_findings:
+        # Before `hierarchy`: a middle node is both a parent and a child, and what
+        # its own parent already decided constrains how it reconciles its children.
+        phase, reason = (
+            "parent-findings",
+            f"{parent_findings} unanswered finding(s) from the parent product - "
+            "answer them before planning on top of a constraint that has moved",
+        )
     elif hierarchy_errors:
         phase, reason = (
             "hierarchy",
@@ -141,6 +172,8 @@ def compute_plan_phase(workspace: Path) -> dict:
         phase, reason = "council", "plan initialized, no active feature - council-review before the feature spec"
 
     pipeline = ["grill"]
+    if parent_findings or (workspace / "plan" / "PARENT_CONTEXT.md").exists():
+        pipeline.append("parent-findings")
     if hierarchy_errors or (workspace / "plan" / "SUBPRODUCTS.md").exists():
         pipeline.append("hierarchy")
     pipeline.append("council")

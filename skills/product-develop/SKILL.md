@@ -58,7 +58,7 @@ Build the product from `plan/main_plan.md` and `plan/` while respecting gates.
 ## Build Loop
 
 ```text
-SESSION-START -> SELECT TASK (from active feature tasks.md + TASKS.yml) -> READ MANIFEST/AUTO-SKILLS -> PLAN DIFF -> BUILD -> TEST -> FEATURE-CONVERGE -> SESSION-END
+SESSION-START -> ANSWER PARENT FINDINGS + BLOCKING DOUBTS -> SELECT TASK (from active feature tasks.md + TASKS.yml) -> READ MANIFEST/AUTO-SKILLS -> PLAN DIFF -> BUILD -> TEST -> FEATURE-CONVERGE -> SESSION-END
 ```
 
 Run `loop session-start --command /product-develop` first and `loop session-end` last. Frontend motion/3D skills and agent-development skills are both auto-detected at session-start and included in the manifest when signals match (`plan/AUTO_SKILLS.md`, `plan/AUTO_AGENT_SKILLS.md`) - re-run `loop auto-agent-skills --write` only if the task description changed after session-start.
@@ -91,7 +91,8 @@ Run `loop session-start --command /product-develop` first and `loop session-end`
 - Reuse cloud, LLM, and deployment answers already in `DECISIONS.md`, resolved `DOUBTS.md`, or `plan/main_plan.md`.
 - Ask the user only for unresolved deployment questions.
 - Fix safe P0/P1 technical blockers found by `prod-gap` when in scope.
-- Add human-required blockers from `prod-gap` to `DOUBTS.md` and `HANDOFF.md`.
+- Add human-required blockers from `prod-gap` with `loop doubts add` - never by appending
+  prose, which leaves an entry no command can count or close.
 - Update `memories/MEMORY.md`, `DOUBTS.md`, `CURRENT_STATE.md`, `HANDOFF.md`, `DEPLOYMENT_PLAN.md`, and `.ai/SESSION_LOG.md`.
 - Run `compact-loop` when development is long, many files changed, the user may switch tools, or the context is getting heavy.
 - Run `loop session-end --command /product-develop` (mandatory; includes converge + memory-review staging).

@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import re
 from datetime import date
 from pathlib import Path
 
@@ -50,15 +49,30 @@ def find_active_task(tasks_text: str) -> str:
     return "See `TASKS.yml`."
 
 
-def find_human_blockers(doubts_text: str, prod_gap_text: str) -> list[str]:
+def find_human_blockers(workspace: Path, prod_gap_text: str) -> list[str]:
+    """Blocking doubts, plus the gap report's own human-required section.
+
+    This used to substring-match `- ` bullets for words like "sign" and "account",
+    which on a real workspace surfaced the *resolution* text of an already-closed
+    doubt and matched "sign" inside "design partner". Blocking doubts are now read
+    from the parser, where they carry an id.
+    """
     blockers: list[str] = []
-    for text in (doubts_text, prod_gap_text):
-        for line in text.splitlines():
-            lower = line.lower()
-            if line.strip().startswith("- ") and any(
-                token in lower for token in ("human", "user must", "approval", "sign", "account", "credential")
-            ):
-                blockers.append(line.strip()[2:])
+    try:
+        from doubts import blocking_doubts
+
+        blockers.extend(f"`{d.id}` {d.question or d.title}" for d in blocking_doubts(workspace))
+    except Exception:
+        pass
+
+    in_section = False
+    for line in prod_gap_text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("#"):
+            in_section = "human-required" in stripped.lower()
+            continue
+        if in_section and stripped.startswith("- "):
+            blockers.append(stripped[2:])
     return blockers[:8]
 
 
@@ -124,11 +138,16 @@ def summarize(workspace: Path) -> str:
     active_gate = extract_line(current_state, "**Active gate", "Unknown")
     active_task = find_active_task(tasks)
     next_command = recommend_next_command(main_plan, current_state, gates, tasks)
-    human_blockers = find_human_blockers(doubts, prod_gap)
+    human_blockers = find_human_blockers(workspace, prod_gap)
 
-    open_doubt_count = len(re.findall(r"(?im)^- .*open", doubts))
-    if open_doubt_count == 0 and "open" in doubts.lower():
-        open_doubt_count = len([line for line in doubts.splitlines() if line.strip().startswith("- ")])
+    # One parser, whole file. The old regex ran over a 3,000-char excerpt and
+    # matched any bullet containing "open" - it reported 3 for a file with 13.
+    try:
+        from doubts import counts as doubt_counts
+
+        open_doubt_count = doubt_counts(workspace)["open"]
+    except Exception:
+        open_doubt_count = 0
 
     hierarchy = _hierarchy(workspace)
     human_blockers.extend(hierarchy["blockers"])

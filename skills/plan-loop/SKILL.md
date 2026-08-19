@@ -26,6 +26,7 @@ The harness picks the phase for you: `loop session-start` / `loop plan-loop "<id
 | Phase | Load when | File |
 |-------|-----------|------|
 | **grill** | product uninitialized, pivot, or `PHASE: grill` | `phases/grill.md` |
+| **parent-findings** | this sub-product has unanswered findings from its parent product, or `PHASE: parent-findings` | `phases/parent-findings.md` |
 | **hierarchy** | linked sub-products contradict the master plan (`plan/SUBPRODUCTS.md` has `error` findings), or `PHASE: hierarchy` | `phases/hierarchy.md` |
 | **council** | before PRD/architecture lock, or `PHASE: council` | `phases/council.md` |
 | **ultraplan** | `plan/PLAN_SCALE.md` = platform with an incomplete step, `/ultraplan-loop`, or `PHASE: ultraplan` | `phases/ultraplan.md` |
@@ -54,7 +55,7 @@ Then load the current phase file from the router above.
 ## Loop
 
 ```text
-SESSION-START -> READ PHASE -> [grill -> (hierarchy) -> council] -> (platform: ultraplan/step) -> spec-clarify -> spec-checklist -> resolve-doubts -> task-compiler -> SESSION-END
+SESSION-START -> READ PHASE -> [grill -> (parent-findings) -> (hierarchy) -> council] -> (platform: ultraplan/step) -> spec-clarify -> spec-checklist -> resolve-doubts -> task-compiler -> SESSION-END
 ```
 
 ## Instructions

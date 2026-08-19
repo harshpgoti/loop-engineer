@@ -63,12 +63,12 @@ loop workspace unlink billing
 
 | Kind | Level | Fires when |
 |------|-------|-----------|
-| `decision-conflict` | error | Same topic decided differently in the parent's and the sub-product's `DECISIONS.md` |
+| `decision-conflict` | error | Same decision **topic** resolved differently in the parent's and the sub-product's `DECISIONS.md` |
 | `deployment-conflict` | error | Same row of **Deployment & Infrastructure** differs between main plan and sub plan |
 | `contract-gap` | error | Parent's `plan/steps/NN-slug/integrations.md` defines contracts with modules the sub-product's plan never mentions |
 | `unmapped-sub` | error | A sub-product workspace has no `plan/PRODUCT_MAP.md` row |
 | `missing-link` | error | A linked sub-product folder no longer exists |
-| `unbuilt-row` | warn | A map row has no sub-product workspace |
+| `unbuilt-row` | warn | A row **typed `sub-product`** has no workspace (other types are built here) |
 | `uninitialized-sub` | warn | Sub-product exists but its `plan/main_plan.md` is UNINITIALIZED |
 | `dependency-gap` | warn | Map says this sub-product depends on another; its plan never references it |
 | `parent-added` | warn / error | Master plan gained a constraint this sub-product has never synced |

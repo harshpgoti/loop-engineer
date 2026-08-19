@@ -41,7 +41,7 @@ PRODUCT_MAP = """# Product Map
 | ID | Step file | Type | Title | Depends on | Ultraplan status |
 |----|-----------|------|-------|------------|------------------|
 | 01 | step_01 | service | auth svc | | outline |
-| 02 | step_02 | product | portal | 01 | outline |
+| 02 | step_02 | sub-product | portal | 01 | outline |
 | 03 | step_03 | module | billing | | outline |
 """
 
@@ -300,10 +300,70 @@ class TestDriftChecks(TreeSandbox):
         self.assertIn("unmapped-sub", self._kinds(findings))
 
     def test_unbuilt_map_row(self) -> None:
+        """Only a row that declares delegation can be missing a workspace.
+
+        `billing` is typed `module` - planned and built inside this workspace - so
+        it is not unbuilt, it is simply not delegated.
+        """
         self.seed(self.main / "auth-svc", **{"plan/main_plan.md": "# Plan\n- **Name:** Auth\n"})
         findings = drift.check_children(self.main_ws, self._children())
         unbuilt = [f for f in findings if f["kind"] == "unbuilt-row"]
-        self.assertEqual({f["sub"] for f in unbuilt}, {"portal", "billing"})
+        self.assertEqual({f["sub"] for f in unbuilt}, {"portal"})
+
+    def test_module_and_program_rows_are_never_unbuilt(self) -> None:
+        (self.main_ws / "plan" / "PRODUCT_MAP.md").write_text(
+            "# Product Map\n\n| ID | Step file | Type | Title | Depends on | Status |\n"
+            "|----|---|---|---|---|---|\n"
+            "| 01 | step_01 | sub-product | auth svc | | outline |\n"
+            "| 02 | step_02 | program | Revenue Activation | | active |\n"
+            "| 03 | step_03 | module | billing | | outline |\n",
+            encoding="utf-8",
+        )
+        self.seed(self.main / "auth-svc", **{"plan/main_plan.md": "# Plan\n- **Name:** Auth\n"})
+        findings = drift.check_children(self.main_ws, self._children())
+        self.assertEqual([], [f for f in findings if f["kind"] == "unbuilt-row"])
+
+    def test_adr_formatted_logs_do_not_collide_on_boilerplate(self) -> None:
+        """Two ADR logs share field names, not decisions - that is not a conflict."""
+        adr = (
+            "# Decision Log\n\n## {id}: {topic}\n"
+            "- **Date:** {date}\n"
+            "- **Decision:** {decision}\n"
+            "- **Rationale:** because of {date}\n"
+            "- **Consequences:** downstream work\n"
+        )
+        (self.main_ws / "DECISIONS.md").write_text(
+            adr.format(id="D-M-001", topic="Pricing model", date="2026-08-10", decision="Flat fee only"),
+            encoding="utf-8",
+        )
+        self.seed(
+            self.main / "auth-svc",
+            **{
+                "plan/main_plan.md": "# Plan\n- **Name:** Auth\n",
+                "DECISIONS.md": adr.format(
+                    id="D-001", topic="Token lifetime", date="2026-07-01", decision="15 minutes"
+                ),
+            },
+        )
+        self.assertNotIn("decision-conflict", self._kinds(drift.check_children(self.main_ws, self._children())))
+
+    def test_same_adr_topic_decided_differently_is_a_conflict(self) -> None:
+        """The ID prefix differs per workspace, so the topic alone is the key."""
+        adr = "# Decision Log\n\n## {id}: Datastore\n- **Date:** {date}\n- **Decision:** {decision}\n"
+        (self.main_ws / "DECISIONS.md").write_text(
+            adr.format(id="D-M-004", date="2026-08-10", decision="Postgres"), encoding="utf-8"
+        )
+        self.seed(
+            self.main / "auth-svc",
+            **{
+                "plan/main_plan.md": "# Plan\n- **Name:** Auth\n",
+                "DECISIONS.md": adr.format(id="D-002", date="2026-07-01", decision="DynamoDB"),
+            },
+        )
+        findings = [f for f in drift.check_children(self.main_ws, self._children()) if f["kind"] == "decision-conflict"]
+        self.assertEqual(1, len(findings))
+        self.assertIn("Postgres", findings[0]["detail"])
+        self.assertIn("DynamoDB", findings[0]["detail"])
 
     def test_uninitialized_sub_product(self) -> None:
         self.seed(self.main / "auth-svc", **{"plan/main_plan.md": "# Plan\n\nStatus: **UNINITIALIZED**\n"})
@@ -443,31 +503,54 @@ class TestHierarchySync(TreeSandbox):
             },
         )
 
-    def test_writes_report_and_stages_note(self) -> None:
+    def test_reports_here_and_the_sub_product_sees_it_there(self) -> None:
+        """Nothing is copied across: the sub-product derives its own view."""
+        import parent_inbox
+
         result = hierarchy_sync.run(self.main_ws)
         self.assertEqual(result["role"], wt.ROLE_MAIN)
         self.assertTrue((self.main_ws / "plan" / "SUBPRODUCTS.md").exists())
         self.assertGreaterEqual(result["counts"]["error"], 1)
 
-        staged = pw.list_pending(self.child_ws)
-        self.assertTrue(staged)
-        self.assertEqual(staged[0]["relative_path"], "DOUBTS.md")
-        # Staged, not applied.
+        self.assertEqual([], pw.list_pending(self.child_ws), "findings are derived, never queued")
         self.assertNotIn("GCP", (self.child_ws / "DOUBTS.md").read_text(encoding="utf-8"))
 
-        pw.approve_pending(self.child_ws, approve_all=True)
-        self.assertIn("deployment-conflict", (self.child_ws / "DOUBTS.md").read_text(encoding="utf-8"))
+        box = parent_inbox.inbox(self.child_ws)
+        self.assertTrue(box["ask"], "the sub-product must see the conflict from its own side")
+        self.assertEqual("deployment-conflict", box["ask"][0]["kind"])
 
-    def test_rerun_does_not_duplicate_staged_notes(self) -> None:
-        hierarchy_sync.run(self.main_ws)
-        count = len(pw.list_pending(self.child_ws))
-        hierarchy_sync.run(self.main_ws)
-        self.assertEqual(len(pw.list_pending(self.child_ws)), count)
+    def test_resolved_finding_stops_appearing(self) -> None:
+        import finding_log
+        import parent_inbox
 
-    def test_no_stage_mode_reports_without_staging(self) -> None:
-        result = hierarchy_sync.run(self.main_ws, stage=False)
-        self.assertGreaterEqual(result["counts"]["error"], 1)
-        self.assertEqual(pw.list_pending(self.child_ws), [])
+        hierarchy_sync.run(self.main_ws)
+        box = parent_inbox.inbox(self.child_ws)
+        finding_log.resolve(self.child_ws, box["ask"][0], finding_log.DECLINED, note="platform is wrong")
+        self.assertEqual(0, parent_inbox.inbox(self.child_ws)["total"])
+
+    def test_changed_upstream_value_reopens_a_resolved_finding(self) -> None:
+        """A 'no' about AWS must not silently suppress a later switch to Azure."""
+        import finding_log
+        import parent_inbox
+
+        hierarchy_sync.run(self.main_ws)
+        box = parent_inbox.inbox(self.child_ws)
+        finding_log.resolve(self.child_ws, box["ask"][0], finding_log.DECLINED)
+        self.assertEqual(0, parent_inbox.inbox(self.child_ws)["total"])
+
+        (self.main_ws / "plan" / "main_plan.md").write_text(
+            MAIN_PLAN.replace("| Cloud provider | AWS |", "| Cloud provider | Azure |"), encoding="utf-8"
+        )
+        self.assertEqual(1, parent_inbox.inbox(self.child_ws)["total"])
+
+    def test_every_finding_carries_a_recommended_answer(self) -> None:
+        import parent_inbox
+
+        hierarchy_sync.run(self.main_ws)
+        for item in parent_inbox.inbox(self.child_ws)["ask"]:
+            question = parent_inbox.question(item)
+            self.assertIn(question["recommended"], question["options"])
+            self.assertTrue(question["why"].strip())
 
     def test_sub_gets_parent_context(self) -> None:
         hierarchy_sync.run(self.main_ws)
@@ -605,6 +688,92 @@ class TestPlanPhase(TreeSandbox):
         (self.main_ws / "plan").mkdir(parents=True, exist_ok=True)
         (self.main_ws / "plan" / "main_plan.md").write_text(MAIN_PLAN, encoding="utf-8")
         self.assertNotEqual(compute_plan_phase(self.main_ws)["phase"], "hierarchy")
+
+
+class TestMapParsing(TreeSandbox):
+    """The map is read by column name, because real maps grow columns and tables."""
+
+    def _map(self, body: str) -> list[dict]:
+        from ultraplan_harness import parse_product_map
+
+        (self.main_ws / "plan").mkdir(parents=True, exist_ok=True)
+        (self.main_ws / "plan" / "PRODUCT_MAP.md").write_text(body, encoding="utf-8")
+        return parse_product_map(self.main_ws)
+
+    def test_extra_column_does_not_shift_fields(self) -> None:
+        """A `Founder rank` column between ID and Step file must change nothing."""
+        rows = self._map(
+            "# Product Map\n\n"
+            "| ID | Founder rank | Step file | Type | Title | Scope | Depends on | Status |\n"
+            "|----|---|---|---|---|---|---|---|\n"
+            "| 01 | #1 | step_01 | sub-product | Denial Recovery Engine | engine loops | | Built |\n"
+        )
+        self.assertEqual(1, len(rows))
+        self.assertEqual("sub-product", rows[0]["type"])
+        self.assertEqual("Denial Recovery Engine", rows[0]["title"])
+        self.assertEqual("", rows[0]["depends"])
+
+    def test_two_tables_in_one_id_space(self) -> None:
+        rows = self._map(
+            "# Product Map\n\n## A. Programs\n\n"
+            "| ID | Step file | Type | Title | Depends on | Status |\n"
+            "|----|---|---|---|---|---|\n"
+            "| 02 | step_02 | program | Revenue Activation | 01 | active |\n"
+            "\n## B. Modules\n\n"
+            "| ID | Founder rank | Step file | Type | Title | Depends on | Status |\n"
+            "|----|---|---|---|---|---|---|\n"
+            "| 01 | #1 | step_01 | sub-product | auth svc | | built |\n"
+        )
+        self.assertEqual({"01": "auth svc", "02": "Revenue Activation"}, {r["id"]: r["title"] for r in rows})
+
+    def test_non_map_tables_are_skipped(self) -> None:
+        """A path index also starts with `ID` - without a Title it is not a map."""
+        rows = self._map(
+            "# Product Map\n\n"
+            "| ID | Step file | Type | Title | Depends on | Status |\n"
+            "|----|---|---|---|---|---|\n"
+            "| 01 | step_01 | sub-product | auth svc | | outline |\n"
+            "\n## Canonical paths\n\n"
+            "| ID | Index file | Ultraplan pack |\n|----|---|---|\n"
+            "| 01 | `plan/step_01.md` | `plan/steps/01-auth/` |\n"
+        )
+        self.assertEqual(["01"], [r["id"] for r in rows])
+        self.assertEqual("auth svc", rows[0]["title"])
+
+    def test_header_less_table_keeps_legacy_column_order(self) -> None:
+        rows = self._map("# Product Map\n\n| 01 | step_01 | service | auth svc | | outline |\n")
+        self.assertEqual("auth svc", rows[0]["title"])
+
+
+class TestMapBinding(TreeSandbox):
+    def _bind(self, folder_name: str, map_body: str) -> str | None:
+        (self.main_ws / "plan").mkdir(parents=True, exist_ok=True)
+        (self.main_ws / "plan" / "PRODUCT_MAP.md").write_text(map_body, encoding="utf-8")
+        self.seed(self.main / folder_name)
+        return wt.refresh(self.main_ws)["children"][0]["map_id"]
+
+    MAP = (
+        "# Product Map\n\n| ID | Step file | Type | Title | Depends on | Status |\n"
+        "|----|---|---|---|---|---|\n"
+        "| 01 | step_01 | sub-product | api gateway | | outline |\n"
+        "| 02 | step_02 | sub-product | public api | | outline |\n"
+    )
+
+    def test_partial_name_never_binds(self) -> None:
+        """`api` is a prefix of two rows - guessing one would be a silent mis-bind."""
+        self.assertIsNone(self._bind("api", self.MAP))
+
+    def test_exact_title_binds(self) -> None:
+        self.assertEqual("02", self._bind("public-api", self.MAP))
+
+    def test_workspace_column_binds_when_folder_name_differs(self) -> None:
+        bound = self._bind(
+            "gateway",
+            "# Product Map\n\n| ID | Step file | Type | Title | Workspace | Status |\n"
+            "|----|---|---|---|---|---|\n"
+            "| 01 | step_01 | sub-product | api gateway | gateway | outline |\n",
+        )
+        self.assertEqual("01", bound)
 
 
 if __name__ == "__main__":

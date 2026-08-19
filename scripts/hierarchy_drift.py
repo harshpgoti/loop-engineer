@@ -105,6 +105,12 @@ def normalize_value(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", value.strip().lower()).strip()
 
 
+def _short(value: str, limit: int = 180) -> str:
+    """One-line, bounded quote of a value for a finding message."""
+    flat = re.sub(r"\s+", " ", value).strip()
+    return flat if len(flat) <= limit else flat[:limit].rstrip() + "..."
+
+
 def _deployment_section(workspace: Path) -> str:
     from memory_paths import main_plan_file
 
@@ -121,12 +127,78 @@ def deployment_labels(workspace: Path) -> dict[str, tuple[str, str]]:
     return labelled_pairs(_deployment_section(workspace))
 
 
+ADR_HEADING = re.compile(r"^([A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*)\s*[:.]\s*(.+)$")
+DECISION_BULLET = re.compile(r"^[-*]\s+\*\*Decision:?\*\*:?\s*(.+)$", re.I)
+
+
+def _adr_topic(heading: str) -> str:
+    """`D-M-003: Pricing is flat fee` -> `Pricing is flat fee`.
+
+    The ID prefix is workspace-local numbering - `D-001` in a sub-product, `D-M-001`
+    in its parent - so it can never be part of the comparison key. Only the topic is
+    shared vocabulary between two workspaces.
+    """
+    match = ADR_HEADING.match(heading)
+    if match and any(char.isdigit() for char in match.group(1)):
+        return match.group(2).strip()
+    return heading.strip()
+
+
+def decision_entries(text: str, *, skip_sections: tuple[str, ...] = ()) -> dict[str, tuple[str, str]]:
+    """Decisions keyed by *topic*, from the two shapes a DECISIONS.md actually uses.
+
+    1. Decision tables - `| Topic | Decision |` rows.
+    2. ADR sections - `## D-007: Datastore is Postgres` with a `- **Decision:**` bullet.
+
+    Bare `- **Key:** value` bullets are deliberately not harvested. Every ADR entry
+    repeats the same field names - Date, Rationale, Consequences, Reversibility - so
+    harvesting them made any two ADR-formatted logs collide on boilerplate rather
+    than on substance: six false `decision-conflict` errors between this repo's own
+    main product and its sub-product, each one staged into that sub-product's
+    DOUBTS.md as a question no one could answer.
+    """
+    pairs: dict[str, tuple[str, str]] = {}
+    heading = ""
+    skipping = False
+
+    for line in text.splitlines():
+        stripped = line.strip()
+
+        if stripped.startswith("#"):
+            heading = stripped.lstrip("#").strip()
+            skipping = any(token in heading.lower() for token in skip_sections)
+            continue
+        if skipping:
+            continue
+
+        if stripped.startswith("|"):
+            if re.match(r"^[-:\s|]+$", stripped.strip("|")):
+                continue
+            cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+            if len(cells) < 2:
+                continue
+            key, value = cells[0], cells[1]
+            if key.lower() in ("item", "topic", "key", "decision", "id", "name", "step"):
+                continue
+            if key and not is_placeholder(value):
+                pairs.setdefault(normalize_key(key), (key, value))
+            continue
+
+        bullet = DECISION_BULLET.match(stripped)
+        if bullet and heading and not is_placeholder(bullet.group(1)):
+            topic = _adr_topic(heading)
+            if topic:
+                pairs.setdefault(normalize_key(topic), (topic, bullet.group(1).strip()))
+
+    return pairs
+
+
 def decisions_table(workspace: Path) -> dict[str, str]:
-    return table_pairs(read_text(workspace / "DECISIONS.md"), skip_sections=("pending",))
+    return {key: value for key, (_label, value) in decisions_labels(workspace).items()}
 
 
 def decisions_labels(workspace: Path) -> dict[str, tuple[str, str]]:
-    return labelled_pairs(read_text(workspace / "DECISIONS.md"), skip_sections=("pending",))
+    return decision_entries(read_text(workspace / "DECISIONS.md"), skip_sections=("pending",))
 
 
 def is_uninitialized(workspace: Path) -> bool:
@@ -177,7 +249,34 @@ def last_session_at(workspace: Path) -> datetime | None:
     return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
 
 
-def _finding(kind: str, level: str, sub: str, key: str, detail: str, note: str, *, stage: bool = False) -> dict:
+DELEGATED_TYPES = {"sub-product", "subproduct"}
+
+
+def row_is_delegated(row: dict) -> bool:
+    """True when a map row is meant to become its own sub-product workspace.
+
+    Most rows are not. A real map holds company programs that are not products at
+    all, and modules planned and built inside this same workspace - typing every
+    row as a missing workspace produced 16 warnings on this repo's own map, none
+    of them true. Delegation is therefore declared, not assumed: type
+    `sub-product`, or a `Workspace` column naming the folder.
+    """
+    if str(row.get("workspace", "")).strip():
+        return True
+    return normalize_key(row.get("type", "")) in DELEGATED_TYPES
+
+
+def _finding(
+    kind: str,
+    level: str,
+    sub: str,
+    key: str,
+    detail: str,
+    note: str,
+    *,
+    stage: bool = False,
+    material: str | None = None,
+) -> dict:
     return {
         "id": f"{kind}:{slugify(sub) or 'main'}:{normalize_key(key) or 'x'}",
         "kind": kind,
@@ -185,6 +284,10 @@ def _finding(kind: str, level: str, sub: str, key: str, detail: str, note: str, 
         "sub": sub,
         "detail": detail,
         "note": note,
+        # The substance of the disagreement, with nothing incidental in it. A
+        # resolution is bound to this, so a finding whose *values* change comes
+        # back for a fresh answer while a re-worded `detail` does not.
+        "material": material if material is not None else detail,
         # Errors always reach the sub-product. `stage` lets a non-error finding
         # do the same - a parent update is news the sub-product must see even
         # when nothing yet contradicts.
@@ -220,18 +323,19 @@ def check_children(main_ws: Path, children: list[dict]) -> list[dict]:
 
     bound_ids = {c.get("map_id") for c in children if c.get("map_id")}
     for row in rows:
-        if row.get("id") not in bound_ids:
-            findings.append(
-                _finding(
-                    "unbuilt-row",
-                    LEVEL_WARN,
-                    row.get("title", row.get("id", "?")),
-                    f"row-{row.get('id')}",
-                    f"Product map row {row.get('id')} ({row.get('title')}) has no sub-product workspace. "
-                    "Plan it here, or run `loop setup --use-cwd` in its folder.",
-                    "",
-                )
+        if not row_is_delegated(row) or row.get("id") in bound_ids:
+            continue
+        findings.append(
+            _finding(
+                "unbuilt-row",
+                LEVEL_WARN,
+                row.get("title", row.get("id", "?")),
+                f"row-{row.get('id')}",
+                f"Product map row {row.get('id')} ({row.get('title')}) is typed `sub-product` but has no "
+                "workspace. Run `loop setup --use-cwd` in its folder, or retype the row if it is built here.",
+                "",
             )
+        )
 
     parent_deploy = deployment_labels(main_ws)
     parent_decisions = decisions_labels(main_ws)
@@ -313,15 +417,18 @@ def _conflicts(
         child_value = child_entry[1]
         if normalize_value(child_value) == normalize_value(parent_value):
             continue
+        # Compare in full, quote in brief: an ADR decision body runs to paragraphs,
+        # and the note goes straight into the sub-product's DOUBTS.md.
+        parent_text, child_text = _short(parent_value), _short(child_value)
         findings.append(
             _finding(
                 kind,
                 LEVEL_ERROR,
                 name,
                 key,
-                f"{label}: main says **{parent_value}**, `{name}` says **{child_value}** ({source}).",
-                f"Conflict with parent `{parent_name}` ({source}): **{label}** is **{parent_value}** at "
-                f"platform level but **{child_value}** here. Parent decisions are constraints - resolve "
+                f"{label}: main says **{parent_text}**, `{name}` says **{child_text}** ({source}).",
+                f"Conflict with parent `{parent_name}` ({source}): **{label}** is **{parent_text}** at "
+                f"platform level but **{child_text}** here. Parent decisions are constraints - resolve "
                 "before the next `/product-develop`, or raise it with the platform plan.",
             )
         )
@@ -450,8 +557,11 @@ def _parent_updates(main_ws: Path, child: dict, parent_name: str) -> list[dict]:
                 f"{wm.describe(change)} (`{child['name']}` last synced {seen or 'unknown'})",
                 f"Parent `{parent_name}` updated the master plan since this workspace last "
                 f"synced ({seen or 'unknown'}). {wm.describe(change)} {urgency} "
-                "If the master plan is the wrong side, fix it there and reject this note.",
+                "If the master plan is the wrong side, fix it there instead.",
                 stage=True,
+                # Not `detail` - that carries the last-synced date, which moves on
+                # its own and would reopen an answered question every session.
+                material=wm.describe(change),
             )
         )
     return findings

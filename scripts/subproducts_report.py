@@ -80,11 +80,17 @@ def _tasks(workspace: Path) -> str:
 
 
 def _open_doubts(workspace: Path) -> int:
-    text = drift.read_text(workspace / "DOUBTS.md", 20000)
-    count = len(re.findall(r"(?im)^- .*open", text))
-    if count == 0 and "open" in text.lower():
-        count = len([line for line in text.splitlines() if line.strip().startswith("- ")])
-    return count
+    """Shared with /status, so the roll-up and the snapshot cannot disagree.
+
+    They used to: the same file counted 17 here and 3 in /status, because each had
+    its own regex and its own truncation budget.
+    """
+    try:
+        from doubts import counts
+
+        return counts(workspace)["open"]
+    except Exception:
+        return 0
 
 
 def _last_session(workspace: Path) -> str:

@@ -29,35 +29,72 @@ Where each fits:
 
 ## Steps
 
-1. **Gather every open item** into one list:
-   - `DOUBTS.md` entries with `status: open`
+1. **Gather every open item** into one list. Do not re-read and re-interpret
+   `DOUBTS.md` by eye - one parser owns it, and every command shares its answer:
+
+   ```bash
+   loop doubts ask      # blocking doubts, each with a recommended answer
+   loop doubts list     # everything open, blocking flagged
+   loop doubts lint     # entries whose status contradicts their content
+   ```
+
+   Then add, from the same pass:
    - open questions in the active feature `spec.md` / step plans
    - **blocked pre-development gates** in `GATES.yml` (typically `G-INIT-01`,
      `G-DISCOVERY-01`, `G-DISCOVERY-02`, `G-ARCH-01`, `G-COUNCIL-01`,
      `G-SENSITIVE-DATA`) and the specific criteria not yet met
    - decisions marked pending in `DECISIONS.md`; claims still unsourced that a
      build decision depends on
-2. **Classify** each as **blocking** (development can't safely start) or
-   **deferrable** (can be decided during build). Show the user the grouped list.
+2. **Classification is already recorded** - `loop doubts` reports each item as
+   blocking or non-blocking, from its `- **Blocking:** yes|no` field or, absent
+   that, from the entry's own wording. Do not re-derive it by judgement each
+   session; if a classification is wrong, fix the field so it stays fixed.
 3. **Reuse, don't re-ask.** If `DECISIONS.md`, resolved `DOUBTS.md`,
-   `clarifications.md`, or `SESSION_RECALL.md` already answers an item, mark it
-   resolved and inform the user - do not ask again.
-4. **Walk the blocking items one at a time.** Ask the user a direct question per
-   item. For research-grounded questions use `skills/research-search/SKILL.md`
+   `clarifications.md`, or `SESSION_RECALL.md` already answers an item, resolve it
+   with that answer and inform the user - do not ask again.
+
+   When a decision does not *answer* a question but removes the reason it was asked,
+   say so on the decision and the doubt stops being raised everywhere:
+
+   ```markdown
+   ## D-014: Pricing is flat fee only
+   - **Supersedes:** DQ-007, DQ-020
+   ```
+
+   A main product's decision retires questions inside its sub-products this way.
+   Prefer it over answering a question that no longer applies.
+4. **Walk the blocking items one at a time**, each as a question with its
+   recommended answer:
+
+   - **Question** and **why it matters** - from the entry
+   - **Recommended:** the entry's own `Default if unavailable`, which is what the
+     person who raised it said to do when nobody answers
+   - The three answers: **answer it**, **accept the default**, **defer it**
+
+   Apply the default without asking when it is plainly safe and reversible, and say
+   that you did. For research-grounded questions use `skills/research-search/SKILL.md`
    (`loop research "<query>"`) and cite in `EVIDENCE_LOG.md`.
-5. **Record every resolution** at its source:
-   - `DOUBTS.md`: set the item `status: resolved` with the answer, or
-     `status: deferred` for non-blocking items (never leave a decided item `open`)
+5. **Record every resolution at its source - with the command, not by hand:**
+
+   ```bash
+   loop doubts resolve DQ-007 "Flat per-claim fee" --decision D-014
+   loop doubts defer DQ-020 "Decide after the first pilot"
+   ```
+
+   That rewrites the status *and* records the answer beside it, so the count every
+   other command reads actually goes down. Then:
    - `DECISIONS.md`: add durable decisions (strategy/architecture/scope)
    - update the owning `spec.md` / `plan/step_*.md` / `plan/main_plan.md`
    - `EVIDENCE_LOG.md`: sourced answers
 6. **Re-check gates.** For any `GATES.yml` gate whose criteria are now met, set
    its `status` to `pass` (or `ready`) with a one-line `note:` of what satisfied
    it. Never mark a gate passed whose criteria are still unmet.
-7. **User unavailable / undecidable:** mark the item `status: deferred` in
-   `DOUBTS.md` with an explicit risk note and a `blocks:` pointer to what it
-   affects. Do **not** loop or invent an answer - report it as a remaining
+7. **User unavailable / undecidable:** `loop doubts defer <id> "<risk note>"`, naming
+   what it blocks. Do **not** loop or invent an answer - report it as a remaining
    blocker in the go/no-go.
+8. **Verify before claiming GO.** `loop doubts counts` is the number the go/no-go
+   must quote, and `loop doubts lint` must be clean - an entry marked resolved with
+   no recorded answer, or filed under Resolved while still `open`, is not resolved.
 
 ## Go / No-Go output (always end with this)
 
@@ -65,9 +102,9 @@ Where each fits:
 2. **Gates moved to pass** - and what satisfied them
 3. **Remaining blockers** - open/deferred items that still block development (empty
    if none)
-4. **Verdict:**
+4. **Verdict** - the counts come from `loop doubts counts`, never from your own tally:
    - **GO** - "No blocking doubts remain. Clear to run `/product-develop`." (only
-     when there are zero remaining blockers and the pre-dev gates pass)
+     when `blocking` is 0 and the pre-dev gates pass)
    - **NO-GO** - "N blocker(s) remain: <list>. Resolve these before development."
 5. Next command (`/product-develop` on GO; otherwise what to do about each blocker)
 

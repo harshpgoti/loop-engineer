@@ -116,6 +116,8 @@ the user to run the next branch yourself.
 
 | Condition | Action |
 |-----------|--------|
+| Unanswered findings from the parent product | **Answer them first** - `loop findings ask`, one question per finding with a recommended answer, then `loop findings resolve`. See `skills/plan-loop/phases/parent-findings.md` |
+| Blocking doubts open | **`loop doubts ask`** - answer or defer each with its recorded default as the recommendation, then continue routing |
 | `plan/main_plan.md` UNINITIALIZED or `G-INIT-01` blocked | Execute **`/plan-loop` flow** (`commands/plan-loop.md` steps 1-23) |
 | Evidence / PRD / architecture gates blocked | **`/plan-loop` flow** + `product-council` |
 | After user describes product idea | Auto: `plan/PLAN_BOOTSTRAP.md` via session-start `--text` or `loop plan-loop "<idea>"` |

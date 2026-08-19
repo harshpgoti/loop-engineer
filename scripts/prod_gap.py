@@ -68,7 +68,6 @@ def analyze(workspace: Path) -> str:
 
     main_plan = read_text(main_plan_file(workspace))
     current_state = read_text(workspace / "CURRENT_STATE.md")
-    doubts = read_text(workspace / "DOUBTS.md")
     tasks = read_text(workspace / "TASKS.yml")
     gates = read_text(workspace / "GATES.yml")
     evidence = read_text(workspace / "EVIDENCE_LOG.md")
@@ -92,11 +91,16 @@ def analyze(workspace: Path) -> str:
         human_required.append("User must provide product initialization inputs or approve defaults.")
         recommended.append("Run `/plan-loop` to initialize the product plan.")
 
-    if "open" in doubts.lower():
-        p1.append("There are unresolved questions in `DOUBTS.md`.")
-        non_technical.append("Resolve or explicitly defer open doubts before major build work.")
-        human_required.append("User must answer or explicitly defer open questions in `DOUBTS.md`.")
-        open_questions.append("Review `DOUBTS.md`.")
+    # Was `if "open" in doubts.lower()`, which the `## Open Doubts` heading satisfies
+    # even when every entry is resolved - so this blocker could never be cleared, and
+    # each run appended another note that made the file longer.
+    blocking_doubts = _blocking_doubts(workspace)
+    if blocking_doubts:
+        ids = ", ".join(f"`{d.id}`" for d in blocking_doubts[:6])
+        p1.append(f"{len(blocking_doubts)} blocking question(s) still open in `DOUBTS.md`: {ids}.")
+        non_technical.append("Answer or explicitly defer the blocking doubts before major build work.")
+        human_required.append(f"User must answer or defer: {ids}.")
+        open_questions.append("Run `loop doubts ask` - each one comes with a recommended answer.")
 
     if "No product evidence yet" in evidence or "Define product before research" in evidence:
         p1.append("Product-critical evidence is missing or not yet collected.")
@@ -233,22 +237,26 @@ def append_session_log(workspace: Path, output: Path) -> None:
         )
 
 
+def _blocking_doubts(workspace: Path) -> list:
+    try:
+        from doubts import blocking_doubts
+
+        return blocking_doubts(workspace)
+    except Exception:
+        return []
+
+
 def append_human_blockers(workspace: Path) -> None:
-    doubts_path = workspace / "DOUBTS.md"
+    """Point HANDOFF.md at the gap report. DOUBTS.md is deliberately not touched.
+
+    This used to append a dated, ID-less, status-less block to DOUBTS.md with no
+    dedupe, while `analyze` raised its P1 on the mere presence of the word "open" -
+    which the appended block itself contained. Three identical copies of that note
+    are in the real workspace. A doubt now enters DOUBTS.md only through
+    `doubts.add`, with an id and a status something can actually read.
+    """
     handoff_path = workspace / "HANDOFF.md"
-
-    doubts_path.parent.mkdir(parents=True, exist_ok=True)
     handoff_path.parent.mkdir(parents=True, exist_ok=True)
-
-    note = (
-        "\n"
-        f"## {date.today().isoformat()} - Human-required production blockers\n\n"
-        "- Review `plan/PROD-GAP.md` section **Human-Required Blockers**.\n"
-        "- Resolve or explicitly defer P0/P1 human-required blockers before production launch.\n"
-    )
-
-    with doubts_path.open("a", encoding="utf-8") as handle:
-        handle.write(note)
 
     with handoff_path.open("a", encoding="utf-8") as handle:
         handle.write(

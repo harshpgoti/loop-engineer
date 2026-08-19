@@ -40,8 +40,19 @@ loop session-end --summary "<progress>"
 Details: `docs/SESSION_LIFECYCLE.md` + `skills/session-lifecycle/SKILL.md`.
 
 User does **not** run these manually - the agent runs them, and closeout writes this
-workspace's memory itself. `loop pending` holds only cross-workspace and skill writes
-that need a human decision.
+workspace's memory itself.
+
+Two things that used to be the user's chore are now raised **in the session**, as
+questions with a recommended answer, by `/plan-loop`, `/product-develop`,
+`/loop-engine` and `/revise-plan`:
+
+| | Command | What it raises |
+|---|---------|----------------|
+| Parent product disagrees with this plan | `loop findings ask` → `loop findings resolve <id> <accepted\|declined\|deferred>` | Derived every session from both plans - never queued |
+| Blocking questions in `DOUBTS.md` | `loop doubts ask` → `loop doubts resolve <id> "<answer>"` / `loop doubts defer` | One parser owns the file; the `Default if unavailable` field is the recommendation |
+
+Never tell the user to go run these - run them, ask the question, act on the answer
+(`docs/CONTINUATION.md`). `loop pending` is now only the opt-in `--stage` memory path.
 
 ## App root resolution
 
@@ -87,6 +98,7 @@ The user should be able to type these commands in Cursor, Codex, Claude Code, Gr
 | `/resolve-doubts` | Interactively clear all open doubts/blockers plan-wide, then give a go/no-go for development | `commands/resolve-doubts.md` + `skills/plan-loop/phases/resolve-doubts.md` |
 | `/feature-converge` | Post-build drift check vs spec/tasks | `commands/feature-converge.md` + `skills/feature-converge/SKILL.md` |
 | `/product-tree` | Show main product ⇄ sub-product workspaces, their roll-up, and where a sub-product's plan contradicts the master plan | `commands/product-tree.md` + `skills/product-tree/SKILL.md` |
+| `/product-tree-sync` | Make main product and sub-products agree, run from either folder - refreshes both ends and stages drift notes | `commands/product-tree-sync.md` + `skills/product-tree-sync/SKILL.md` |
 | `/ultraplan-loop` | Deep per-step planning for platform-scale products | `commands/ultraplan-loop.md` + `skills/plan-loop/phases/ultraplan.md` |
 | `/frontend-animation` | Route to built-in GSAP, Motion.dev, and 3D core skills for frontend work | `commands/frontend-animation.md` + `skills/frontend-animation/SKILL.md` |
 | `/agent-builder` | Design/scaffold an AI agent (or agentic/dynamic workflow) as the product itself - auto-activates in `/plan-loop` and `/product-develop` | `commands/agent-builder.md` + `skills/agent-builder/SKILL.md` |

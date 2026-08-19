@@ -29,6 +29,7 @@ Use these directly in any agent that can access the repo:
 /resolve-doubts
 /feature-converge
 /product-tree
+/product-tree-sync
 /plan-loop <idea>
 /loop-engine <idea>
 /ultraplan-loop
@@ -92,6 +93,7 @@ The agent must route the command through `commands/*.md` and update `memories/ME
 | `/resolve-doubts` | `commands/resolve-doubts.md` | Interactively clear all open doubts/blockers plan-wide, ending in a go/no-go for development |
 | `/feature-converge` | `commands/feature-converge.md` | Drift check after implementation |
 | `/product-tree` | `commands/product-tree.md` | Show sub-product workspaces, their roll-up, and drift vs the master plan |
+| `/product-tree-sync` | `commands/product-tree-sync.md` | Sync main product ⇄ sub-products from either folder |
 | `/ultraplan-loop` | `commands/ultraplan-loop.md` | Deep planning per step when scale is platform |
 | `/agent-builder` | `commands/agent-builder.md` | Design/scaffold an AI agent (or agentic/dynamic workflow) as the product |
 | `/research-search` | `commands/research-search.md` | Search arXiv, Research Square, and SSRN to ground a claim |

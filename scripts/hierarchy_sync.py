@@ -7,19 +7,22 @@ Called once per session by `loop session-start` / `session-end`, and directly by
 Write policy, enforced here:
 
 - **Metadata** (`.loop/workspace.json`) may be stamped into a sub-product directly.
-- **Product state** (`DOUBTS.md`, `HANDOFF.md`, `plan/*`) is only ever *staged* into
-  the sub-product's `.loop/pending/` for `loop pending approve`.
+- **Product state** (`DOUBTS.md`, `HANDOFF.md`, `plan/*`) is never written across a
+  workspace boundary at all.
+
+Findings are no longer copied into the sub-product either. They are derived, so the
+sub-product recomputes its own from its side (`parent_inbox`) and its commands ask
+the user about them in the session. Staging them made a frozen copy of derived state
+that could not self-heal, in a queue nobody remembered to drain.
 """
 
 from __future__ import annotations
 
 import argparse
-from datetime import date
 from pathlib import Path
 
 import hierarchy_drift as drift
 from parent_context import PARENT_CONTEXT_FILE, write_context
-from pending_writes import stage_file_write
 from subproducts_report import SUBPRODUCTS_FILE, write_report
 from workspace_tree import ROLE_MAIN, describe_tree, refresh
 from workspace_utils import resolve_workspace
@@ -36,42 +39,28 @@ def _drop_stale(path: Path, result: dict) -> None:
         pass
 
 
-def stage_findings(main_workspace: Path, children: list[dict], findings: list[dict]) -> dict[str, str]:
-    """Stage an `error` finding as a note in the affected sub-product's DOUBTS.md.
+def _advance_watermark(workspace: Path, tree: dict) -> str | None:
+    """Record that this sub-product has seen the parent's current state.
 
-    Returns {finding_id: write_id} for what was newly staged. Findings already
-    staged (same finding id) are skipped, so repeated sessions never pile up.
+    Held back while the sub-product still has open findings. The watermark is what
+    makes an upstream change stop being news, so advancing it before the user has
+    answered would silence a question that was never asked. Once the inbox is
+    empty - every finding accepted, declined or deferred - the parent's current
+    state genuinely has been seen.
     """
-    by_name = {child["name"]: child for child in children if not child.get("missing")}
-    staged: dict[str, str] = {}
-    parent_label = main_workspace.parent.name if main_workspace.name == ".loop-engineer" else main_workspace.name
+    from workspace_tree import read_meta
 
-    for item in findings:
-        if not item.get("note"):
-            continue
-        if item["level"] != drift.LEVEL_ERROR and not item.get("stage"):
-            continue
-        child = by_name.get(item["sub"])
-        if child is None:
-            continue
-        note = (
-            f"- [ ] **{item['kind']}** (from parent `{parent_label}`, {date.today().isoformat()}): "
-            f"{item['note']}"
-        )
-        try:
-            write_id = stage_file_write(
-                child["data_dir"],
-                relative_path="DOUBTS.md",
-                action="append",
-                content=note,
-                reason=f"hierarchy drift: {item['kind']}",
-                origin={"finding_id": item["id"], "from_workspace": str(main_workspace)},
-            )
-        except (ValueError, OSError):
-            continue
-        if write_id:
-            staged[item["id"]] = write_id
-    return staged
+    parent_ws = (tree.get("parent") or {}).get("data_dir")
+    if not parent_ws:
+        return None
+
+    import parent_inbox
+    import parent_watermark as wm
+
+    if parent_inbox.inbox(workspace)["total"]:
+        return None
+    map_id = tree.get("map_id") or read_meta(workspace).get("map_id")
+    return str(wm.sync(workspace, Path(parent_ws), map_id=map_id))
 
 
 def run(workspace: Path, *, stage: bool = True) -> dict:
@@ -84,7 +73,6 @@ def run(workspace: Path, *, stage: bool = True) -> dict:
         "parent": (tree.get("parent") or {}).get("name"),
         "findings": [],
         "counts": {"error": 0, "warn": 0, "info": 0, "total": 0},
-        "staged": {},
         "subproducts_file": None,
         "parent_context_file": None,
     }
@@ -96,22 +84,9 @@ def run(workspace: Path, *, stage: bool = True) -> dict:
         path = write_context(workspace, tree)
         if path is not None:
             result["parent_context_file"] = str(path)
-        # This workspace has just read its parent's current state into
-        # PARENT_CONTEXT.md, so it has "seen" the parent as of now. The parent
-        # computes the diff but must never advance this, or a change would be
-        # reported once and then forgotten before anyone acted on it.
         if stage:
             try:
-                import parent_watermark as wm
-
-                from workspace_tree import read_meta
-
-                parent_ws = tree["parent"].get("data_dir")
-                if parent_ws:
-                    map_id = tree.get("map_id") or read_meta(workspace).get("map_id")
-                    result["parent_watermark"] = str(
-                        wm.sync(workspace, Path(parent_ws), map_id=map_id)
-                    )
+                result["parent_watermark"] = _advance_watermark(workspace, tree)
             except Exception as exc:  # noqa: BLE001 - never block a session on this
                 result["parent_watermark_error"] = f"{exc.__class__.__name__}: {exc}"
     else:
@@ -125,11 +100,11 @@ def run(workspace: Path, *, stage: bool = True) -> dict:
 
     if tree.get("role") == ROLE_MAIN and tree.get("children"):
         findings = drift.check_children(workspace, tree["children"])
-        staged = stage_findings(workspace, tree["children"], findings) if stage else {}
-        path, _ = write_report(workspace, tree, staged, findings)
+        # Reported here, answered there: each sub-product recomputes its own share
+        # of these and raises them with the user during its next command.
+        path, _ = write_report(workspace, tree, {}, findings)
         result["findings"] = findings
         result["counts"] = drift.summarize(findings)
-        result["staged"] = staged
         result["subproducts_file"] = str(path) if path else None
 
     return result
@@ -207,8 +182,9 @@ def manifest_block(workspace: Path, result: dict) -> list[str]:
         )
         if counts["error"]:
             lines.append(
-                "- **Action:** resolve the `error` findings before build; notes were staged in the "
-                "affected sub-products (`loop pending approve --all` there)."
+                "- **Action:** resolve the `error` findings before build. Each sub-product raises "
+                "its own share with the user during its next command - fix the master plan here "
+                "when this side is the one that is wrong."
             )
         lines.append("- Sub-product state is read-only from here - never edit a sub-product's files directly.")
     return lines
@@ -217,7 +193,11 @@ def manifest_block(workspace: Path, result: dict) -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Refresh product hierarchy links and reports.")
     parser.add_argument("--workspace", default=None)
-    parser.add_argument("--no-stage", action="store_true", help="Report drift without staging notes into sub-products.")
+    parser.add_argument(
+        "--no-stage",
+        action="store_true",
+        help="Report only: do not advance this sub-product's parent watermark.",
+    )
     args = parser.parse_args()
 
     workspace = resolve_workspace(args.workspace)
@@ -234,8 +214,8 @@ def main() -> int:
         print(f"\nDrift: {counts['error']} error, {counts['warn']} warning, {counts['info']} info")
         for item in result["findings"]:
             print(f"  [{item['level']}] {item['sub']} {item['kind']}: {item['detail']}")
-    if result["staged"]:
-        print(f"\nStaged {len(result['staged'])} note(s) in sub-products - approve with `loop pending approve --all` there.")
+    if result.get("parent") and result.get("parent_watermark") is None:
+        print("\nParent watermark held - open findings remain here. Run `loop findings ask`.")
     return 0
 
 
