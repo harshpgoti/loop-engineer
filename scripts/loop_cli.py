@@ -292,6 +292,33 @@ def cmd_session_lifecycle(args: argparse.Namespace) -> int:
     return run_script("session_lifecycle.py", extra)
 
 
+def cmd_fresh(args: argparse.Namespace) -> int:
+    return run_script("freshness.py", _workspace_args(args) + (["--all"] if args.all else []))
+
+
+def cmd_graph(args: argparse.Namespace) -> int:
+    cmd = getattr(args, "graph_cmd", None) or "stats"
+    extra = _workspace_args(args)
+    if cmd == "check":
+        return run_script("graph_schema.py", extra + (["--verbose"] if getattr(args, "verbose", False) else []))
+    if cmd == "show":
+        extra = ["show", args.node_id, "--depth", str(args.depth)] + extra
+    elif cmd == "as-of":
+        extra = ["as-of", args.date] + extra
+    else:
+        extra = [cmd] + extra
+    return run_script("graph_index.py", extra)
+
+
+def cmd_archive(args: argparse.Namespace) -> int:
+    extra = _workspace_args(args)
+    if args.search:
+        extra = ["--search", args.search] + extra
+    elif args.dry_run:
+        extra = ["--dry-run"] + extra
+    return run_script("state_archive.py", extra)
+
+
 def cmd_findings(args: argparse.Namespace) -> int:
     cmd = getattr(args, "findings_cmd", None) or "list"
     extra = _workspace_args(args)
@@ -685,6 +712,45 @@ def build_parser() -> argparse.ArgumentParser:
     ws_role.add_argument("role", nargs="?", default=None, choices=["main", "sub", "standalone"])
     ws_role.add_argument("--workspace", default=argparse.SUPPRESS)
     ws_role.set_defaults(func=cmd_workspace)
+
+    fresh = sub.add_parser("fresh", help="Which generated files no longer match their sources.")
+    fresh.add_argument("--workspace", default=argparse.SUPPRESS)
+    fresh.add_argument("--all", action="store_true", help="List fresh views too.")
+    fresh.set_defaults(func=cmd_fresh)
+
+    graph = sub.add_parser("graph", help="How this workspace's records reference each other.")
+    graph_sub = graph.add_subparsers(dest="graph_cmd")
+    g_check = graph_sub.add_parser("check", help="Validate the graph against the reference model.")
+    g_check.add_argument("--verbose", action="store_true")
+    g_check.add_argument("--workspace", default=argparse.SUPPRESS)
+    g_check.set_defaults(func=cmd_graph)
+    for name, helptext in (
+        ("stats", "Node and edge counts."),
+        ("build", "Rebuild .loop/graph.json and fold this parse into the edge log."),
+        ("orphans", "Records nothing references - compaction candidates."),
+        ("dangling", "References to IDs no file anywhere defines."),
+        ("closed", "Edges no longer asserted, and how they closed."),
+    ):
+        obj = graph_sub.add_parser(name, help=helptext)
+        obj.add_argument("--workspace", default=argparse.SUPPRESS)
+        obj.set_defaults(func=cmd_graph)
+    g_show = graph_sub.add_parser("show", help="One record and what it links to.")
+    g_show.add_argument("node_id")
+    g_show.add_argument("--depth", type=int, default=1)
+    g_show.add_argument("--workspace", default=argparse.SUPPRESS)
+    g_show.set_defaults(func=cmd_graph)
+    g_asof = graph_sub.add_parser("as-of", help="What this plan believed on a date (YYYY-MM-DD).")
+    g_asof.add_argument("date")
+    g_asof.add_argument("--workspace", default=argparse.SUPPRESS)
+    g_asof.set_defaults(func=cmd_graph)
+
+    archive = sub.add_parser(
+        "archive", help="Compact finished tasks/doubts in place; full detail to plan/archive/."
+    )
+    archive.add_argument("--workspace", default=argparse.SUPPRESS)
+    archive.add_argument("--dry-run", action="store_true", help="Report what would compact.")
+    archive.add_argument("--search", default=None, help="Find an archived answer without loading the file.")
+    archive.set_defaults(func=cmd_archive)
 
     findings = sub.add_parser(
         "findings", help="Findings from the parent product this workspace has not answered."

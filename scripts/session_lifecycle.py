@@ -138,7 +138,7 @@ def render_manifest(
     lines.extend(["## Read order", ""])
     lines.append(f"1. `{MANIFEST}` (this file)")
     idx = 2
-    for path in session_bootstrap_paths(workspace):
+    for path in session_bootstrap_paths(workspace, command):
         if path.name == "SESSION_MANIFEST.md":
             continue
         try:
@@ -199,6 +199,18 @@ def render_manifest(
         except Exception:
             pass
 
+    # The development counterpart: one phase file and its skills, instead of the
+    # 32-item Read First list a build session used to work through.
+    from memory_paths import _is_build_command
+
+    if _is_build_command(command) and (workspace / "TASKS.yml").exists():
+        try:
+            from build_phase import render_phase_block as render_build_phase
+
+            lines.extend(["", render_build_phase(workspace, heading="## Build phase")])
+        except Exception:
+            pass
+
     active = read_active_feature(workspace)
     if active:
         lines.extend(
@@ -248,12 +260,46 @@ def _auto_maintenance(workspace: Path) -> list[str]:
     except Exception:
         pass
 
+    try:  # the task-scoped slice a build session reads instead of the whole files
+        from task_context import write_context
+
+        if write_context(workspace) is not None:
+            actions.append("build context refreshed for the active task")
+    except Exception:
+        pass
+
     try:  # was: loop pending dedupe
         from pending_writes import dedupe_pending
 
         dropped = dedupe_pending(workspace)
         if dropped:
             actions.append(f"dropped {len(dropped)} duplicate pending write(s)")
+    except Exception:
+        pass
+
+    try:  # generated files that no longer match what they were generated from
+        from freshness import stale_views
+
+        stale = stale_views(workspace)
+        if stale:
+            names = ", ".join(item["view"] for item in stale[:3])
+            actions.append(
+                f"{len(stale)} generated file(s) out of date ({names}"
+                f"{', ...' if len(stale) > 3 else ''}) - `loop fresh`"
+            )
+    except Exception:
+        pass
+
+    try:  # the reference index, and one more day of edge history
+        import graph_index
+
+        graph = graph_index.build(workspace)
+        if graph["nodes"]:
+            graph_index.write(workspace, graph)
+            graph_index.record_history(workspace, graph)
+            broken = len(graph.get("dangling", []))
+            if broken:
+                actions.append(f"{broken} dangling reference(s) - run `loop graph dangling`")
     except Exception:
         pass
 
@@ -448,6 +494,22 @@ def session_end(
             converge_note = f"feature converge skipped: {exc}"
     if converge_note:
         actions.append(f"feature converge: {converge_note}")
+
+    # Compact finished work at the *end* of a session, never at the start - the
+    # session that just closed a task should still see it in full when it writes
+    # its handoff. Budget-gated, so a small workspace is never touched.
+    try:
+        from state_archive import run as compact_state
+
+        for item in compact_state(workspace):
+            if item.get("compacted"):
+                saved = item["before"] - item["after"]
+                actions.append(
+                    f"{item['file']}: compacted {len(item['compacted'])} finished entry(ies), "
+                    f"-{saved:,} chars (detail in plan/archive/)"
+                )
+    except Exception:
+        pass
 
     # Refresh the roll-up so the next agent inherits a current view of the tree.
     hierarchy = _hierarchy(workspace, stage=False)

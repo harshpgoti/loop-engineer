@@ -256,6 +256,22 @@ def write_report(
     path = workspace / SUBPRODUCTS_FILE
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
+
+    try:
+        import freshness
+
+        # Each sub-product's own plan state, plus this workspace's map. A roll-up that
+        # no longer matches the folders it describes is worse than none.
+        sources = [workspace / "plan" / "PRODUCT_MAP.md"]
+        for child in tree.get("children") or []:
+            child_ws = child.get("data_dir")
+            if child_ws and not child.get("missing"):
+                sources.extend([Path(child_ws) / "TASKS.yml", Path(child_ws) / "plan" / "main_plan.md"])
+        freshness.stamp(
+            path, sources, generator="subproducts", version=1, workspace=workspace, command="loop session-start"
+        )
+    except Exception:
+        pass
     return path, findings
 
 

@@ -83,7 +83,12 @@ def _integrations(parent_ws: Path, row: dict | None) -> str:
     if not spec:
         return f"_`plan/steps/{folder.name}/integrations.md` is empty in the master plan._"
     body = "\n".join(f"> {line}" for line in spec.splitlines()[:40])
-    return f"From main `plan/steps/{folder.name}/integrations.md`:\n\n{body}"
+    return (
+        f"**This section is an obligation, not evidence.** Quoting it here does not mean this\n"
+        f"sub-product has accounted for anything - record the response in `plan/INTEGRATIONS.yml`\n"
+        f"or under `## Internal platform APIs` in this workspace's own step pack.\n\n"
+        f"From main `plan/steps/{folder.name}/integrations.md`:\n\n{body}"
+    )
 
 
 def build_context(workspace: Path, tree: dict | None = None) -> str | None:
@@ -173,6 +178,25 @@ def write_context(workspace: Path, tree: dict | None = None) -> Path | None:
     path = workspace / PARENT_CONTEXT_FILE
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
+
+    # Sources live in the *parent* workspace, so this view goes stale when the master
+    # plan moves - which is exactly the case a sub-product needs to notice.
+    try:
+        import freshness
+
+        parent_ws = (tree or {}).get("parent", {}).get("data_dir")
+        if parent_ws:
+            parent_ws = Path(parent_ws)
+            freshness.stamp(
+                path,
+                [parent_ws / "DECISIONS.md", parent_ws / "plan" / "main_plan.md", parent_ws / "plan" / "PRODUCT_MAP.md"],
+                generator="parent-context",
+                version=1,
+                workspace=workspace,
+                command="loop session-start",
+            )
+    except Exception:
+        pass
     return path
 
 

@@ -82,12 +82,14 @@ Deterministic, parsed from structured plan files - never model-generated
 | `parent-removed` | warn / error | A constraint was dropped upstream and may still be honored here |
 | `decision-conflict` | error | Same decision **topic** resolved differently in the parent's and sub-product's `DECISIONS.md` |
 | `deployment-conflict` | error | Same **Deployment & Infrastructure** row differs between main plan and sub plan |
-| `contract-gap` | error | Parent's `plan/steps/NN-slug/integrations.md` names modules the sub-product's plan never mentions |
+| `contract-gap` | error | Parent's `## Internal platform APIs` table declares a counterparty the sub-product declares no integration for |
 | `unmapped-sub` | error | A sub-product workspace has no `plan/PRODUCT_MAP.md` row |
 | `missing-link` | error | A linked sub-product folder no longer exists |
 | `unbuilt-row` | warn | A row **typed `sub-product`** has no workspace |
 | `uninitialized-sub` | warn | Sub-product exists but its plan is UNINITIALIZED |
-| `dependency-gap` | warn | Map says this sub-product depends on another; its plan never references it |
+| `dependency-gap` | warn | Map says this sub-product depends on another; nothing here declares how |
+| `dependency-declined` | info | The sub-product deliberately does not integrate, and says so |
+| `unverifiable-dependency` | info | No structured integration surface exists, so the dependency cannot be checked either way |
 | `stale-sub` | info | Main plan changed after the sub-product's last session |
 
 `error` findings also gate planning: `plan_phase.py` routes `/plan-loop` to
@@ -169,6 +171,37 @@ A finding says the two plans disagree. It does **not** say which one is wrong:
 
 Two phase files walk this with the user: `skills/plan-loop/phases/hierarchy.md` from the
 main product's side, `skills/plan-loop/phases/parent-findings.md` from the sub-product's.
+
+## Declaring integrations
+
+`dependency-gap` and `contract-gap` read **declarations**, not prose. A sub-product
+records what it depends on in either place:
+
+```yaml
+# plan/INTEGRATIONS.yml
+integrations:
+  - counterparty: "07"                 # PRODUCT_MAP row ID, or the exact Title
+    status: planned
+    contract: "REST /claims/status v1"
+  - counterparty: "Revenue Activation"
+    status: declined
+    rationale: "Pricing is a company program, not an engine surface (D-021)."
+```
+
+or as a row under `## Internal platform APIs` in `plan/steps/NN-*/integrations.md`.
+
+- **`declined` is an answer, not a gap.** Deciding not to integrate is a real decision;
+  saying so is what stops the checker guessing.
+- **No surface at all** → one `info` finding saying the dependency cannot be verified,
+  naming the command that fixes it. It never blocks a release.
+
+> **Why declarations.** This check used to scan ~120KB of the sub-product's prose for the
+> counterparty's name. Measured on this repo's own workspace, *every* positive match came
+> from `plan/PARENT_CONTEXT.md` - a file the harness writes into the sub-product containing
+> the parent's dependency titles verbatim. The check was reading back its own output and
+> could not fail. It also scored "we explicitly do **not** integrate with X" as compliance,
+> passed a `Depends on` of `—` because `slugify` yields the word "module", and its 120KB cap
+> discarded three of the four `integrations.md` files - the only on-point evidence there was.
 
 ## Retiring a sub-product's question from the master plan
 
