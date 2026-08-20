@@ -1,0 +1,23 @@
+# Integrations this sub-product's plan accounts for.
+#
+# Read by the hierarchy drift checker to answer one question: for each module the
+# parent's PRODUCT_MAP says this one depends on, is there a declaration here?
+#
+# Absence of a row is a `dependency-gap` (warn). A `declined` row is an answer, not a
+# gap - recording that you deliberately do not integrate is the right thing to do, and
+# naming it here is what stops the checker guessing from prose.
+#
+# `counterparty` is the other module's PRODUCT_MAP row ID (preferred - stable across
+# renames) or its exact Title.
+
+integrations:
+  - counterparty: "07"
+    status: planned
+    contract: "REST /claims/status v1"
+    where: "plan/steps/06-private-payer-claims-pack/integrations.md"
+
+  - counterparty: "Revenue Activation"
+    status: declined
+    rationale: "Pricing is a company program, not an engine surface (D-021)."
+
+  # status: planned | declined | deferred

@@ -72,18 +72,48 @@ def parent_key(parent_ws: Path) -> str:
     return sha256(str(Path(parent_ws).resolve()).lower().encode("utf-8")).hexdigest()[:16]
 
 
+# A watermark only has to *detect* change, so it stores a digest per key rather than
+# the value. Storing whole values made it grow with the parent's decision log - 9,069
+# chars for 28 decisions on the workspace this was built against, per parent, rewritten
+# every session. The excerpt is what a change message quotes, and is bounded.
+EXCERPT_LIMIT = 160
+
+
+def _entry(label: str, value: str) -> dict[str, str]:
+    import hierarchy_drift as drift
+
+    normalized = drift.normalize_value(value)
+    return {
+        "label": label,
+        "digest": sha256(normalized.encode("utf-8")).hexdigest()[:12],
+        "excerpt": value[:EXCERPT_LIMIT],
+    }
+
+
+def _digest_of(entry: dict) -> str:
+    """Digest for comparison, recomputed for watermarks written before this format."""
+    import hierarchy_drift as drift
+
+    if entry.get("digest"):
+        return str(entry["digest"])
+    normalized = drift.normalize_value(str(entry.get("value", "")))
+    return sha256(normalized.encode("utf-8")).hexdigest()[:12]
+
+
+def _text_of(entry: dict) -> str:
+    return str(entry.get("excerpt") or entry.get("value") or "")
+
+
 def snapshot(parent_ws: Path, *, map_id: str | None = None) -> dict:
-    """The parent surface a sub-product is bound by, as plain key -> value."""
+    """The parent surface a sub-product is bound by, as key -> digest + excerpt."""
     import hierarchy_drift as drift
 
     surfaces: dict[str, dict[str, dict[str, str]]] = {
         SURFACE_DEPLOYMENT: {
-            key: {"label": label, "value": value}
-            for key, (label, value) in drift.deployment_labels(parent_ws).items()
+            key: _entry(label, value) for key, (label, value) in drift.deployment_labels(parent_ws).items()
         },
         SURFACE_DECISIONS: {
-            key: {"label": label, "value": value}
-            for key, (label, value) in drift.decisions_labels(parent_ws).items()
+            key: _entry(label, value) for key, (label, value) in drift.decisions_labels(parent_ws).items()
         },
         SURFACE_MAP_ROW: {},
         SURFACE_CONTRACTS: {},
@@ -94,9 +124,9 @@ def snapshot(parent_ws: Path, *, map_id: str | None = None) -> dict:
         for field in ("title", "type", "depends"):
             value = str(row.get(field, "")).strip()
             if value:
-                surfaces[SURFACE_MAP_ROW][field] = {"label": field, "value": value}
+                surfaces[SURFACE_MAP_ROW][field] = _entry(field, value)
         for name in _counterparts(parent_ws, row):
-            surfaces[SURFACE_CONTRACTS][drift.normalize_key(name)] = {"label": name, "value": "required"}
+            surfaces[SURFACE_CONTRACTS][drift.normalize_key(name)] = _entry(name, "required")
 
     return {"parent": str(Path(parent_ws).resolve()), "taken_at": _now(), "surfaces": surfaces}
 
@@ -115,10 +145,15 @@ def _map_row(parent_ws: Path, map_id: str | None) -> dict | None:
 
 
 def _counterparts(parent_ws: Path, row: dict) -> list[str]:
-    """Other map rows named by this row's integration spec."""
-    import hierarchy_drift as drift
+    """Other map rows *declared* by this row's integration spec.
 
+    Was a substring scan of the spec's prose, which made this watermark surface flap
+    whenever unrelated wording changed - and every flap produced a staged
+    `parent-added` / `parent-removed` finding that interrupted the user.
+    """
     try:
+        import dependency_ledger as ledger_mod
+
         from plan_paths import find_step_folder
         from ultraplan_harness import parse_product_map
     except ImportError:
@@ -127,14 +162,9 @@ def _counterparts(parent_ws: Path, row: dict) -> list[str]:
     folder = find_step_folder(parent_ws, str(row.get("id")))
     if folder is None:
         return []
-    spec = drift.read_text(folder / "integrations.md").lower()
-    if not spec.strip():
-        return []
-    return [
-        other["title"]
-        for other in parse_product_map(parent_ws)
-        if other.get("id") != row.get("id") and other.get("title") and drift.mentions(spec, other["title"])
-    ]
+    by_id, by_title = ledger_mod.index_rows(parse_product_map(parent_ws))
+    declared = ledger_mod.parse_internal_apis(folder / "integrations.md", by_id, by_title)
+    return [e["label"] for e in declared if e["id"] != str(row.get("id", ""))]
 
 
 # ---------------------------------------------------------------------------
@@ -187,8 +217,6 @@ def diff(previous: dict | None, current: dict) -> list[dict]:
     if not previous:
         return []
 
-    import hierarchy_drift as drift
-
     changes: list[dict] = []
     prev_surfaces = previous.get("surfaces") or {}
     curr_surfaces = current.get("surfaces") or {}
@@ -197,14 +225,14 @@ def diff(previous: dict | None, current: dict) -> list[dict]:
         before = prev_surfaces.get(surface) or {}
         after = curr_surfaces.get(surface) or {}
         for key in sorted(set(before) | set(after)):
-            old = (before.get(key) or {}).get("value", "")
-            new = (after.get(key) or {}).get("value", "")
-            label = (after.get(key) or before.get(key) or {}).get("label", key)
+            prev_entry, curr_entry = before.get(key) or {}, after.get(key) or {}
+            old, new = _text_of(prev_entry), _text_of(curr_entry)
+            label = (curr_entry or prev_entry).get("label", key)
             if key not in before:
                 changes.append(_change(surface, key, label, CHANGE_ADDED, "", new))
             elif key not in after:
                 changes.append(_change(surface, key, label, CHANGE_REMOVED, old, ""))
-            elif drift.normalize_value(old) != drift.normalize_value(new):
+            elif _digest_of(prev_entry) != _digest_of(curr_entry):
                 changes.append(_change(surface, key, label, CHANGE_CHANGED, old, new))
     return changes
 

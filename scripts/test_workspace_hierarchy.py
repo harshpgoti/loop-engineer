@@ -369,26 +369,126 @@ class TestDriftChecks(TreeSandbox):
         self.seed(self.main / "auth-svc", **{"plan/main_plan.md": "# Plan\n\nStatus: **UNINITIALIZED**\n"})
         self.assertIn("uninitialized-sub", self._kinds(drift.check_children(self.main_ws, self._children())))
 
-    def test_dependency_gap(self) -> None:
-        self.seed(self.main / "portal", **{"plan/main_plan.md": "# Plan\n- **Name:** Portal\n"})
+    LEDGER = "integrations:\n  - counterparty: {ref}\n    status: {status}\n    contract: {detail}\n"
+
+    def test_dependency_gap_when_nothing_is_declared(self) -> None:
+        self.seed(
+            self.main / "portal",
+            **{
+                "plan/main_plan.md": "# Plan\n- **Name:** Portal\n",
+                "plan/INTEGRATIONS.yml": "integrations:\n",
+            },
+        )
         findings = drift.check_children(self.main_ws, self._children())
         gap = next(f for f in findings if f["kind"] == "dependency-gap")
         self.assertIn("auth svc", gap["detail"])
 
-    def test_dependency_satisfied_when_plan_mentions_it(self) -> None:
+    def test_dependency_satisfied_when_the_ledger_declares_it(self) -> None:
         self.seed(
             self.main / "portal",
-            **{"plan/main_plan.md": "# Plan\n- **Name:** Portal\n\nCalls the auth svc for tokens.\n"},
+            **{
+                "plan/main_plan.md": "# Plan\n- **Name:** Portal\n",
+                "plan/INTEGRATIONS.yml": self.LEDGER.format(ref="01", status="planned", detail="REST /token v1"),
+            },
         )
         self.assertNotIn("dependency-gap", self._kinds(drift.check_children(self.main_ws, self._children())))
 
-    def test_contract_gap(self) -> None:
-        (self.main_ws / "plan" / "steps" / "01-auth-svc").mkdir(parents=True, exist_ok=True)
-        (self.main_ws / "plan" / "steps" / "01-auth-svc" / "integrations.md").write_text(
-            "# Integrations\n\nExposes token introspection to the portal.\n", encoding="utf-8"
+    def test_prose_alone_no_longer_satisfies_a_dependency(self) -> None:
+        """Naming a module in passing is not the same as planning the integration."""
+        self.seed(
+            self.main / "portal",
+            **{
+                "plan/main_plan.md": "# Plan\n- **Name:** Portal\n\nCalls the auth svc for tokens.\n",
+                "plan/INTEGRATIONS.yml": "integrations:\n",
+            },
         )
-        self.seed(self.main / "auth-svc", **{"plan/main_plan.md": "# Plan\n- **Name:** Auth\n"})
+        self.assertIn("dependency-gap", self._kinds(drift.check_children(self.main_ws, self._children())))
+
+    def test_a_declined_dependency_is_recorded_not_reported_as_a_gap(self) -> None:
+        """"We deliberately do not integrate with X" is an answer, not a failure."""
+        self.seed(
+            self.main / "portal",
+            **{
+                "plan/main_plan.md": "# Plan\n- **Name:** Portal\n",
+                "plan/INTEGRATIONS.yml": self.LEDGER.format(
+                    ref="auth svc", status="declined", detail="Tokens come from the edge proxy (D-009)."
+                ),
+            },
+        )
+        kinds = self._kinds(drift.check_children(self.main_ws, self._children()))
+        self.assertIn("dependency-declined", kinds)
+        self.assertNotIn("dependency-gap", kinds)
+
+    def test_parent_context_alone_does_not_satisfy_a_dependency(self) -> None:
+        """The harness writes this file; reading it back was self-validation."""
+        self.seed(
+            self.main / "portal",
+            **{
+                "plan/main_plan.md": "# Plan\n- **Name:** Portal\n",
+                "plan/PARENT_CONTEXT.md": "# Parent Context\n\n- **Depends on** 01 - auth svc\n",
+                "plan/INTEGRATIONS.yml": "integrations:\n",
+            },
+        )
+        self.assertIn("dependency-gap", self._kinds(drift.check_children(self.main_ws, self._children())))
+
+    def test_placeholder_depends_produces_no_finding(self) -> None:
+        """`—` used to pass via slugify returning the literal word `module`."""
+        (self.main_ws / "plan" / "PRODUCT_MAP.md").write_text(
+            PRODUCT_MAP.replace("| 02 | step_02 | sub-product | portal | 01 |", "| 02 | step_02 | sub-product | portal | — |"),
+            encoding="utf-8",
+        )
+        self.seed(self.main / "portal", **{"plan/main_plan.md": "# Plan\n- **Name:** Portal\n"})
+        kinds = self._kinds(drift.check_children(self.main_ws, self._children()))
+        self.assertNotIn("dependency-gap", kinds)
+        self.assertNotIn("unverifiable-dependency", kinds)
+
+    def test_no_integration_surface_is_unverifiable_not_a_pass(self) -> None:
+        self.seed(self.main / "portal", **{"plan/main_plan.md": "# Plan\n- **Name:** Portal\n"})
+        findings = drift.check_children(self.main_ws, self._children())
+        item = next(f for f in findings if f["kind"] == "unverifiable-dependency")
+        self.assertEqual(drift.LEVEL_INFO, item["level"])
+        self.assertIn("INTEGRATIONS.yml", item["note"])
+
+    def _parent_spec(self, body: str) -> None:
+        folder = self.main_ws / "plan" / "steps" / "01-auth-svc"
+        folder.mkdir(parents=True, exist_ok=True)
+        (folder / "integrations.md").write_text(body, encoding="utf-8")
+
+    def test_contract_gap_from_the_declared_table(self) -> None:
+        self._parent_spec(
+            "# Integrations\n\n## Internal platform APIs\n\n"
+            "| Step / service | Contract | Version |\n|---|---|---|\n"
+            "| 02 | token introspection | v1 |\n"
+        )
+        self.seed(
+            self.main / "auth-svc",
+            **{"plan/main_plan.md": "# Plan\n- **Name:** Auth\n", "plan/INTEGRATIONS.yml": "integrations:\n"},
+        )
         self.assertIn("contract-gap", self._kinds(drift.check_children(self.main_ws, self._children())))
+
+    def test_prose_in_the_parent_spec_declares_nothing(self) -> None:
+        """The old check inferred counterparties by substring - two stacked guesses."""
+        self._parent_spec("# Integrations\n\nExposes token introspection to the portal.\n")
+        self.seed(
+            self.main / "auth-svc",
+            **{"plan/main_plan.md": "# Plan\n- **Name:** Auth\n", "plan/INTEGRATIONS.yml": "integrations:\n"},
+        )
+        self.assertNotIn("contract-gap", self._kinds(drift.check_children(self.main_ws, self._children())))
+
+    def test_contract_satisfied_when_the_child_declares_it(self) -> None:
+        self._parent_spec(
+            "# Integrations\n\n## Internal platform APIs\n\n"
+            "| Step / service | Contract | Version |\n|---|---|---|\n"
+            "| 02 | token introspection | v1 |\n"
+        )
+        self.seed(
+            self.main / "auth-svc",
+            **{
+                "plan/main_plan.md": "# Plan\n- **Name:** Auth\n",
+                "plan/INTEGRATIONS.yml": self.LEDGER.format(ref="02", status="planned", detail="introspection v1"),
+            },
+        )
+        self.assertNotIn("contract-gap", self._kinds(drift.check_children(self.main_ws, self._children())))
 
     def test_missing_link_is_an_error(self) -> None:
         outside = self.tmp / "billing"
