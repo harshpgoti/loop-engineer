@@ -257,7 +257,9 @@ def parse(workspace: Path) -> list[Doubt]:
             current.why = value
         elif key.startswith("default"):
             current.default = value
-        elif key.startswith("resolution") or key.startswith("resolved"):
+        elif key.startswith(("resolution", "resolved", "answer", "deferral")):
+            # `answer` is what `state_archive` leaves behind when it compacts a
+            # resolved entry - the rationale moves to plan/archive/, this stays.
             current.note = value
 
     close()
@@ -291,7 +293,7 @@ def _finalize(doubt: Doubt, blob: str) -> None:
     """Settle status from every signal, and record contradictions instead of hiding them."""
     heading_resolved = "resolved" in doubt.title.lower()
     section_resolved = "resolved" in doubt.section.lower() or "superseded" in doubt.section.lower()
-    has_resolution = bool(doubt.note) or bool(re.search(r"\*\*resolv", blob, re.I))
+    has_resolution = bool(doubt.note) or bool(re.search(r"\*\*(resolv|answer|deferral)", blob, re.I))
 
     if not doubt.status:
         # No Status field at all - fall back to the heading, then the section.
