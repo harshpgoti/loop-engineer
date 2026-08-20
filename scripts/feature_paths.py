@@ -113,13 +113,20 @@ def list_features(workspace: Path) -> list[dict]:
     return items
 
 
-def session_bootstrap_feature_paths(workspace: Path) -> list[Path]:
+# What a build session needs from the active feature. `clarifications`, `research`
+# and `checklist` are how the spec was *arrived at* - they belong to planning, and
+# re-reading them to write code is ~11KB of settled argument.
+BUILD_FEATURE_KEYS = ("spec", "feature_plan", "tasks")
+PLAN_FEATURE_KEYS = ("spec", "clarifications", "feature_plan", "tasks", "research", "checklist")
+
+
+def session_bootstrap_feature_paths(workspace: Path, *, build: bool = False) -> list[Path]:
     active = read_active_feature(workspace)
     if not active:
         return []
     feat = Path(active["abs_path"])
     paths: list[Path] = []
-    for key in ("spec", "clarifications", "feature_plan", "tasks", "research", "checklist"):
+    for key in (BUILD_FEATURE_KEYS if build else PLAN_FEATURE_KEYS):
         p = feature_artifact_paths(feat)[key]
         if p.exists():
             paths.append(p)

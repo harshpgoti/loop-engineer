@@ -49,9 +49,16 @@ Read command/skill files from the tool app (`~/.loop-engineer/app/` or your clon
 23. `CURRENT_STATE.md`
 24. `TASKS.yml`
 25. `GATES.yml`
-26. `EVIDENCE_LOG.md`
-27. `DECISIONS.md`
-28. `HANDOFF.md`
+26. `HANDOFF.md`
+
+Read **on demand**, not every session - both are append-only records that grow without
+bound, and the manifest's `PHASE:` block names the skills the current phase needs:
+
+- `DECISIONS.md` - when checking or recording a decision. Rationale for settled ones is
+  in `plan/archive/DECISIONS_DETAIL.md`.
+- `EVIDENCE_LOG.md` - when sourcing or checking a claim. Every `E-*` id still resolves
+  there; settled sourcing is in `plan/archive/EVIDENCE_SETTLED.md`
+  (`loop archive --search "<term>"`).
 
 Product-state files (`plan/main_plan.md`, `plan/`, `memories/MEMORY.md`, `TASKS.yml`, etc.) must come from the product workspace, not from the reusable `loop-engineer/` repo.
 

@@ -144,8 +144,28 @@ def _load_template(name: str) -> str:
     return ""
 
 
-def session_bootstrap_paths(workspace: Path) -> list[Path]:
-    """Session start read order."""
+# Commands that build. These get the task-scoped slice instead of the whole of
+# TASKS.yml, GATES.yml and DOUBTS.md - on a real workspace that is 43KB replaced by
+# under 4KB, and the removed content is provably about other tasks.
+BUILD_COMMANDS = ("/product-develop", "/develop-product", "/startup-build-loop", "/loop-engine", "/all-in-one")
+
+# Swapped out only when plan/BUILD_CONTEXT.md exists to replace them.
+SLICED_BY_BUILD_CONTEXT = ("TASKS.yml", "GATES.yml", "DOUBTS.md")
+
+
+def _is_build_command(command: str | None) -> bool:
+    return bool(command) and any(name in command for name in BUILD_COMMANDS)
+
+
+def session_bootstrap_paths(workspace: Path, command: str | None = None) -> list[Path]:
+    """Session start read order.
+
+    Planning reads the full files - it edits them. A build session reads the slice
+    for the active task, and `plan/BUILD_CONTEXT.md` says where to find the rest.
+    """
+    build_context = workspace / "plan" / "BUILD_CONTEXT.md"
+    slice_mode = _is_build_command(command) and build_context.exists()
+
     ordered = [
         workspace / "plan" / "SESSION_MANIFEST.md",
         soul_file(workspace),
@@ -165,7 +185,7 @@ def session_bootstrap_paths(workspace: Path) -> list[Path]:
         workspace / "plan" / "PARENT_CONTEXT.md",
         workspace / "plan" / "ULTRAPLAN_STATUS.md",
     ]
-    ordered.extend(session_bootstrap_feature_paths(workspace))
+    ordered.extend(session_bootstrap_feature_paths(workspace, build=slice_mode))
     ordered.extend(
         [
         workspace / "COMPACT.md",
@@ -174,8 +194,13 @@ def session_bootstrap_paths(workspace: Path) -> list[Path]:
         workspace / "plan" / "AUTO_SKILLS.md",
         ]
     )
+
+    if slice_mode:
+        ordered = [p for p in ordered if p.name not in SLICED_BY_BUILD_CONTEXT]
+        ordered.insert(1, build_context)
+
     return [path for path in ordered if path.exists()]
 
 
-def session_read_paths(workspace: Path) -> list[Path]:
-    return session_bootstrap_paths(workspace)
+def session_read_paths(workspace: Path, command: str | None = None) -> list[Path]:
+    return session_bootstrap_paths(workspace, command)

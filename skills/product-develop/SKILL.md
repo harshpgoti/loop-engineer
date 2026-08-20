@@ -15,38 +15,44 @@ Build the product from `plan/main_plan.md` and `plan/` while respecting gates.
 
 ## Read First
 
-1. `plan/SESSION_MANIFEST.md` (after `loop session-start`)
-2. `AGENTS.md`
-3. `memories/SOUL.md`
-4. `memories/USER.md`
-5. `memories/MEMORY.md`
-6. `DOUBTS.md`
-7. `plan/main_plan.md`
-8. relevant `plan/step_*.md`
-9. `plan/SESSION_RECALL.md`
-10. `plan/AUTO_SKILLS.md` (if present)
-11. `plan/AUTO_AGENT_SKILLS.md` (if present)
-12. `skills/feature-workflow/SKILL.md`
-13. `skills/plan-loop/phases/spec-clarify.md` (when requirements blocked)
-14. `skills/feature-converge/SKILL.md`
-15. `skills/frontend-animation/SKILL.md` (when AUTO_SKILLS present)
-16. `skills/agent-builder/SKILL.md` (when AUTO_AGENT_SKILLS present or the task involves building an AI agent)
-17. `skills/implementation-planner/SKILL.md`
-18. `skills/code-reviewer/SKILL.md`
-19. `skills/qa-validation/SKILL.md`
-20. `skills/security-compliance/SKILL.md`
-21. `skills/prod-gap/SKILL.md`
-22. `skills/deployment-plan/SKILL.md`
-23. `skills/compact-loop/SKILL.md`
-24. `skills/memory-review/SKILL.md`
-25. `skills/docs/SKILL.md` (Documentation domain - PRDs, ADRs, API specs, runbooks)
-26. `skills/tool-orchestrator/SKILL.md` (selecting supporting tools - memory, sandboxing, RAG, roles)
-27. `TASKS.yml`
-29. `GATES.yml`
-30. `HANDOFF.md`
-31. Active feature: `.loop/active-feature.json` → `spec.md`, `feature-plan.md`, `tasks.md`
-32. `skills/session-lifecycle/SKILL.md`
-33. product repo instructions if a product repo exists
+> **Progressive disclosure - the one rule.** Read this file every development session.
+> Load a **phase file** only when the harness selects it. This list used to hold 32
+> entries, 27 of them unconditional, so a session that only needed to write a test
+> still pulled in the agent-builder, deployment-plan and security-compliance skills.
+
+Always:
+
+1. `plan/SESSION_MANIFEST.md` (after `loop session-start`) - get the **`BUILD PHASE:`** line
+2. `plan/BUILD_CONTEXT.md` - the active task, its dependencies, its gate, its blocking
+   doubts. This **replaces** reading `TASKS.yml`, `GATES.yml` and `DOUBTS.md` whole;
+   they remain the place to *write*, and to read when you need another task's detail
+3. `AGENTS.md`
+4. `memories/SOUL.md`, `memories/USER.md`, `memories/MEMORY.md`
+5. `plan/main_plan.md`, `HANDOFF.md`
+6. Active feature: `.loop/active-feature.json` → `spec.md`, `feature-plan.md`, `tasks.md`
+7. `plan/AUTO_SKILLS.md` / `plan/AUTO_AGENT_SKILLS.md` (only when the manifest lists them)
+
+Then load **one** phase file from the router below, and only the skills it names.
+
+## Build phase router
+
+`scripts/build_phase.py` computes the phase from `TASKS.yml`, `GATES.yml` and the source
+tree, and writes a `BUILD PHASE:` line into the manifest. Rules first, never a model
+judgement (`AGENTS.md` non-negotiable #4).
+
+| Phase | Selected when | File | Skills it loads |
+|-------|---------------|------|-----------------|
+| **scaffold** | no product source tree yet | `phases/scaffold.md` | implementation-planner, tool-orchestrator |
+| **implement** | a task is active | `phases/implement.md` | implementation-planner, feature-workflow |
+| **test** | the active task is QA-phase | `phases/test.md` | qa-validation |
+| **converge** | task built, awaiting verification | `phases/converge.md` | feature-converge, code-reviewer |
+| **release** | tasks complete, release gate open | `phases/release.md` | security-compliance, prod-gap, deployment-plan, cicd-release |
+
+Read on demand, not up front: `skills/agent-builder/SKILL.md` (when the product is or
+includes an AI agent), `skills/frontend-animation/SKILL.md` (when `AUTO_SKILLS.md`
+lists it), `skills/docs/SKILL.md`, `skills/plan-loop/phases/spec-clarify.md` (when
+requirements are blocked), `skills/session-lifecycle/SKILL.md`, and the product repo's
+own instructions.
 
 ## Gate Classification
 

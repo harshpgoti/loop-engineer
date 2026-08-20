@@ -73,6 +73,25 @@ PACKAGE_MANIFESTS = [
     "composer.json",
 ]
 
+# Top-level folders that mean "product code lives here". `src`/`app` alone missed
+# every service-split repo - the real one this was tested against is
+# backend/ + frontend/ + agent/ and was reported as having no source tree at all.
+SOURCE_DIR_NAMES = (
+    "src",
+    "app",
+    "apps",
+    "lib",
+    "services",
+    "backend",
+    "frontend",
+    "server",
+    "client",
+    "api",
+    "packages",
+    "cmd",
+    "internal",
+)
+
 LOCK_FILES = [
     "package-lock.json",
     "pnpm-lock.yaml",
@@ -99,19 +118,34 @@ class SourceTreeFindings:
     secret_hits: list[str] = field(default_factory=list)
 
 
+def _search_roots(workspace: Path) -> list[Path]:
+    """Where product code could live, relative to a workspace.
+
+    In the nested layout the workspace is `<product folder>/.loop-engineer`, so the
+    source tree is one level *up* - searching only inside the workspace found nothing
+    and reported every real product as having no source tree.
+    """
+    roots = [workspace]
+    if workspace.name == ".loop-engineer" and workspace.parent.is_dir():
+        roots.append(workspace.parent)
+    return roots
+
+
 def find_source_root(workspace: Path) -> Path | None:
     candidates: list[Path] = []
 
-    for marker in ("package.json", "pyproject.toml", "go.mod", "Cargo.toml", "src", "app", "apps"):
-        for path in [workspace / marker, workspace / "product" / marker]:
-            if path.exists():
-                candidates.append(path.parent if path.is_file() else path)
+    for root in _search_roots(workspace):
+        for marker in ("package.json", "pyproject.toml", "go.mod", "Cargo.toml", "src", "app", "apps"):
+            for path in (root / marker, root / "product" / marker):
+                if path.exists():
+                    candidates.append(path.parent if path.is_file() else path)
 
     if candidates:
         return sorted(candidates, key=lambda p: len(str(p)))[0]
 
-    if any((workspace / name).exists() for name in ("src", "app", "apps", "lib", "services")):
-        return workspace
+    for root in _search_roots(workspace):
+        if any((root / name).is_dir() for name in SOURCE_DIR_NAMES):
+            return root
 
     return None
 

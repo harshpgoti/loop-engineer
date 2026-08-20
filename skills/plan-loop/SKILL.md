@@ -39,18 +39,29 @@ The harness picks the phase for you: `loop session-start` / `loop plan-loop "<id
 
 1. `AGENTS.md`
 2. `memories/SOUL.md`, `memories/USER.md`, `memories/MEMORY.md`
-3. `DOUBTS.md`
-4. `plan/main_plan.md`, `plan/`
-5. `TASKS.yml`, `GATES.yml`, `EVIDENCE_LOG.md`, `DECISIONS.md`, `HANDOFF.md`
-6. `plan/PLAN_BOOTSTRAP.md` and `plan/SESSION_MANIFEST.md` - get the `PHASE:` line
-7. `templates/plan_deployment_questions.md`
-8. `skills/session-lifecycle/SKILL.md`, `skills/session-recall/SKILL.md`, `skills/memory-review/SKILL.md`, `skills/compact-loop/SKILL.md`
-9. `skills/feature-workflow/SKILL.md` (feature spec folder routing)
-10. `skills/deployment-plan/SKILL.md` (closeout deployment draft)
-11. `skills/agent-builder/SKILL.md` (when the product is/includes an AI agent - see `plan/AUTO_AGENT_SKILLS.md`)
-12. `skills/research-search/SKILL.md`, `skills/tool-orchestrator/SKILL.md`
+3. `plan/PLAN_BOOTSTRAP.md` and `plan/SESSION_MANIFEST.md` - get the **`PHASE:`** line
+   **and the skills it names**
+4. `plan/main_plan.md`, `HANDOFF.md`
+5. `DOUBTS.md`, `TASKS.yml`, `GATES.yml`
 
-Then load the current phase file from the router above.
+Then load **the current phase file** from the router above, and **only the skills the
+manifest lists for it**.
+
+> **Skills are phase-scoped too.** This list used to name twelve skill files
+> unconditionally - 51KB every session, including `revise-plan` (a different command
+> entirely) and `agent-builder` (only relevant when the product is an agent). The phase
+> router now emits the skills for the selected phase; everything else stays unread.
+
+Read on demand, when the phase you are in actually needs it:
+
+| Need | File |
+|------|------|
+| Deployment questions during planning | `templates/plan_deployment_questions.md`, `skills/deployment-plan/SKILL.md` |
+| Sourcing a claim | `skills/research-search/SKILL.md` → cite in `EVIDENCE_LOG.md` |
+| Checking a past decision | `DECISIONS.md` - and `plan/archive/DECISIONS_DETAIL.md` for the rationale |
+| Checking evidence behind a decision | `EVIDENCE_LOG.md`; settled sourcing is in `plan/archive/EVIDENCE_SETTLED.md` (`loop archive --search <term>`) |
+| Session bookkeeping | `skills/session-lifecycle/SKILL.md`, `skills/memory-review/SKILL.md`, `skills/compact-loop/SKILL.md` |
+| The product is/includes an AI agent | `skills/agent-builder/SKILL.md` (the manifest adds it when `plan/AUTO_AGENT_SKILLS.md` exists) |
 
 ## Loop
 

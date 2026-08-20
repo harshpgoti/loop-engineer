@@ -27,13 +27,46 @@ STATE_FILES = [
 ]
 
 
-def read_excerpt(path: Path, max_chars: int = 4000) -> str:
+# COMPACT.md is read at the start of every session, so it is a standing cost on
+# every command. `memories/MEMORY.md` has had a character budget from the start;
+# this file had none and grew to be the single largest thing in the read order.
+COMPACT_CHAR_LIMIT = 8000
+EXCERPT_CHAR_LIMIT = 1200
+
+
+def read_excerpt(path: Path, max_chars: int = EXCERPT_CHAR_LIMIT) -> str:
     if not path.exists():
         return f"_Missing: {path.name}_"
     text = path.read_text(encoding="utf-8", errors="ignore").strip()
     if len(text) <= max_chars:
         return text
-    return text[:max_chars].rstrip() + "\n\n_...truncated in compact summary_"
+    return text[:max_chars].rstrip() + f"\n\n_...truncated - full text in `{path.name}`_"
+
+
+def enforce_limit(content: str, limit: int = COMPACT_CHAR_LIMIT) -> str:
+    """Trim from the end, on a section boundary, so the summary stays readable.
+
+    Earlier sections are the durable ones (product, phase, active task); the tail is
+    per-file excerpts that can always be read from the file itself.
+    """
+    if len(content) <= limit:
+        return content
+
+    sections = content.split("\n## ")
+    kept, total = [sections[0]], len(sections[0])
+    for section in sections[1:]:
+        chunk = "\n## " + section
+        if total + len(chunk) > limit:
+            break
+        kept.append(section)
+        total += len(chunk)
+
+    trimmed = kept[0] + "".join("\n## " + s for s in kept[1:])
+    dropped = len(sections) - len(kept)
+    return trimmed.rstrip() + (
+        f"\n\n_...{dropped} section(s) trimmed to stay under {limit:,} chars. "
+        "Read the source files directly when you need them._\n"
+    )
 
 
 def extract_line(text: str, prefix: str, default: str = "TBD") -> str:
@@ -119,7 +152,7 @@ def main() -> int:
     args = parser.parse_args()
 
     workspace = resolve_workspace(args.workspace)
-    content = summarize_workspace(workspace)
+    content = enforce_limit(summarize_workspace(workspace))
     output = workspace / "COMPACT.md"
     output.write_text(content, encoding="utf-8")
     append_session_log(workspace)

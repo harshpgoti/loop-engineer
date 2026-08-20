@@ -28,6 +28,36 @@ PHASE_FILES = {
     "task-compiler": "skills/plan-loop/phases/task-compiler.md",
 }
 
+# Skills worth loading per phase. The phase files were already progressively
+# disclosed; the *skills* were not - all twelve loaded every session, 51KB of them,
+# including `revise-plan` (a different command) and `agent-builder` (only relevant
+# when the product is an agent). Same contract as `build_phase.PHASE_SKILLS`.
+PHASE_SKILLS = {
+    "grill": ["skills/research-search/SKILL.md"],
+    "parent-findings": [],
+    "hierarchy": [],
+    "council": [],
+    "ultraplan": ["skills/tool-orchestrator/SKILL.md"],
+    "spec-clarify": ["skills/feature-workflow/SKILL.md"],
+    "spec-checklist": ["skills/feature-workflow/SKILL.md"],
+    "resolve-doubts": ["skills/research-search/SKILL.md"],
+    "task-compiler": ["skills/feature-workflow/SKILL.md"],
+}
+
+# Loaded on top of the phase's own list when the workspace signals it.
+CONDITIONAL_SKILLS = (
+    ("plan/AUTO_AGENT_SKILLS.md", "skills/agent-builder/SKILL.md"),
+    ("plan/AUTO_SKILLS.md", "skills/frontend-animation/SKILL.md"),
+)
+
+
+def phase_skills(workspace: Path, phase: str) -> list[str]:
+    skills = list(PHASE_SKILLS.get(phase, []))
+    for signal, skill in CONDITIONAL_SKILLS:
+        if (workspace / signal).exists() and skill not in skills:
+            skills.append(skill)
+    return skills
+
 
 def _is_initialized(workspace: Path) -> bool:
     main_plan = workspace / "plan" / "main_plan.md"
@@ -184,6 +214,7 @@ def compute_plan_phase(workspace: Path) -> dict:
     return {
         "phase": phase,
         "file": PHASE_FILES[phase],
+        "skills": phase_skills(workspace, phase),
         "pipeline": pipeline,
         "reason": reason,
     }
@@ -199,6 +230,8 @@ def render_phase_block(workspace: Path, *, heading: str = "## Plan phase") -> st
         "",
         f"- Reason: {result['reason']}",
         f"- Load only: `{result['file']}` (progressive disclosure - do not preload all phases)",
+        f"- Skills for this phase: {', '.join(f'`{s}`' for s in result['skills']) or 'none beyond the always-read set'}",
+        "- Every other skill stays unread until a phase names it.",
         f"- Pipeline: {' -> '.join(result['pipeline'])}",
         "- Router: `skills/plan-loop/SKILL.md`",
     ]
