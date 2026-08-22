@@ -298,16 +298,19 @@ def cmd_fresh(args: argparse.Namespace) -> int:
 
 def cmd_graph(args: argparse.Namespace) -> int:
     cmd = getattr(args, "graph_cmd", None) or "stats"
-    extra = _workspace_args(args)
+    workspace = _workspace_args(args)
     if cmd == "check":
-        return run_script("graph_schema.py", extra + (["--verbose"] if getattr(args, "verbose", False) else []))
+        return run_script("graph_schema.py", workspace + (["--verbose"] if getattr(args, "verbose", False) else []))
     if cmd == "show":
-        extra = ["show", args.node_id, "--depth", str(args.depth)] + extra
+        tail = ["show", args.node_id, "--depth", str(args.depth)]
     elif cmd == "as-of":
-        extra = ["as-of", args.date] + extra
+        tail = ["as-of", args.date]
     else:
-        extra = [cmd] + extra
-    return run_script("graph_index.py", extra)
+        tail = [cmd]
+    # `--workspace` is a top-level option in graph_index, so it has to precede the
+    # subcommand. Appending it put the flag where argparse could not see it and every
+    # `loop graph <cmd> --workspace ...` failed.
+    return run_script("graph_index.py", workspace + tail)
 
 
 def cmd_archive(args: argparse.Namespace) -> int:

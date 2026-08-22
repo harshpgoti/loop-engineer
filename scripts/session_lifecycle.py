@@ -28,6 +28,12 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def _today() -> str:
+    from datetime import date
+
+    return date.today().isoformat()
+
+
 def _meta_path(workspace: Path) -> Path:
     return workspace / SESSION_META
 
@@ -494,6 +500,23 @@ def session_end(
             converge_note = f"feature converge skipped: {exc}"
     if converge_note:
         actions.append(f"feature converge: {converge_note}")
+
+    # Fold this session's own edits into the reference index and its edge history.
+    # Building only at session-start recorded the state the session *inherited*, so a
+    # retraction made during the session stayed invisible until the next one began -
+    # the history lagged by a session, which is the one thing a history must not do.
+    try:
+        import graph_index
+
+        graph = graph_index.build(workspace)
+        if graph["nodes"]:
+            graph_index.write(workspace, graph)
+            closed = graph_index.record_history(workspace, graph)
+            withdrawn = sum(1 for e in closed["edges"].values() if e.get("closed_at") == _today())
+            if withdrawn:
+                actions.append(f"graph: {withdrawn} reference(s) withdrawn this session")
+    except Exception:
+        pass
 
     # Compact finished work at the *end* of a session, never at the start - the
     # session that just closed a task should still see it in full when it writes

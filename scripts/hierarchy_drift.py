@@ -111,10 +111,19 @@ def _short(value: str, limit: int = 180) -> str:
     return flat if len(flat) <= limit else flat[:limit].rstrip() + "..."
 
 
+# Structured parsers read the whole file. `read_text`'s 40,000-char default is a
+# budget for prose scanning, and applying it here silently truncated a real
+# DECISIONS.md at 63,074 chars: 23 of 41 decision keys fell past the cut, the parent
+# watermark saw them vanish, and the sub-product got 16 error-level `parent-removed`
+# findings for decisions that were still sitting in the file. Parsing structure is
+# cheap; a cap on it only ever produces phantom removals.
+FULL_FILE = 2_000_000
+
+
 def _deployment_section(workspace: Path) -> str:
     from memory_paths import main_plan_file
 
-    text = read_text(main_plan_file(workspace))
+    text = read_text(main_plan_file(workspace), FULL_FILE)
     match = re.search(r"(?ims)^##\s+Deployment\s*&?\s*Infrastructure\s*$(.*?)(?=^##\s|\Z)", text)
     return match.group(1) if match else ""
 
@@ -160,13 +169,22 @@ def decision_entries(text: str, *, skip_sections: tuple[str, ...] = ()) -> dict[
     pairs: dict[str, tuple[str, str]] = {}
     heading = ""
     skipping = False
+    # Only a table that *declares* itself a decision table is harvested. A real
+    # DECISIONS.md is full of body tables - an ICP segmentation grid inside one
+    # decision's rationale - and taking every `| a | b |` row turned four market
+    # segments into four "platform decisions" that the sub-product was then told
+    # were new. Recognized by the header, exactly like the product map.
+    DECISION_HEADERS = {"decision", "topic", "key", "item"}
+    in_decision_table = False
 
-    for line in text.splitlines():
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
         stripped = line.strip()
 
         if stripped.startswith("#"):
             heading = stripped.lstrip("#").strip()
             skipping = any(token in heading.lower() for token in skip_sections)
+            in_decision_table = False
             continue
         if skipping:
             continue
@@ -177,12 +195,20 @@ def decision_entries(text: str, *, skip_sections: tuple[str, ...] = ()) -> dict[
             cells = [cell.strip() for cell in stripped.strip("|").split("|")]
             if len(cells) < 2:
                 continue
-            key, value = cells[0], cells[1]
-            if key.lower() in ("item", "topic", "key", "decision", "id", "name", "step"):
+
+            following = lines[index + 1].strip() if index + 1 < len(lines) else ""
+            if re.match(r"^\|[-:\s|]+\|$", following):
+                in_decision_table = cells[0].lower() in DECISION_HEADERS
                 continue
-            if key and not is_placeholder(value):
-                pairs.setdefault(normalize_key(key), (key, value))
+
+            key, value = cells[0], cells[1]
+            if not in_decision_table or not key or is_placeholder(value):
+                continue
+            pairs.setdefault(normalize_key(key), (key, value))
             continue
+
+        if stripped:
+            in_decision_table = False  # any non-table line ends the table
 
         bullet = DECISION_BULLET.match(stripped)
         if bullet and heading and not is_placeholder(bullet.group(1)):
@@ -198,7 +224,7 @@ def decisions_table(workspace: Path) -> dict[str, str]:
 
 
 def decisions_labels(workspace: Path) -> dict[str, tuple[str, str]]:
-    return decision_entries(read_text(workspace / "DECISIONS.md"), skip_sections=("pending",))
+    return decision_entries(read_text(workspace / "DECISIONS.md", FULL_FILE), skip_sections=("pending",))
 
 
 def is_uninitialized(workspace: Path) -> bool:

@@ -323,6 +323,35 @@ class TestDriftChecks(TreeSandbox):
         findings = drift.check_children(self.main_ws, self._children())
         self.assertEqual([], [f for f in findings if f["kind"] == "unbuilt-row"])
 
+    def test_decisions_past_40k_are_still_parsed(self) -> None:
+        """A real DECISIONS.md hit 63,074 chars and 23 of 41 keys fell past the cut.
+
+        The parent watermark then saw them vanish and told the sub-product 16
+        decisions had been removed while they were still sitting in the file.
+        """
+        padding = "\n".join(f"<!-- filler line {i} to push the table past the old cap -->" for i in range(1200))
+        (self.main_ws / "DECISIONS.md").write_text(
+            "# Decision Log\n\n## Context\n\n" + padding
+            + "\n\n## Inherited decisions\n\n| Decision | Status |\n|---|---|\n| Datastore | Postgres |\n",
+            encoding="utf-8",
+        )
+        self.assertGreater(len((self.main_ws / "DECISIONS.md").read_text(encoding="utf-8")), 40_000)
+        self.assertIn("datastore", drift.decisions_labels(self.main_ws))
+
+    def test_body_tables_are_not_harvested_as_decisions(self) -> None:
+        """An ICP segmentation grid inside one decision turned into four decisions."""
+        (self.main_ws / "DECISIONS.md").write_text(
+            "# Decision Log\n\n## D-M-009: Who we sell to\n"
+            "- **Decision:** Volume clinics first.\n\n"
+            "| Segment | Volume |\n|---|---|\n| Dental | 3-4 dentists |\n| Dermatology | 2-3 providers |\n\n"
+            "## Inherited decisions\n\n| Decision | Status |\n|---|---|\n| Datastore | Postgres |\n",
+            encoding="utf-8",
+        )
+        labels = drift.decisions_labels(self.main_ws)
+        self.assertIn("datastore", labels, "the declared decision table must be read")
+        self.assertNotIn("dental", labels)
+        self.assertNotIn("dermatology", labels)
+
     def test_adr_formatted_logs_do_not_collide_on_boilerplate(self) -> None:
         """Two ADR logs share field names, not decisions - that is not a conflict."""
         adr = (
