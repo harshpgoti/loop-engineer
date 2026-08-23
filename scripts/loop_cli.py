@@ -319,6 +319,16 @@ def cmd_eval(args: argparse.Namespace) -> int:
     return run_script('eval_suite.py', extra + tail)
 
 
+def cmd_subproduct(args: argparse.Namespace) -> int:
+    cmd = getattr(args, "subproduct_cmd", None) or "list"
+    tail = [cmd]
+    if cmd == "new":
+        tail += list(args.rows)
+        if args.dry_run:
+            tail.append("--dry-run")
+    return run_script("subproduct_new.py", _workspace_args(args) + tail)
+
+
 def cmd_fog(args: argparse.Namespace) -> int:
     cmd = getattr(args, "fog_cmd", None) or "list"
     tail = [cmd]
@@ -781,6 +791,21 @@ def build_parser() -> argparse.ArgumentParser:
     ws_role.add_argument("role", nargs="?", default=None, choices=["main", "sub", "standalone"])
     ws_role.add_argument("--workspace", default=argparse.SUPPRESS)
     ws_role.set_defaults(func=cmd_workspace)
+
+    sp = sub.add_parser(
+        "subproduct", help="Carve a product-map row out of the main product into its own workspace."
+    )
+    sp.add_argument("--workspace", default=argparse.SUPPRESS)
+    sp_sub = sp.add_subparsers(dest="subproduct_cmd")
+    sp_list = sp_sub.add_parser("list", help="Rows typed `sub-product`, and which are ready to carve out.")
+    sp_list.add_argument("--workspace", default=argparse.SUPPRESS)
+    sp_list.set_defaults(func=cmd_subproduct)
+    sp_new = sp_sub.add_parser("new", help="Create a workspace for each map row given.")
+    sp_new.add_argument("rows", nargs="+")
+    sp_new.add_argument("--dry-run", action="store_true")
+    sp_new.add_argument("--workspace", default=argparse.SUPPRESS)
+    sp_new.set_defaults(func=cmd_subproduct)
+    sp.set_defaults(func=cmd_subproduct)
 
     fg = sub.add_parser("fog", help="Decisions the plan can see coming but cannot yet state.")
     fg.add_argument("--workspace", default=argparse.SUPPRESS)

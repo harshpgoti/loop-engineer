@@ -262,7 +262,15 @@ for approval, never written into it. Single-product workspaces are unaffected.
 ```text
 /product-tree         # roles, roll-up, and where a sub-product's plan contradicts the master plan
 /product-tree-sync    # make both ends agree - run it from either folder when you are not sure
+/subproduct-new 17 18 # carve those map rows out into their own workspaces, ready for /loop-engine
 ```
+
+A row typed `sub-product` in `plan/PRODUCT_MAP.md` is a statement that the work will live
+in its own folder. `/subproduct-new` is what makes that true: it derives the folder name
+from the row title (which is what `map_id` binds on), seeds the workspace, hands over the
+row's step plan so it does not re-plan from nothing, and links both ends. It reports the
+main-product tasks carrying the gate the row declares - and does not move them, because
+the new workspace compiles its own.
 
 ```bash
 loop workspace tree      # role, parent, sub-products

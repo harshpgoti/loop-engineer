@@ -31,6 +31,7 @@ Use these directly in any agent that can access the repo:
 /eval-loop
 /product-tree
 /product-tree-sync
+/subproduct-new
 /plan-loop <idea>
 /loop-engine <idea>
 /ultraplan-loop
@@ -101,6 +102,7 @@ The agent must route the command through `commands/*.md` and update `memories/ME
 | `/agent-builder` | `commands/agent-builder.md` | Design/scaffold an AI agent (or agentic/dynamic workflow) as the product |
 | `/research-search` | `commands/research-search.md` | Search arXiv, Research Square, and SSRN to ground a claim |
 | `/diagnose-loop` | `commands/diagnose-loop.md` | Build a feedback loop that goes red on a bug, then hypothesise |
+| `/subproduct-new` | `commands/subproduct-new.md` | Carve a map row out of the main product into its own workspace |
 | `/upgrade-loop-engineer` | `commands/upgrade-loop-engineer.md` | Safe tool update without overwriting product data |
 
 ## Aliases

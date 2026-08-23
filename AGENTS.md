@@ -113,6 +113,7 @@ The user should be able to type these commands in Cursor, Codex, Claude Code, Gr
 | `/eval-loop` | Score the product's golden cases, record the run, find regressions, and let the failure pattern decide what to build next | `commands/eval-loop.md` + `skills/eval-loop/SKILL.md` |
 | `/product-tree` | Show main product ⇄ sub-product workspaces, their roll-up, and where a sub-product's plan contradicts the master plan | `commands/product-tree.md` + `skills/product-tree/SKILL.md` |
 | `/product-tree-sync` | Make main product and sub-products agree, run from either folder - refreshes both ends and stages drift notes | `commands/product-tree-sync.md` + `skills/product-tree-sync/SKILL.md` |
+| `/subproduct-new` | Carve a product-map row out of the main product into its own workspace, seeded from that row's plan and ready for `/loop-engine` | `commands/subproduct-new.md` + `skills/subproduct-new/SKILL.md` |
 | `/ultraplan-loop` | Deep per-step planning for platform-scale products | `commands/ultraplan-loop.md` + `skills/plan-loop/phases/ultraplan.md` |
 | `/frontend-animation` | Route to built-in GSAP, Motion.dev, and 3D core skills for frontend work | `commands/frontend-animation.md` + `skills/frontend-animation/SKILL.md` |
 | `/agent-builder` | Design/scaffold an AI agent (or agentic/dynamic workflow) as the product itself - auto-activates in `/plan-loop` and `/product-develop` | `commands/agent-builder.md` + `skills/agent-builder/SKILL.md` |
