@@ -229,8 +229,12 @@ def decision_entries(text: str, *, skip_sections: tuple[str, ...] = ()) -> dict[
                 # heading would keep only the first, which is how five decisions became
                 # one and the datastore call stopped travelling.
                 qualifier = (bullet.group("qualifier") or "").strip().rstrip(".:")
-                label = f"{topic} - {qualifier}" if qualifier else topic
-                pairs.setdefault(normalize_key(label), (label, bullet.group("value").strip()))
+                # Key on both so sibling bullets stay distinct; *display* the qualifier,
+                # because that is the half that tells them apart. Labelled the other way
+                # round, four decisions from one ADR all read as the same truncated
+                # heading in every report the user actually sees.
+                key = normalize_key(f"{topic} - {qualifier}") if qualifier else normalize_key(topic)
+                pairs.setdefault(key, (qualifier or topic, bullet.group("value").strip()))
 
     return pairs
 
