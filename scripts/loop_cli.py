@@ -319,6 +319,16 @@ def cmd_eval(args: argparse.Namespace) -> int:
     return run_script('eval_suite.py', extra + tail)
 
 
+def cmd_fog(args: argparse.Namespace) -> int:
+    cmd = getattr(args, "fog_cmd", None) or "list"
+    tail = [cmd]
+    if cmd == "promote":
+        tail.append(str(args.index))
+        if args.non_blocking:
+            tail.append("--non-blocking")
+    return run_script("fog.py", _workspace_args(args) + tail)
+
+
 def cmd_glossary(args: argparse.Namespace) -> int:
     cmd = getattr(args, "glossary_cmd", None) or "list"
     return run_script("glossary.py", _workspace_args(args) + [cmd])
@@ -771,6 +781,19 @@ def build_parser() -> argparse.ArgumentParser:
     ws_role.add_argument("role", nargs="?", default=None, choices=["main", "sub", "standalone"])
     ws_role.add_argument("--workspace", default=argparse.SUPPRESS)
     ws_role.set_defaults(func=cmd_workspace)
+
+    fg = sub.add_parser("fog", help="Decisions the plan can see coming but cannot yet state.")
+    fg.add_argument("--workspace", default=argparse.SUPPRESS)
+    fg_sub = fg.add_subparsers(dest="fog_cmd")
+    fg_list = fg_sub.add_parser("list", help="Fog and out-of-scope items, with how long each has sat.")
+    fg_list.add_argument("--workspace", default=argparse.SUPPRESS)
+    fg_list.set_defaults(func=cmd_fog)
+    fg_promote = fg_sub.add_parser("promote", help="State a patch of fog as a doubt and clear it.")
+    fg_promote.add_argument("index", type=int)
+    fg_promote.add_argument("--non-blocking", action="store_true")
+    fg_promote.add_argument("--workspace", default=argparse.SUPPRESS)
+    fg_promote.set_defaults(func=cmd_fog)
+    fg.set_defaults(func=cmd_fog)
 
     gl = sub.add_parser("glossary", help="The product's own words, and where the plan drifts from them.")
     gl.add_argument("--workspace", default=argparse.SUPPRESS)

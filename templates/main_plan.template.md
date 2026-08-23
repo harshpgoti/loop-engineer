@@ -72,7 +72,26 @@ Run `loop plan-loop scale --write` after capturing the user's idea.
 
 ## Open Strategy Questions
 
-See `DOUBTS.md`.
+Questions you can state. See `DOUBTS.md`.
+
+## Not yet specified
+
+Decisions you can see coming but cannot yet phrase as a question. The test is whether you can
+**state** it precisely now, not whether you can answer it - sharp enough to state means it
+belongs in `DOUBTS.md` instead. Write each as loosely as the view allows.
+
+Fog is meant to clear. A patch that sits unchanged is either a question you can now state
+(`loop fog promote <n>`) or work you have quietly decided not to do - move that below.
+
+- TBD
+
+## Out of scope
+
+Work ruled beyond this plan. Scope, not sharpness, lands an item here, and it never
+graduates: it returns only if the plan's destination is redrawn, and then as a fresh
+decision. Recording the deliberate no is as valuable as recording the yes.
+
+- TBD
 
 ## Tooling References
 

@@ -86,10 +86,24 @@ model, and cost posture · distribution path · pilot or validation path · what
 | Needs proof | `EVIDENCE_LOG.md` - cite the source, never the search |
 | Raises a new question | `loop doubts add`, with `Depends on:` / `Ask:` where they apply |
 | Belongs to someone who is not here | `Ask: <who>`, then `loop doubts questionnaire` |
-| In scope but not yet sharp enough to ask | `## Not yet specified` in `plan/main_plan.md` |
+| In scope but not yet sharp enough to ask | `## Not yet specified` in `plan/main_plan.md` - `loop fog` lists it, `loop fog promote <n>` states one as a doubt |
+| Decided against, deliberately | `## Out of scope` in `plan/main_plan.md`. It never graduates |
 | Names a concept the plan keeps renaming | `## Language` in `CONTEXT.md` - the name, one sentence, and the synonyms it displaces |
 
 Then `memories/MEMORY.md`.
+
+## Fog
+
+Do not chart what you cannot yet see. Beyond the frontier sits fog: decisions you can tell are
+coming but cannot pin down, because they hang on questions still open. Guessing at fog
+over-specifies the plan; leaving it unwritten drops scope silently and rediscovers it mid-build.
+
+**Fog or question?** Whether you can state it precisely now - not whether you can answer it.
+Sharp enough to state, even if blocked: record it as a doubt. Not yet: write it into
+`## Not yet specified`, as loosely as the view allows.
+
+Each round of answers clears some of it. Graduate whatever became statable, and clear that
+patch from the section so it lives only as its question.
 
 ## Done
 
