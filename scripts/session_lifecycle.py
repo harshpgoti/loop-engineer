@@ -296,6 +296,13 @@ def render_manifest(
         pass
 
     try:
+        from glossary import manifest_block as language_block
+
+        lines.extend(language_block(workspace))
+    except Exception:
+        pass
+
+    try:
         lines.extend(attention_block(workspace))
     except Exception:
         pass

@@ -57,6 +57,17 @@ Run `loop research "<query>"`. Never ask the user something you could look up.
 Do not block the whole round on it: a lookup in flight is an unsettled prerequisite, so only
 the questions downstream of it wait. Ask the rest of the frontier now.
 
+## Sharpen the words as you go
+
+When the user uses a term that clashes with `CONTEXT.md`, say so in the round: "your glossary
+calls this a Denial, you seem to mean a rejection - which is it?". When they use a vague or
+overloaded word, propose a precise one. Write the resolution into `CONTEXT.md` `## Language`
+**there and then**, not at the end - a name settled in conversation and never recorded is a
+name the next session re-litigates.
+
+`loop glossary` reports where the plan still uses a displaced synonym. It reports and never
+rewrites: two words that turn out to name different things get two definitions, not a rename.
+
 ## Grill areas
 
 Coverage, not a checklist - reach for whichever the current plan leaves soft:
@@ -76,6 +87,7 @@ model, and cost posture · distribution path · pilot or validation path · what
 | Raises a new question | `loop doubts add`, with `Depends on:` / `Ask:` where they apply |
 | Belongs to someone who is not here | `Ask: <who>`, then `loop doubts questionnaire` |
 | In scope but not yet sharp enough to ask | `## Not yet specified` in `plan/main_plan.md` |
+| Names a concept the plan keeps renaming | `## Language` in `CONTEXT.md` - the name, one sentence, and the synonyms it displaces |
 
 Then `memories/MEMORY.md`.
 

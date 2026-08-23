@@ -23,7 +23,7 @@ across them** - one axis masking the other is what the separation prevents.
 | Spec | the active task in `plan/BUILD_CONTEXT.md` - its `acceptance` list is the spec |
 | Spec | the active feature's `spec.md`, when one exists |
 | Spec | `GATES.yml` for the gate this task sits behind |
-| Standards | `CONTEXT.md` - the repo's own vocabulary and conventions |
+| Standards | `CONTEXT.md` - the repo's own vocabulary and conventions (`loop glossary`) |
 | Standards | `DECISIONS.md` - decisions in the area being changed |
 | Standards | `skills/codebase-design/SKILL.md` - module, interface, seam, depth |
 | Standards | `skills/tdd/SKILL.md` - the bar the tests have to clear |

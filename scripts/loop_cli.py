@@ -319,6 +319,11 @@ def cmd_eval(args: argparse.Namespace) -> int:
     return run_script('eval_suite.py', extra + tail)
 
 
+def cmd_glossary(args: argparse.Namespace) -> int:
+    cmd = getattr(args, "glossary_cmd", None) or "list"
+    return run_script("glossary.py", _workspace_args(args) + [cmd])
+
+
 def cmd_evidence(args: argparse.Namespace) -> int:
     extra = _workspace_args(args)
     if getattr(args, 'verbose', False):
@@ -766,6 +771,18 @@ def build_parser() -> argparse.ArgumentParser:
     ws_role.add_argument("role", nargs="?", default=None, choices=["main", "sub", "standalone"])
     ws_role.add_argument("--workspace", default=argparse.SUPPRESS)
     ws_role.set_defaults(func=cmd_workspace)
+
+    gl = sub.add_parser("glossary", help="The product's own words, and where the plan drifts from them.")
+    gl.add_argument("--workspace", default=argparse.SUPPRESS)
+    gl_sub = gl.add_subparsers(dest="glossary_cmd")
+    for name, helptext in (
+        ("list", "Defined terms and any displaced synonyms still in use."),
+        ("lint", "Non-zero exit when a displaced synonym is still in use."),
+    ):
+        gl_obj = gl_sub.add_parser(name, help=helptext)
+        gl_obj.add_argument("--workspace", default=argparse.SUPPRESS)
+        gl_obj.set_defaults(func=cmd_glossary)
+    gl.set_defaults(func=cmd_glossary)
 
     ev = sub.add_parser("eval", help="Eval cases, recorded runs, regressions, error analysis.")
     ev.add_argument("--workspace", default=argparse.SUPPRESS)
