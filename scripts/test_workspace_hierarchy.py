@@ -310,6 +310,53 @@ class TestDriftChecks(TreeSandbox):
         unbuilt = [f for f in findings if f["kind"] == "unbuilt-row"]
         self.assertEqual({f["sub"] for f in unbuilt}, {"portal"})
 
+    def _map(self, *rows: str) -> None:
+        (self.main_ws / "plan" / "PRODUCT_MAP.md").write_text(
+            "# Product Map\n\n\n\n| ID | Step file | Type | Title | Depends on | Status |\n"
+            "|----|---|---|---|---|---|\n" + "".join(rows),
+            encoding="utf-8",
+        )
+
+    def _unbuilt(self) -> list[str]:
+        findings = drift.check_children(self.main_ws, self._children())
+        return [f["sub"] for f in findings if f["kind"] == "unbuilt-row"]
+
+    def _auth(self) -> None:
+        self.seed(self.main / "auth-svc", **{"plan/main_plan.md": "# Plan\n- **Name:** Auth\n"})
+
+    ROW_AUTH = "| 01 | step_01 | sub-product | auth svc | | outline |\n"
+
+    def test_a_deferred_row_is_not_yet_a_missing_workspace(self) -> None:
+        """Typing a row `sub-product` says where the work will live, not that it starts now.
+
+        A real map had 12 of 14 delegated rows `Deferred`; warning about each one every
+        session buried the single row that had actually gone active.
+        """
+        self._map(self.ROW_AUTH, "| 02 | step_02 | sub-product | portal | | Deferred - lowest priority |\n")
+        self._auth()
+        self.assertEqual([], self._unbuilt())
+
+    def test_the_same_row_reports_the_session_it_goes_active(self) -> None:
+        self._map(self.ROW_AUTH, "| 02 | step_02 | sub-product | portal | | **ACTIVE (track C)** |\n")
+        self._auth()
+        self.assertEqual(["portal"], self._unbuilt())
+
+    def test_planned_still_counts_as_dormant(self) -> None:
+        self._map(self.ROW_AUTH, "| 02 | step_02 | sub-product | portal | | PLANNED - ranked ahead of row 10 |\n")
+        self._auth()
+        self.assertEqual([], self._unbuilt())
+
+    def test_a_row_with_no_status_still_reports(self) -> None:
+        """Unknown is not the same as dormant - the cautious default is to say something."""
+        self._map(self.ROW_AUTH, "| 02 | step_02 | sub-product | portal | | |\n")
+        self._auth()
+        self.assertEqual(["portal"], self._unbuilt())
+
+    def test_a_dormant_row_that_has_a_workspace_is_never_reported(self) -> None:
+        self._map("| 01 | step_01 | sub-product | auth svc | | Deferred |\n")
+        self._auth()
+        self.assertEqual([], self._unbuilt())
+
     def test_module_and_program_rows_are_never_unbuilt(self) -> None:
         (self.main_ws / "plan" / "PRODUCT_MAP.md").write_text(
             "# Product Map\n\n| ID | Step file | Type | Title | Depends on | Status |\n"

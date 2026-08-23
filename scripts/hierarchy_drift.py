@@ -315,6 +315,28 @@ def last_session_at(workspace: Path) -> datetime | None:
 
 DELEGATED_TYPES = {"sub-product", "subproduct"}
 
+# A row's status decides whether a missing workspace is a problem yet. Typing a row
+# `sub-product` states where the work will live; it is not a promise to start it now.
+# On a real map, 12 of 14 rows were `Deferred` - warning about each one's missing folder
+# every session is noise that buries the one row that had actually gone active.
+DORMANT_STATUSES = (
+    "deferred",
+    "planned",
+    "parked",
+    "backlog",
+    "later",
+    "on hold",
+    "not started",
+    "future",
+    "out of scope",
+)
+
+
+def row_is_dormant(row: dict) -> bool:
+    """True when the plan itself says this row has not started."""
+    status = normalize_key(row.get("status", ""))
+    return any(word.replace(" ", "-") in status for word in DORMANT_STATUSES)
+
 
 def row_is_delegated(row: dict) -> bool:
     """True when a map row is meant to become its own sub-product workspace.
@@ -389,14 +411,19 @@ def check_children(main_ws: Path, children: list[dict]) -> list[dict]:
     for row in rows:
         if not row_is_delegated(row) or row.get("id") in bound_ids:
             continue
+        if row_is_dormant(row):
+            # The plan says this one has not started. It will be reported the session
+            # its status moves, which is when the missing folder starts to matter.
+            continue
         findings.append(
             _finding(
                 "unbuilt-row",
                 LEVEL_WARN,
                 row.get("title", row.get("id", "?")),
                 f"row-{row.get('id')}",
-                f"Product map row {row.get('id')} ({row.get('title')}) is typed `sub-product` but has no "
-                "workspace. Run `loop setup --use-cwd` in its folder, or retype the row if it is built here.",
+                f"Product map row {row.get('id')} ({row.get('title')}) is typed `sub-product`, is no longer "
+                f"dormant (`{str(row.get('status') or 'no status').strip()}`), and has no workspace. "
+                "Run `loop setup --use-cwd` in its folder, or retype the row if it is built here.",
                 "",
             )
         )
