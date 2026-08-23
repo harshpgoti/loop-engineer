@@ -97,6 +97,63 @@ ALIASES: dict[str, str] = {
 }
 
 
+# Some agents unify slash commands and skills in one namespace; opencode does not.
+# There, a skill is model-invoked - the agent chooses it from its description - and
+# `/name` reads a separate command directory. Installing only skills left `opencode
+# debug skill` listing all 36 routers while `/plan-loop` matched nothing, because the
+# user was typing into the namespace we had not populated.
+#
+# Paths are opencode's own documented layout (`opencode debug skill` -> the built-in
+# `customize-opencode` skill): `~/.config/opencode/command/<name>.md`, singular.
+SLASH_COMMAND_HOSTS: dict[str, dict[str, str]] = {
+    "opencode": {"user": "~/.config/opencode/command", "project": ".opencode/command"},
+}
+
+
+def render_command(name: str, target: str | None = None) -> str:
+    """A slash command for a host that keeps commands separate from skills.
+
+    The filename is the command, so the frontmatter carries no `name`; the body is
+    the template opencode runs when the user types `/<name>`.
+    """
+    target = target or name
+    desc = command_description(target)
+    body = render_router(name, target).split("---\n", 2)[-1].lstrip()
+    return "---\n" + f'description: "{desc}"\n' + "---\n\n" + body
+
+
+def install_commands(dest: Path, names: list[str], *, dry_run: bool) -> tuple[int, int]:
+    """Write slash commands into one directory. Returns (written, pruned)."""
+    want: dict[str, str] = {n: n for n in names}
+    for alias, target in ALIASES.items():
+        if target in names:
+            want[alias] = target
+
+    if not dry_run:
+        dest.mkdir(parents=True, exist_ok=True)
+
+    written = 0
+    for name, target in want.items():
+        path = dest / f"{name}.md"
+        # Never clobber a command the user wrote themselves.
+        if path.exists() and MARKER not in path.read_text(encoding="utf-8", errors="ignore"):
+            continue
+        if not dry_run:
+            path.write_text(render_command(name, target), encoding="utf-8")
+        written += 1
+
+    pruned = 0
+    if dest.exists():
+        for entry in dest.glob("*.md"):
+            if entry.stem in want:
+                continue
+            if MARKER in entry.read_text(encoding="utf-8", errors="ignore"):
+                if not dry_run:
+                    entry.unlink()
+                pruned += 1
+    return written, pruned
+
+
 def command_names() -> list[str]:
     if not COMMANDS_DIR.exists():
         return []
@@ -136,7 +193,10 @@ def render_router(name: str, target: str | None = None) -> str:
     )
     return (
         "---\n"
-        f"name: {name}\n"
+        # opencode documents that a skill's `name` must match its folder, and the
+        # folder carries DIR_PREFIX. Claude Code already addresses these by folder
+        # name, so matching is right everywhere and wrong nowhere.
+        f"name: {DIR_PREFIX}{name}\n"
         f'description: "{desc}{trigger}"\n'
         "---\n"
         f"<!-- {MARKER} name={name} -->\n\n"
@@ -378,6 +438,16 @@ def cmd_install(hosts: list[str], scope: str, project_root: Path, *, dry_run: bo
         total_p += n
         if n:
             print(f"  [{host}] removed {n} duplicate router(s) -> {dest}  (covered by each agent's own dir)")
+
+    for host in selected:
+        cfg = SLASH_COMMAND_HOSTS.get(host)
+        if not cfg:
+            continue
+        cmd_dest = _resolve(cfg[scope], project_root)
+        w, n = install_commands(cmd_dest, names, dry_run=dry_run)
+        total_w += w
+        total_p += n
+        print(f"  [{host}] {w} slash command(s) -> {cmd_dest}")
 
     if not keep_legacy:
         for host in hosts:

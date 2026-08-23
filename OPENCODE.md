@@ -19,6 +19,30 @@ See the full, current list in **`AGENTS.md`'s Portable Commands table** (or
 time a command is added. Read `AGENTS.md`, find the row for what the user typed,
 and open the two files it names.
 
+## Where the routers are installed
+
+`loop skills` writes two things for OpenCode, because it keeps them in separate
+namespaces:
+
+| | Path | Reached by |
+|---|------|-----------|
+| Skills | `~/.config/opencode/skills/loop-<name>/SKILL.md` | The model, from the description |
+| Slash commands | `~/.config/opencode/command/<name>.md` | The user typing `/<name>` |
+
+Installing only the skills leaves `opencode debug skill` listing every router while
+`/plan-loop` matches nothing. Verify both with:
+
+```bash
+opencode debug skill      # the routers the model can reach
+opencode debug config     # the `command` block - what `/` completes
+```
+
+OpenCode also auto-loads `~/.claude/skills/` and `~/.agents/skills/`, and dedupes by
+skill `name`. A router whose `name` disagrees with its folder stops those copies
+collapsing, so every install writes `name: loop-<command>` to match the folder.
+
+Config is read once at startup - restart OpenCode after installing.
+
 ## Required Behavior
 
 - Read `AGENTS.md` first.
