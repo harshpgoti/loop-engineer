@@ -527,6 +527,37 @@ def check_continuation_handoffs(errors: list[str]) -> None:
         errors.append(f"READ_ONLY_BY_DESIGN lists {rel}, which no longer exists - drop it.")
 
 
+# `/loop-engine` carries flow diagrams for both branches, and they drift. Its develop
+# diagram named prod-gap and deployment-plan but not `evaluate` or `release-check`, so an
+# agent following it skipped the eval gate entirely - while the routers it summarises had
+# moved on. A diagram that omits a phase the router can select is worse than no diagram.
+def _routed_phases() -> dict[str, list[str]]:
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import build_phase
+    import plan_phase
+
+    return {"build": sorted(build_phase.PHASE_FILES), "plan": sorted(plan_phase.PHASE_FILES)}
+
+
+def check_flow_covers_phases(errors: list[str]) -> None:
+    path = ROOT / "commands" / "loop-engine.md"
+    if not path.is_file():
+        return
+    text = path.read_text(encoding="utf-8", errors="ignore").lower()
+    try:
+        routed = _routed_phases()
+    except Exception as exc:  # noqa: BLE001 - a broken import is another check's problem
+        errors.append(f"could not read the phase routers to check /loop-engine: {exc}")
+        return
+    for branch, phases in routed.items():
+        for phase in phases:
+            if phase.lower() not in text:
+                errors.append(
+                    f"commands/loop-engine.md never names the `{phase}` phase, which the "
+                    f"{branch} router can select. An agent following its flow would skip it."
+                )
+
+
 def check_skill_frontmatter(errors: list[str]) -> None:
     for skill_path in (ROOT / "skills").glob("*/SKILL.md"):
         text = skill_path.read_text(encoding="utf-8", errors="ignore")
@@ -583,6 +614,7 @@ def main() -> int:
     check_skill_reachability(errors)
     check_readme_covers_commands(errors)
     check_continuation_handoffs(errors)
+    check_flow_covers_phases(errors)
 
     if errors:
         print("Template validation failed:\n")

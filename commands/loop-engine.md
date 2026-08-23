@@ -134,6 +134,8 @@ the user to run the next branch yourself.
 | After dev slice or before session-end on develop | **`loop feature converge`** + **`/prod-gap`** |
 | P0/P1 technical blockers from prod-gap | Route back to **`/develop-product`** |
 | Human-required blockers | `DOUBTS.md` + `HANDOFF.md` - ask user |
+| Agent behaviour changed (prompt, model, tool, retrieval) or an eval regressed | **`/eval-loop`** - unit tests cannot see any of these |
+| Launch blockers reported in the manifest | **`/release-check`** - read it during build, not at the end |
 | Meaningful work unit complete | **`/deployment-plan`** |
 | Long session / tool switch | **`/compact-loop`** |
 | Every closeout | **`loop session-end`** (includes memory-review staging; converge on develop) |
@@ -143,9 +145,14 @@ the user to run the next branch yourself.
 When routing to plan, follow **`commands/plan-loop.md`** in full:
 
 ```text
-scale detect → [convenient: step + feature spec] | [platform: PRODUCT_MAP → ultraplan/step → feature spec per step]
-→ task-compiler → deployment-plan draft → validate_outputs → memory + handoff
+scale detect → grill → (parent-findings) → (hierarchy) → council
+→ [convenient: step + feature spec] | [platform: PRODUCT_MAP → ultraplan/step → feature spec per step]
+→ spec-clarify → spec-checklist → resolve-doubts → task-compiler
+→ deployment-plan draft → validate_outputs → memory + handoff
 ```
+
+The harness picks the phase - `plan/PLAN_BOOTSTRAP.md` carries a `PHASE:` line computed
+from state. Read it and open that phase file; do not walk the diagram by hand.
 
 ## Execute development branch
 
@@ -153,11 +160,17 @@ When routing to develop, follow **`commands/develop-product.md`** in full:
 
 ```text
 select task (active feature tasks.md + TASKS.yml)
+→ (scaffold, when the product has no source tree yet)
 → implementation-planner → build → test → (diagnose-loop if red) → code-reviewer
-→ qa-validation → security-compliance (when applicable)
-→ update tasks.md + TASKS.yml → prod-gap → feature-converge
-→ deployment-plan → memory + handoff
+→ qa-validation → update tasks.md + TASKS.yml → feature-converge
+→ (eval-loop, when the product has cases)
+→ release phase: security-compliance → deployment-plan → prod-gap → release-check
+→ memory + handoff
 ```
+
+The release phase **runs** security, deployment-plan, prod-gap and release-check - they
+are steps of `skills/develop-product/phases/release.md`, not follow-up work. Never end a
+run by listing them as next steps.
 
 ## Product completion definition
 
@@ -179,6 +192,22 @@ The product is not "done" until:
 - `plan/PROD-GAP.md` has no unresolved P0 launch blockers
 - `DEPLOYMENT_PLAN.md` is current
 - `COMPACT.md` is current after long sessions
+
+## Continuation
+
+**Terminus: the build slice is complete** - task built, reviewed, QA'd, converged,
+evaluated where the product has cases, and taken through the release phase. When build
+gates are still blocked, the terminus is the planning one instead: tasks compiled and a
+go/no-go given.
+
+Cascade through both branches in one turn, plan into develop when the gates allow. The
+routing table above is a router, not a menu to read out.
+
+**Stop Conditions** (`docs/CONTINUATION.md`) - name the one that fired and what you need:
+
+- A blocking question whose answer changes product direction and only the user can settle
+- An action needing approval, or a blocker that is human-owned
+- A failing eval case that needs a product decision rather than a fix
 
 ## Output
 
