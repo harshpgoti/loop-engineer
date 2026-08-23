@@ -18,9 +18,29 @@ Where each fits:
 - `/ask-loop` - talk to **understand** (read-only)
 - `/resolve-doubts` - talk to **resolve** open blockers to green before build
 
+## Two channels, not one
+
+A workspace has **two** places a blocking question can live, and clearing one while
+ignoring the other produces a green go/no-go that is simply wrong:
+
+| Channel | What it holds | Command |
+|---------|---------------|---------|
+| `DOUBTS.md` | Questions this workspace raised | `loop doubts ask` |
+| Parent findings | Where the master plan disagrees with this plan | `loop findings ask` |
+
+Findings go **first**. A parent finding can create a doubt, retire one, or change the
+answer to one - resolving doubts before findings means answering questions the platform
+was about to settle for you. On a real sub-product the parent had decided Postgres with
+row-level security; the sub-product's own doubts said nothing about a datastore, so a
+doubts-only sweep would have returned GO while the build sat on SQLite.
+
+A workspace with no parent has no findings, and this whole section collapses to the
+doubts channel.
+
 ## Read First
 
 1. `DOUBTS.md` (the open-doubt tracker)
+2. `plan/PARENT_CONTEXT.md` and the parent findings inbox, when this is a sub-product
 2. `DECISIONS.md`, `EVIDENCE_LOG.md`
 3. `GATES.yml` (pre-development gates and their unmet criteria)
 4. `TASKS.yml`, `plan/main_plan.md`, active `plan/step_*.md`
@@ -29,13 +49,25 @@ Where each fits:
 
 ## Steps
 
+0. **Clear the parent's findings first**, if this workspace has a parent:
+
+   ```bash
+   loop findings ask                                   # each finding as a question
+   loop findings resolve <id> accepted --note "<what changed>"
+   loop findings resolve <id> declined --note "<why the master plan is wrong>"
+   loop findings resolve <id> deferred --note "<when this gets decided>"
+   ```
+
+   `skills/plan-loop/phases/parent-findings.md` holds the full treatment. Accepting one
+   usually means an edit here; make it now, not later.
+
 1. **Gather every open item** into one list. Do not re-read and re-interpret
    `DOUBTS.md` by eye - one parser owns it, and every command shares its answer:
 
    ```bash
-   loop doubts ask      # blocking doubts, each with a recommended answer
+   loop doubts ask      # this round's questions, each with a recommended answer
    loop doubts list     # everything open, blocking flagged
-   loop doubts lint     # entries whose status contradicts their content
+   loop doubts lint     # bad prerequisites, and status that contradicts content
    ```
 
    Then add, from the same pass:
@@ -92,21 +124,26 @@ Where each fits:
 7. **User unavailable / undecidable:** `loop doubts defer <id> "<risk note>"`, naming
    what it blocks. Do **not** loop or invent an answer - report it as a remaining
    blocker in the go/no-go.
-8. **Verify before claiming GO.** `loop doubts counts` is the number the go/no-go
-   must quote, and `loop doubts lint` must be clean - an entry marked resolved with
-   no recorded answer, or filed under Resolved while still `open`, is not resolved.
+8. **Verify before claiming GO.** Both channels, both from the harness:
+   `loop doubts counts` is the number the go/no-go must quote, `loop doubts lint` must
+   be clean - an entry marked resolved with no recorded answer, or filed under Resolved
+   while still `open`, is not resolved - and `loop findings list` must report nothing
+   open. An unanswered finding is a blocker even when every doubt is closed.
 
 ## Go / No-Go output (always end with this)
 
 1. **Resolved this session** - items and where each was recorded
 2. **Gates moved to pass** - and what satisfied them
-3. **Remaining blockers** - open/deferred items that still block development (empty
+3. **Parent findings answered** - each one, and what changed here as a result (omit
+   the section entirely when this workspace has no parent)
+4. **Remaining blockers** - open/deferred items that still block development (empty
    if none)
-4. **Verdict** - the counts come from `loop doubts counts`, never from your own tally:
-   - **GO** - "No blocking doubts remain. Clear to run `/product-develop`." (only
-     when `blocking` is 0 and the pre-dev gates pass)
+5. **Verdict** - the counts come from the harness, never from your own tally:
+   - **GO** - "No blocking doubts remain, no findings open. Clear to run
+     `/product-develop`." (only when `loop doubts counts` reports `blocking` 0,
+     `loop findings list` reports nothing open, and the pre-dev gates pass)
    - **NO-GO** - "N blocker(s) remain: <list>. Resolve these before development."
-5. Next command (`/product-develop` on GO; otherwise what to do about each blocker)
+6. Next command (`/product-develop` on GO; otherwise what to do about each blocker)
 
 ## Continue automatically
 
