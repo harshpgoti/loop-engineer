@@ -21,7 +21,7 @@ Use `--tool` hint when known: `cursor`, `claude`, `codex`, `opencode`, `grok`, `
 
 ## Wired into
 
-`/plan-loop`, `/product-develop`, `/loop-engine`, and ad-hoc product work - always run this first.
+`/plan-loop`, `/develop-product`, `/loop-engine`, and ad-hoc product work - always run this first.
 
 ## Continuation
 

@@ -1,10 +1,10 @@
-# /product-develop
+# /develop-product
 
 Run Step 2: build the product from the approved plan, including frontend, backend, database, agent loops, QA, auto-validation, docs, security, compliance, CI/CD, deployment readiness, and handoff.
 
 ## How To Interpret
 
-If the user says `/product-develop`, `product-develop`, `start development`, or `develop product`, execute this file directly. Do not ask for boot prompts or separate setup files.
+If the user says `/develop-product`, `develop-product`, `start development`, or `develop product`, execute this file directly. Do not ask for boot prompts or separate setup files.
 
 ## Required Reads
 
@@ -17,7 +17,7 @@ In central-tool setup, read command/skill files from `loop-engineer/`, but read 
 5. `CONTEXT.md`
 6. `DOUBTS.md`
 7. `plan/SESSION_MANIFEST.md` (after session-start)
-8. `skills/product-develop/SKILL.md`
+8. `skills/develop-product/SKILL.md`
 9. `skills/session-lifecycle/SKILL.md`
 10. `skills/feature-workflow/SKILL.md`
 11. `skills/plan-loop/phases/spec-clarify.md` (when requirements ambiguous)
@@ -73,7 +73,7 @@ SESSION-START â†’ RECALL â†’ AUTO-SKILLS â†’ SELECT TASK â†’
 
 | Step | Feature | Command / script |
 |------|---------|------------------|
-| Start | Session lifecycle | `loop session-start --command /product-develop` |
+| Start | Session lifecycle | `loop session-start --command /develop-product` |
 | Bootstrap | Manifest + recall + auto-skills | `SESSION_MANIFEST.md`, `AUTO_SKILLS.md` |
 | Pre-build | Active feature tasks | `tasks.md` + `TASKS.yml` |
 | Blocked? | Clarify spec | `/spec-clarify` |
@@ -84,12 +84,12 @@ SESSION-START â†’ RECALL â†’ AUTO-SKILLS â†’ SELECT TASK â†’
 | Sync | Tasks + converge | Update `tasks.md`; `loop feature converge` |
 | Release | Gaps + deploy | `/prod-gap`, `/deployment-plan` |
 | End | Memory + compact | `memory review`, `/compact-loop` if long |
-| End | Session lifecycle | `loop session-end --command /product-develop` |
+| End | Session lifecycle | `loop session-end --command /develop-product` |
 
 ## Always-on lifecycle (first and last step)
 
 ```bash
-loop session-start --command /product-develop --tool "<tool>"
+loop session-start --command /develop-product --tool "<tool>"
 ```
 
 Read `plan/SESSION_MANIFEST.md` first - it lists recall, memory, and auto-skills.
@@ -97,7 +97,7 @@ Read `plan/SESSION_MANIFEST.md` first - it lists recall, memory, and auto-skills
 At closeout:
 
 ```bash
-loop session-end --command /product-develop --summary "<progress>"
+loop session-end --command /develop-product --summary "<progress>"
 ```
 
 ## Development Scope
@@ -129,7 +129,7 @@ For each task:
 8. Run `/prod-gap` after a task or build loop completes to identify production-readiness blockers.
 9. If `/prod-gap` finds P0/P1 technical blockers that are safe and in scope, add/update tasks and continue fixing them.
 10. If `/prod-gap` finds human-required blockers, list them in `plan/PROD-GAP.md`, `DOUBTS.md`, and `HANDOFF.md`, then ask the user at the end.
-11. At loop closeout, run `/feature-converge` (or rely on `loop session-end` which runs converge for `/product-develop`):
+11. At loop closeout, run `/feature-converge` (or rely on `loop session-end` which runs converge for `/develop-product`):
     ```bash
     loop feature converge
     ```
@@ -138,10 +138,10 @@ For each task:
     ```bash
     loop memory review
     ```
-14. Run `/compact-loop` when development is long, many files changed, tests generated substantial context, the user may switch tools, or the context is getting heavy. At minimum, ensure `COMPACT.md` is current before ending a large `/product-develop` session.
+14. Run `/compact-loop` when development is long, many files changed, tests generated substantial context, the user may switch tools, or the context is getting heavy. At minimum, ensure `COMPACT.md` is current before ending a large `/develop-product` session.
 15. **Session end** (mandatory - runs memory-review staging + feature converge):
     ```bash
-    loop session-end --command /product-develop --summary "<progress>"
+    loop session-end --command /develop-product --summary "<progress>"
     ```
 
 ## Required Checks

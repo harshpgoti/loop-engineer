@@ -72,7 +72,7 @@ def render_report(
     if suggestions:
         lines.extend(f"- {s}" for s in suggestions)
     else:
-        lines.append("- Continue `/product-develop` on unchecked tasks.")
+        lines.append("- Continue `/develop-product` on unchecked tasks.")
     lines.extend(
         [
             "",
@@ -107,7 +107,7 @@ def converge(workspace: Path) -> tuple[Path | None, list[str]]:
     tasks_md = read_text(artifacts["tasks"])
     open_tasks = unchecked_feature_tasks(tasks_md)
     if tasks_md and open_tasks:
-        suggestions.append(f"{len(open_tasks)} unchecked task(s) in tasks.md - continue `/product-develop`.")
+        suggestions.append(f"{len(open_tasks)} unchecked task(s) in tasks.md - continue `/develop-product`.")
     elif tasks_md:
         suggestions.append("All feature tasks checked - run `/prod-gap` for release readiness.")
 

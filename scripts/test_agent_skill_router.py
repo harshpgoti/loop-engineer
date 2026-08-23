@@ -117,8 +117,8 @@ class SlashCommandInstall(unittest.TestCase):
         self.assertIn("AGENTS.md", text)
 
     def test_an_alias_runs_its_target_command(self) -> None:
-        text = self.mod.render_command("develop-product", "product-develop")
-        self.assertIn("commands/product-develop.md", text)
+        text = self.mod.render_command("develop-product", "develop-product")
+        self.assertIn("commands/develop-product.md", text)
 
     def test_a_hand_written_command_is_never_clobbered(self) -> None:
         mine = self.dest / "plan-loop.md"

@@ -12,7 +12,7 @@ and to what the user has not already decided (`finding_log`). Nothing is stored,
 so a disagreement that is resolved upstream simply stops appearing.
 
 `ask` vs `report` is the whole point of the split: only errors and genuine upstream
-changes are worth interrupting for. Opening `/product-develop` with fifteen
+changes are worth interrupting for. Opening `/develop-product` with fifteen
 questions is how the old queue died.
 """
 

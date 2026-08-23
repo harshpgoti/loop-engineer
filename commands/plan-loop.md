@@ -199,7 +199,7 @@ Return:
 10. Gate status
 11. Compact status (`COMPACT.md` updated or why not needed)
 12. Memory review status (`plan/MEMORY_REVIEW.md`, pending writes if staged)
-13. Next command: `/plan-loop`, `/ultraplan-loop`, `/product-develop`, or `/loop-engine`
+13. Next command: `/plan-loop`, `/ultraplan-loop`, `/develop-product`, or `/loop-engine`
 
 ## Continuation
 

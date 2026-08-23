@@ -4,7 +4,7 @@ Design and scaffold an AI agent (or agentic/dynamic workflow) as the product its
 
 ## How To Interpret
 
-If the user says `/agent-builder`, `build an agent`, `build an ai agent`, `develop an agent`, `agent architecture`, or describes a product that is a chatbot/assistant/copilot/workflow-automation/multi-agent system, execute this file directly. This also auto-activates during `/plan-loop` and `/product-develop` - see `skills/agent-builder/SKILL.md`.
+If the user says `/agent-builder`, `build an agent`, `build an ai agent`, `develop an agent`, `agent architecture`, or describes a product that is a chatbot/assistant/copilot/workflow-automation/multi-agent system, execute this file directly. This also auto-activates during `/plan-loop` and `/develop-product` - see `skills/agent-builder/SKILL.md`.
 
 ## Required Reads
 
@@ -50,4 +50,4 @@ product decisions only the user can make. See `docs/CONTINUATION.md`.
 
 ## Handoff
 
-Continue with `/product-develop` to build the agent's tools/skills, or `/spec-clarify` if the agent's requirements are still unclear.
+Continue with `/develop-product` to build the agent's tools/skills, or `/spec-clarify` if the agent's requirements are still unclear.

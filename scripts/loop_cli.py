@@ -685,7 +685,7 @@ def build_parser() -> argparse.ArgumentParser:
     for phase in ("session-start", "session-end"):
         p = sub.add_parser(phase, help=f"Always-on memory lifecycle ({phase.split('-')[1]}).")
         p.add_argument("--workspace", default=None, help="Product workspace path.")
-        p.add_argument("--command", default=None, help="Active loop command e.g. /product-develop")
+        p.add_argument("--command", default=None, help="Active loop command e.g. /develop-product")
         p.add_argument("--tool", default=None, help="Tool hint: cursor, claude, codex, opencode, grok, api")
         p.add_argument("--text", default="", help="Extra context (user message).")
         if phase == "session-start":

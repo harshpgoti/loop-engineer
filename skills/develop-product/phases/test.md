@@ -1,6 +1,6 @@
 # Phase: Test
 
-> Loaded by `skills/product-develop/SKILL.md` when `BUILD PHASE: test`.
+> Loaded by `skills/develop-product/SKILL.md` when `BUILD PHASE: test`.
 > Load only this file.
 
 ## Purpose

@@ -1,6 +1,6 @@
 # Phase: Task Compiler
 
-> Loaded by `skills/plan-loop/SKILL.md` when `PHASE: task-compiler` - the last planning phase, run after `spec-checklist` is Ready and before `/product-develop`.
+> Loaded by `skills/plan-loop/SKILL.md` when `PHASE: task-compiler` - the last planning phase, run after `spec-checklist` is Ready and before `/develop-product`.
 
 ## Purpose
 
@@ -96,11 +96,11 @@ Each task should include:
 
 This is the **planning terminus**: tasks are compiled and the feature is buildable.
 
-- Invoked via `/loop-engine`: continue into `commands/product-develop.md` when the
+- Invoked via `/loop-engine`: continue into `commands/develop-product.md` when the
   build gates pass - do not stop at the plan/build boundary.
 - Invoked via `/plan-loop` (or a phase command that cascaded here): report the
   go/no-go and the compiled tasks, then run `loop session-end`. Starting the build
-  is a scope change the user opts into with `/product-develop` or `/loop-engine`.
+  is a scope change the user opts into with `/develop-product` or `/loop-engine`.
 
 Either way, finish the run: update `TASKS.yml`, `HANDOFF.md`, and memory before
 ending. See `docs/CONTINUATION.md`.

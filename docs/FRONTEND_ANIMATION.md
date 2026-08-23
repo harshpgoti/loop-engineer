@@ -1,6 +1,6 @@
 # Frontend Animation & 3D (Automatic)
 
-Loop Engineer auto-selects frontend motion/3D guidance during `/product-develop`.
+Loop Engineer auto-selects frontend motion/3D guidance during `/develop-product`.
 Users do not pick libraries or run skill commands. Everything lives in **one core
 skill**: `skills/frontend-animation/`.
 

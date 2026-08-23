@@ -1,6 +1,6 @@
 ---
-name: product-develop
-description: Runs product engineering from the approved plan: frontend, backend, database, agent loops, QA, auto-validation, docs, security, compliance, CI/CD, and deployment readiness. Use when the user types /product-develop or asks to start development.
+name: develop-product
+description: Runs product engineering from the approved plan: frontend, backend, database, agent loops, QA, auto-validation, docs, security, compliance, CI/CD, and deployment readiness. Use when the user types /develop-product or asks to start development.
 ---
 
 # Product Develop
@@ -11,7 +11,7 @@ Build the product from `plan/main_plan.md` and `plan/` while respecting gates.
 
 ## Command
 
-`/product-develop`
+`/develop-product`
 
 ## Read First
 
@@ -84,7 +84,7 @@ say, and report what changed (`docs/CONTINUATION.md`).
 SESSION-START -> ANSWER PARENT FINDINGS + BLOCKING DOUBTS -> SELECT TASK (from active feature tasks.md + TASKS.yml) -> READ MANIFEST/AUTO-SKILLS -> PLAN DIFF -> BUILD -> TEST -> FEATURE-CONVERGE -> SESSION-END
 ```
 
-Run `loop session-start --command /product-develop` first and `loop session-end` last. Frontend motion/3D skills and agent-development skills are both auto-detected at session-start and included in the manifest when signals match (`plan/AUTO_SKILLS.md`, `plan/AUTO_AGENT_SKILLS.md`) - re-run `loop auto-agent-skills --write` only if the task description changed after session-start.
+Run `loop session-start --command /develop-product` first and `loop session-end` last. Frontend motion/3D skills and agent-development skills are both auto-detected at session-start and included in the manifest when signals match (`plan/AUTO_SKILLS.md`, `plan/AUTO_AGENT_SKILLS.md`) - re-run `loop auto-agent-skills --write` only if the task description changed after session-start.
 
 ## Development Domains
 
@@ -108,7 +108,7 @@ Run `loop session-start --command /product-develop` first and `loop session-end`
 
 - Run relevant tests or record why not.
 - Update active feature `tasks.md` checkboxes and `TASKS.yml` status.
-- Run `loop feature converge` (or `/feature-converge`) - also runs on `loop session-end` for `/product-develop`.
+- Run `loop feature converge` (or `/feature-converge`) - also runs on `loop session-end` for `/develop-product`.
 - Run `prod-gap` after meaningful development work.
 - Run `loop release-check` when the manifest reports launch blockers - it reports what
   remains, which is worth knowing while there is still time to act on it.
@@ -120,7 +120,7 @@ Run `loop session-start --command /product-develop` first and `loop session-end`
   prose, which leaves an entry no command can count or close.
 - Update `memories/MEMORY.md`, `DOUBTS.md`, `CURRENT_STATE.md`, `HANDOFF.md`, `DEPLOYMENT_PLAN.md`, and `.ai/SESSION_LOG.md`.
 - Run `compact-loop` when development is long, many files changed, the user may switch tools, or the context is getting heavy.
-- Run `loop session-end --command /product-develop` (mandatory; includes converge + memory-review staging).
+- Run `loop session-end --command /develop-product` (mandatory; includes converge + memory-review staging).
 
 ## Output
 

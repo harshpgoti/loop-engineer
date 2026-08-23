@@ -5,8 +5,8 @@ Built-in spec-driven development for one feature at a time. This is Loop Enginee
 ## When to use
 
 - **`/plan-loop`:** After a step plan exists, create the active feature spec.
-- **`/product-develop`:** Implement from active feature `tasks.md`.
-- **Closeout:** Drift check via `/feature-converge` (auto on `loop session-end` for product-develop).
+- **`/develop-product`:** Implement from active feature `tasks.md`.
+- **Closeout:** Drift check via `/feature-converge` (auto on `loop session-end` for develop-product).
 
 ## Layout
 
@@ -38,7 +38,7 @@ plan/features/001-auth-login/
 /plan-loop → step plan → /feature-new → spec.md
      → /spec-clarify → /spec-checklist → feature-plan.md
      → task-compiler → tasks.md + TASKS.yml
-/product-develop → implement tasks → /feature-converge → session-end
+/develop-product → implement tasks → /feature-converge → session-end
 ```
 
 ## No duplication
@@ -57,7 +57,7 @@ Do not copy entire step plans into `spec.md`. Link and summarize.
 
 - `loop session-start` includes active feature files in `plan/SESSION_MANIFEST.md`.
 - `frontend_skill_router.py` reads active feature spec for auto-skills.
-- `loop session-end` runs feature converge when command is `/product-develop`.
+- `loop session-end` runs feature converge when command is `/develop-product`.
 
 ## Principles
 

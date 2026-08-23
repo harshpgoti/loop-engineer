@@ -52,7 +52,7 @@ User: /plan-loop <idea>  OR  /loop-engine <idea>
   → auto bootstrap (PLAN_BOOTSTRAP.md)
   → [platform] ultraplan one step → feature spec → task-compiler
   → [convenient] standard step + feature spec
-  → /product-develop
+  → /develop-product
 ```
 
 ## When a step becomes its own workspace

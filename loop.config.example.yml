@@ -9,7 +9,7 @@ product_workspace: ../product
 
 commands:
   plan: commands/plan-loop.md
-  product_develop: commands/product-develop.md
+  develop_product: commands/develop-product.md
   loop_engine: commands/loop-engine.md
   compact_loop: commands/compact-loop.md
   upgrade_loop_engineer: commands/upgrade-loop-engineer.md

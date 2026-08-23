@@ -100,7 +100,7 @@ def detect_drift(workspace: Path) -> tuple[list[str], list[str]]:
     if "blocked" in gates.lower() and handoff_cmd == "/plan-loop":
         drift.append("Gates show blocked status but HANDOFF points to `/plan-loop`.")
 
-    if "status: blocked" in tasks.lower() and handoff_cmd == "/product-develop":
+    if "status: blocked" in tasks.lower() and handoff_cmd == "/develop-product":
         drift.append("Blocked tasks exist; confirm HANDOFF is routing to the correct unblock work.")
 
     if not (workspace / "COMPACT.md").exists():

@@ -89,7 +89,7 @@ def bootstrap_skill(mode: str, url: str) -> str:
         "Then re-open this repo. Every agent (Claude, Codex, Cursor, Gemini, "
         "OpenCode, ...) will route Loop commands to the installed app.\n\n"
         "## Using it\n\n"
-        "Type a Loop command (`/plan-loop`, `/product-develop`, `/loop-engine`, "
+        "Type a Loop command (`/plan-loop`, `/develop-product`, `/loop-engine`, "
         "...) or describe the task; your agent routes it to the installed app per "
         "its `AGENTS.md`. Full list: the app's `LOOP_COMMANDS.md`.\n\n"
         "## Policy\n\n"
@@ -105,7 +105,7 @@ def claude_md_block(mode: str) -> str:
         f"This repo uses Loop Engineering OS for AI-assisted work ({note}). If the "
         "`loop` CLI is missing, follow `.agents/skills/loop-engineer/SKILL.md` to "
         "install it, then run `loop skills install`. Use Loop commands "
-        "(`/plan-loop`, `/product-develop`, ...) for product work; they route to "
+        "(`/plan-loop`, `/develop-product`, ...) for product work; they route to "
         "the installed app.\n"
         f"{END}"
     )

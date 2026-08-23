@@ -163,7 +163,7 @@ def analyze(workspace: Path) -> str:
             "WARNINGS": bullet(warnings),
             "PASSED": bullet(passed),
             "PROD_GAP_EXCERPT": prod_gap or "_No plan/PROD-GAP.md yet. Run `/prod-gap`._",
-            "NEXT_COMMAND": "/prod-gap" if blockers else "/product-develop",
+            "NEXT_COMMAND": "/prod-gap" if blockers else "/develop-product",
         },
     )
 

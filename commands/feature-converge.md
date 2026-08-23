@@ -20,7 +20,7 @@ loop feature converge
 
 ## Wired From
 
-- `/product-develop` closeout (before session-end)
+- `/develop-product` closeout (before session-end)
 - `/loop-engine` development phase closeout
 
 ## Continuation

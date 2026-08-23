@@ -2,7 +2,7 @@
 """Install thin router skills into every coding agent, pointing at the installed app.
 
 Requirement: whether the user works globally or inside a project, any coding
-agent must be able to run every Loop command (`/plan-loop`, `/product-develop`,
+agent must be able to run every Loop command (`/plan-loop`, `/develop-product`,
 ...) **from the single installed app** — and switching agents mid-task must need
 no manual setup. So Loop installs routers into **all known agent skill dirs at
 once**, not just the one the user picked.
@@ -91,8 +91,7 @@ LEGACY_COMMAND_DIRS: dict[str, dict[str, str]] = {
 # skills-only tools resolve the alias too, not just the canonical command.
 ALIASES: dict[str, str] = {
     "startup-discovery-loop": "plan-loop",
-    "startup-build-loop": "product-develop",
-    "develop-product": "product-develop",
+    "startup-build-loop": "develop-product",
     "all-in-one": "loop-engine",
 }
 
@@ -238,6 +237,17 @@ def install_commands(dest: Path, names: list[str], *, dry_run: bool) -> tuple[in
                     entry.unlink()
                 pruned += 1
     return written, pruned
+
+
+def _check_aliases() -> None:
+    """An alias pointing at itself would install a router shadowing the real command.
+
+    The rename of `product-develop` to `develop-product` produced exactly that for one
+    commit: the old alias key and its new target became the same string.
+    """
+    for alias, target in ALIASES.items():
+        if alias == target:
+            raise SystemExit(f"ALIASES: `{alias}` points at itself - drop the row or fix the target.")
 
 
 def command_names() -> list[str]:
@@ -539,6 +549,7 @@ def cmd_install(
 ) -> int:
     set_app_root(router_app_root(from_here))
     print(f"Routers will point at: {APP_ROOT}")
+    _check_aliases()
     names = command_names()
     if not names:
         print(f"No command files found in {COMMANDS_DIR}", file=sys.stderr)

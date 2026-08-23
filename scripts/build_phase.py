@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deterministic build-phase router for /product-develop.
+"""Deterministic build-phase router for /develop-product.
 
 Planning already works this way: `plan_phase.py` computes which phase applies and
 the skill loads exactly one `phases/*.md`. Development did not - its `Read First`
@@ -21,12 +21,12 @@ import argparse
 from pathlib import Path
 
 PHASE_FILES = {
-    "scaffold": "skills/product-develop/phases/scaffold.md",
-    "implement": "skills/product-develop/phases/implement.md",
-    "test": "skills/product-develop/phases/test.md",
-    "converge": "skills/product-develop/phases/converge.md",
+    "scaffold": "skills/develop-product/phases/scaffold.md",
+    "implement": "skills/develop-product/phases/implement.md",
+    "test": "skills/develop-product/phases/test.md",
+    "converge": "skills/develop-product/phases/converge.md",
     "evaluate": "skills/eval-loop/SKILL.md",
-    "release": "skills/product-develop/phases/release.md",
+    "release": "skills/develop-product/phases/release.md",
 }
 
 # Skills worth loading per phase. Everything else stays unread until its phase.
@@ -179,7 +179,7 @@ def render_phase_block(workspace: Path, *, heading: str = "## Build phase") -> s
         f"- Skills for this phase: {', '.join(f'`{s}`' for s in result['skills'])}",
         "- Everything else in `skills/` stays unread until its phase.",
         f"- Pipeline: {' -> '.join(result['pipeline'])}",
-        "- Router: `skills/product-develop/SKILL.md`",
+        "- Router: `skills/develop-product/SKILL.md`",
     ]
     if result["task"]:
         lines.append(f"- Active task: `{result['task']}` - detail in `plan/BUILD_CONTEXT.md`")

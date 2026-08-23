@@ -28,7 +28,7 @@ class LoopClosesItself(unittest.TestCase):
         )
 
     def test_closeout_writes_memory_without_approval(self):
-        session_end(self.tmp, command="/product-develop", summary="t")
+        session_end(self.tmp, command="/develop-product", summary="t")
         memory = memory_file(self.tmp).read_text(encoding="utf-8")
         self.assertIn("Postgres over DynamoDB", memory)
         self.assertIn("short-lived JWTs", memory)
@@ -36,10 +36,10 @@ class LoopClosesItself(unittest.TestCase):
         self.assertEqual([], list_pending(self.tmp), "closeout must not queue same-workspace memory")
 
     def test_repeat_closeout_does_not_duplicate(self):
-        session_end(self.tmp, command="/product-develop", summary="t")
+        session_end(self.tmp, command="/develop-product", summary="t")
         first = memory_file(self.tmp).read_text(encoding="utf-8")
         for _ in range(4):
-            session_end(self.tmp, command="/product-develop", summary="t")
+            session_end(self.tmp, command="/develop-product", summary="t")
         after = memory_file(self.tmp).read_text(encoding="utf-8")
         self.assertEqual(
             first.count("Postgres over DynamoDB"),
@@ -56,7 +56,7 @@ class LoopClosesItself(unittest.TestCase):
         self.assertEqual(1, len(list_pending(self.tmp)), "identical proposals must collapse to one")
 
     def test_stage_mode_still_available(self):
-        session_end(self.tmp, command="/product-develop", summary="t", stage=True)
+        session_end(self.tmp, command="/develop-product", summary="t", stage=True)
         self.assertTrue(list_pending(self.tmp), "--stage must still queue instead of applying")
 
 

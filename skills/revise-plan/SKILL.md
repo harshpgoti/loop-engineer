@@ -117,7 +117,7 @@ Never leave the workspace describing the old requirement. See
 
 - This command edits **plan, spec, decision, doubt, gate, and task files only**. It never
   edits product/application code. If a revision affects something already built, the fix is
-  a new `TASKS.yml` entry plus a pointer to `/product-develop` or `/feature-converge` -
+  a new `TASKS.yml` entry plus a pointer to `/develop-product` or `/feature-converge` -
   not a direct code patch from here.
 - Do not re-run `/spec-clarify`-style structured Q&A. If the user's statement is ambiguous
   about which file it targets, ask one direct question about that ambiguity - don't turn
@@ -136,7 +136,7 @@ Never leave the workspace describing the old requirement. See
 5. Plain-language reminder of what still needs to be done to reconcile already-built work
    with the revised plan (empty if nothing was built yet)
 6. Next command (usually back to whatever `HANDOFF.md` already pointed at, or
-   `/product-develop` if new tasks were created)
+   `/develop-product` if new tasks were created)
 
 ## Stop Conditions
 

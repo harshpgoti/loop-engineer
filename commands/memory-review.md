@@ -53,7 +53,7 @@ loop memory review --stage
 
 ## When To Run
 
-- At closeout of `/plan-loop`, `/product-develop`, and `/loop-engine`
+- At closeout of `/plan-loop`, `/develop-product`, and `/loop-engine`
 - When memory feels duplicated across `HANDOFF.md`, `COMPACT.md`, and `memories/MEMORY.md`
 - After `/migrate-import`
 

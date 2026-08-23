@@ -15,7 +15,7 @@ If the user says `/spec-clarify`, execute this file and `skills/plan-loop/phases
 ## Wired From
 
 - `/plan-loop` after feature spec draft, before spec-checklist
-- `/product-develop` when blocked on ambiguous requirements
+- `/develop-product` when blocked on ambiguous requirements
 
 ## Continuation
 

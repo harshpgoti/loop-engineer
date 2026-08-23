@@ -265,7 +265,7 @@ class BehaviourDrift(Sandbox):
 
 
 class BuildRouting(Sandbox):
-    """The trigger is computed, not judged - /product-develop reaches it on its own."""
+    """The trigger is computed, not judged - /develop-product reaches it on its own."""
 
     def setUp(self) -> None:
         super().setUp()

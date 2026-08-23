@@ -16,10 +16,10 @@ from workspace_utils import ROOT, load_config, resolve_workspace
 REQUIRED_TOOL_PATHS = [
     "AGENTS.md",
     "commands/plan-loop.md",
-    "commands/product-develop.md",
+    "commands/develop-product.md",
     "commands/loop-engine.md",
     "skills/plan-loop/SKILL.md",
-    "skills/product-develop/SKILL.md",
+    "skills/develop-product/SKILL.md",
     "scripts/validate_template.py",
     "scripts/validate_outputs.py",
     "scripts/workspace_registry.py",

@@ -30,7 +30,7 @@ Read command/skill files from the tool app. Product-state files come from the **
 8. `skills/loop-engine/SKILL.md`
 9. `skills/session-lifecycle/SKILL.md`
 10. `commands/plan-loop.md` (when routing to planning)
-11. `commands/product-develop.md` (when routing to development)
+11. `commands/develop-product.md` (when routing to development)
 12. `skills/feature-workflow/SKILL.md`
 13. `skills/plan-loop/phases/spec-clarify.md`
 14. `skills/plan-loop/phases/spec-checklist.md`
@@ -88,7 +88,7 @@ SESSION-END
 | Plan branch | Scale + ultraplan | `loop plan-loop scale`, `ultraplan`, `PRODUCT_MAP.md` |
 | Plan branch | Full `/plan-loop` cycle | `commands/plan-loop.md` |
 | Plan branch | Feature spec | `feature new` → `spec-clarify` → `spec-checklist` → `task-compiler` |
-| Develop branch | Full `/product-develop` cycle | `commands/product-develop.md` |
+| Develop branch | Full `/develop-product` cycle | `commands/develop-product.md` |
 | Develop branch | Build + review | `implementation-planner`, `codebase-design`, `tdd`, `code-reviewer`, `qa-validation`, `security-compliance` |
 | Anything broken | Diagnose, do not guess | `/diagnose-loop` |
 | Develop branch | Drift + gaps | `feature converge`, `/prod-gap` |
@@ -128,11 +128,11 @@ the user to run the next branch yourself.
 | Open spec questions / ambiguous requirements | **`/spec-clarify`** |
 | Spec not checklist-passed | **`/spec-checklist`** - do not compile tasks until ready |
 | No `tasks.md` or `TASKS.yml` empty | **`task-compiler`** |
-| Build gates pass, tasks ready | Execute **`/product-develop` flow** (`commands/product-develop.md`) |
+| Build gates pass, tasks ready | Execute **`/develop-product` flow** (`commands/develop-product.md`) |
 | Requirements blocked mid-build | **`/spec-clarify`** then resume develop |
 | Frontend motion/3D in task | Read `plan/AUTO_SKILLS.md` + matched skills |
 | After dev slice or before session-end on develop | **`loop feature converge`** + **`/prod-gap`** |
-| P0/P1 technical blockers from prod-gap | Route back to **`/product-develop`** |
+| P0/P1 technical blockers from prod-gap | Route back to **`/develop-product`** |
 | Human-required blockers | `DOUBTS.md` + `HANDOFF.md` - ask user |
 | Meaningful work unit complete | **`/deployment-plan`** |
 | Long session / tool switch | **`/compact-loop`** |
@@ -149,7 +149,7 @@ scale detect → [convenient: step + feature spec] | [platform: PRODUCT_MAP → 
 
 ## Execute development branch
 
-When routing to develop, follow **`commands/product-develop.md`** in full:
+When routing to develop, follow **`commands/develop-product.md`** in full:
 
 ```text
 select task (active feature tasks.md + TASKS.yml)
@@ -195,4 +195,4 @@ Return:
 9. Production gap status
 10. Deployment plan status
 11. Human-required blockers
-12. Next action: `/loop-engine`, `/plan-loop`, or `/product-develop`
+12. Next action: `/loop-engine`, `/plan-loop`, or `/develop-product`

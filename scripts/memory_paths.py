@@ -147,7 +147,7 @@ def _load_template(name: str) -> str:
 # Commands that build. These get the task-scoped slice instead of the whole of
 # TASKS.yml, GATES.yml and DOUBTS.md - on a real workspace that is 43KB replaced by
 # under 4KB, and the removed content is provably about other tasks.
-BUILD_COMMANDS = ("/product-develop", "/develop-product", "/startup-build-loop", "/loop-engine", "/all-in-one")
+BUILD_COMMANDS = ("/develop-product", "/develop-product", "/startup-build-loop", "/loop-engine", "/all-in-one")
 
 # Swapped out only when plan/BUILD_CONTEXT.md exists to replace them.
 SLICED_BY_BUILD_CONTEXT = ("TASKS.yml", "GATES.yml", "DOUBTS.md")

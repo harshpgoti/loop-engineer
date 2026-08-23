@@ -211,7 +211,7 @@ def next_actions(rows: list[dict], findings: list[dict]) -> str:
     if any(not r["initialized"] for r in rows if not r.get("missing")):
         actions.append("Run `/plan-loop` inside each uninitialized sub-product.")
     if not actions:
-        actions.append("Sub-products are aligned with the master plan - continue `/plan-loop` or `/product-develop`.")
+        actions.append("Sub-products are aligned with the master plan - continue `/plan-loop` or `/develop-product`.")
     return "\n".join(f"- {a}" for a in actions)
 
 

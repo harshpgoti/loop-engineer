@@ -10,7 +10,7 @@ Adapters for Cursor, Claude Code, Codex, OpenCode, Grok Build, and every other c
 |-------|-----|
 | `setup-loop-engine` | First-time setup: register product workspace and seed missing state files |
 | `plan` | Product planning, evidence, grilling, PRD, ADRs, task planning |
-| `product-develop` | Product engineering: frontend, backend, DB, agents, QA, security, compliance, CI/CD |
+| `develop-product` | Product engineering: frontend, backend, DB, agents, QA, security, compliance, CI/CD |
 | `loop-engine` | All-in-one loop: chooses planning or development based on gates |
 | `prod-gap` | Analyze technical and non-technical product gaps into `plan/PROD-GAP.md` |
 | `status` | Quick workspace/product/gate/task snapshot into `STATUS.md` |
@@ -49,7 +49,7 @@ Adapters for Cursor, Claude Code, Codex, OpenCode, Grok Build, and every other c
 |---------|-------|
 | `/setup-loop-engine` | `skills/setup-loop-engine/SKILL.md` |
 | `/plan-loop` | `skills/plan-loop/SKILL.md` |
-| `/product-develop` | `skills/product-develop/SKILL.md` |
+| `/develop-product` | `skills/develop-product/SKILL.md` |
 | `/loop-engine` | `skills/loop-engine/SKILL.md` |
 | `/prod-gap` | `skills/prod-gap/SKILL.md` |
 | `/status` | `skills/status/SKILL.md` |

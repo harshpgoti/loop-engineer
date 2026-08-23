@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: Review changed product code on two separate axes - Spec (does it do what the task asked?) and Standards (is it built the way this repo builds things?). Use after /product-develop changes and before marking a task complete.
+description: Review changed product code on two separate axes - Spec (does it do what the task asked?) and Standards (is it built the way this repo builds things?). Use after /develop-product changes and before marking a task complete.
 ---
 
 # Code Reviewer

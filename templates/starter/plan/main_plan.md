@@ -91,7 +91,7 @@ When `/plan-loop` runs:
 
 ## Development Workflow
 
-When `/product-develop` runs:
+When `/develop-product` runs:
 
 1. Select the active step file from `plan/`.
 2. Use `TASKS.yml` and `GATES.yml`.

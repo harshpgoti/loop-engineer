@@ -16,7 +16,7 @@ This file captures open questions, user decisions, contradictions, and grill poi
   loop doubts lint                                  # entries whose status contradicts their content
   ```
 
-- `/plan-loop`, `/product-develop`, and `/loop-engine` raise these for you - you do not have to read this file.
+- `/plan-loop`, `/develop-product`, and `/loop-engine` raise these for you - you do not have to read this file.
 - Add the decision to `DECISIONS.md` too when it affects strategy or architecture.
 
 ## Entry format

@@ -44,4 +44,4 @@ Use `scripts/release_check.py` for a structured draft, then refine with product-
 
 ## Closeout
 
-If not ready, route technical blockers to `/product-develop` and human blockers to `DOUBTS.md` and `HANDOFF.md`. Refresh `DEPLOYMENT_PLAN.md` and inform the user about reused vs unresolved deployment decisions.
+If not ready, route technical blockers to `/develop-product` and human blockers to `DOUBTS.md` and `HANDOFF.md`. Refresh `DEPLOYMENT_PLAN.md` and inform the user about reused vs unresolved deployment decisions.

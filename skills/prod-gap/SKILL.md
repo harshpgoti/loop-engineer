@@ -109,5 +109,5 @@ After writing `plan/PROD-GAP.md`:
 
 1. Add technical P0/P1 blockers to `TASKS.yml`.
 2. Add human-required P0/P1 blockers to `DOUBTS.md` and `HANDOFF.md`.
-3. If called from `/product-develop` or `/loop-engine`, continue fixing agent-solvable P0/P1 technical blockers when safe.
+3. If called from `/develop-product` or `/loop-engine`, continue fixing agent-solvable P0/P1 technical blockers when safe.
 4. Ask the user for human-required blockers at the end of the loop.

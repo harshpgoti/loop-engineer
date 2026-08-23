@@ -1,6 +1,6 @@
 # Phase: Implement
 
-> Loaded by `skills/product-develop/SKILL.md` when `BUILD PHASE: implement`.
+> Loaded by `skills/develop-product/SKILL.md` when `BUILD PHASE: implement`.
 > Load only this file. The other phase files are for other phases.
 
 ## Purpose

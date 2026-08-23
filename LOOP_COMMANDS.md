@@ -7,7 +7,7 @@ Use these directly in any agent that can access the repo:
 /plan-loop
 /revise-plan
 /ask-loop
-/product-develop
+/develop-product
 /loop-engine
 /prod-gap
 /status
@@ -56,7 +56,7 @@ loop agent scaffold
 loop session-start --command /loop-engine --tool cursor --text "your idea"
 ```
 
-Agent-only (during `/product-develop`, not for users):
+Agent-only (during `/develop-product`, not for users):
 
 ```bash
 python scripts/frontend_skill_router.py --write
@@ -75,7 +75,7 @@ The agent must route the command through `commands/*.md` and update `memories/ME
 | `/plan-loop` | `commands/plan-loop.md` | Brainstorming, validation, grilling, PRD, architecture |
 | `/revise-plan` | `commands/revise-plan.md` | Correct or add a detail to a plan that already exists, without asking which file it belongs in |
 | `/ask-loop` | `commands/ask-loop.md` | Ask a question about the existing plan or build; read-only answer with citations, reads code when needed |
-| `/product-develop` | `commands/product-develop.md` | Build frontend/backend/db/agents/QA/security/CI/CD |
+| `/develop-product` | `commands/develop-product.md` | Build frontend/backend/db/agents/QA/security/CI/CD |
 | `/loop-engine` | `commands/loop-engine.md` | All-in-one loop that chooses plan or build based on gates |
 | `/prod-gap` | `commands/prod-gap.md` | Analyze product requirements/progress and write `plan/PROD-GAP.md` |
 | `/status` | `commands/status.md` | Quick snapshot of workspace, gate, task, and next command |
@@ -110,8 +110,8 @@ The agent must route the command through `commands/*.md` and update `memories/ME
 | Alias | Command |
 |-------|---------|
 | `/startup-discovery-loop` | `/plan-loop` |
-| `/startup-build-loop` | `/product-develop` |
-| `/develop-product` | `/product-develop` |
+| `/startup-build-loop` | `/develop-product` |
+| `/develop-product` | `/develop-product` |
 | `/all-in-one` | `/loop-engine` |
 
 ## Step 1 → Step 2 transition prompt
@@ -121,7 +121,7 @@ Verify GATES.yml: G-INIT-01, G-DISCOVERY-01, G-DISCOVERY-02, G-ARCH-01.
 If all pass:
 1. Create monorepo per `plan/main_plan.md` and active `plan/step_*.md`
 2. Add schemas/contracts defined by the active product step
-3. Switch to `/product-develop`
+3. Switch to `/develop-product`
 If blocked: list blockers and run discovery tasks only.
 ```
 

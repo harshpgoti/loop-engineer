@@ -6,7 +6,7 @@ Write or refresh `DEPLOYMENT_PLAN.md` for the active product workspace. Reuse pr
 
 If the user says `/deployment-plan`, `deployment plan`, or a development loop is completing and deployment targets are not documented, execute this file directly.
 
-This command is also invoked automatically at closeout of `/product-develop` and `/loop-engine`.
+This command is also invoked automatically at closeout of `/develop-product` and `/loop-engine`.
 
 ## Required Reads
 

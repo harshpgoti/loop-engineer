@@ -112,7 +112,7 @@ def main() -> int:
     rel = feat.relative_to(workspace)
     print(f"Created {rel}")
     print(f"Active feature: {workspace / '.loop' / 'active-feature.json'}")
-    print("Next: fill spec.md -> /spec-clarify -> /spec-checklist -> feature-plan.md -> /product-develop")
+    print("Next: fill spec.md -> /spec-clarify -> /spec-checklist -> feature-plan.md -> /develop-product")
     return 0
 
 

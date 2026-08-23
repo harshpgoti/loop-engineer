@@ -34,7 +34,7 @@ loop session-end --summary "<progress>"
 | Step | Action |
 |------|--------|
 | **Start** | Recall → manifest → auto-skills → read manifest |
-| **Work** | Follow active command (`/plan-loop`, `/product-develop`, etc.) |
+| **Work** | Follow active command (`/plan-loop`, `/develop-product`, etc.) |
 | **End** | Update handoff/memory → memory review writes memory → log `state.db` |
 
 Details: `docs/SESSION_LIFECYCLE.md` + `skills/session-lifecycle/SKILL.md`.
@@ -43,7 +43,7 @@ User does **not** run these manually - the agent runs them, and closeout writes 
 workspace's memory itself.
 
 Two things that used to be the user's chore are now raised **in the session**, as
-questions with a recommended answer, by `/plan-loop`, `/product-develop`,
+questions with a recommended answer, by `/plan-loop`, `/develop-product`,
 `/loop-engine` and `/revise-plan`:
 
 | | Command | What it raises |
@@ -90,7 +90,7 @@ The user should be able to type these commands in Cursor, Codex, Claude Code, Gr
 | `/startup-discovery-loop` | Alias for `/plan-loop` | `commands/plan-loop.md` + `skills/plan-loop/SKILL.md` |
 | `/revise-plan` | Correct or add detail to a plan that already exists - agent routes the edit to the right file from full plan context | `commands/revise-plan.md` + `skills/revise-plan/SKILL.md` |
 | `/ask-loop` | Answer a question about the existing plan or build from full context (reads product code when needed); read-only, cites sources | `commands/ask-loop.md` + `skills/ask-loop/SKILL.md` |
-| `/product-develop` | Run Step 2: build product from the approved plan, with QA/security/compliance/CI/CD gates | `commands/product-develop.md` + `skills/product-develop/SKILL.md` |
+| `/develop-product` | Run Step 2: build product from the approved plan, with QA/security/compliance/CI/CD gates | `commands/develop-product.md` + `skills/develop-product/SKILL.md` |
 | `/loop-engine` | Run all-in-one loop: Step 1 planning, then Step 2 development when gates allow | `commands/loop-engine.md` + `skills/loop-engine/SKILL.md` |
 | `/prod-gap` | Analyze product requirements, current progress, implementation, and readiness gaps | `commands/prod-gap.md` + `skills/prod-gap/SKILL.md` |
 | `/status` | Quick snapshot of workspace, gate, task, blockers, and next command | `commands/status.md` + `skills/status/SKILL.md` |
@@ -116,7 +116,7 @@ The user should be able to type these commands in Cursor, Codex, Claude Code, Gr
 | `/subproduct-new` | Carve a product-map row out of the main product into its own workspace, seeded from that row's plan and ready for `/loop-engine` | `commands/subproduct-new.md` + `skills/subproduct-new/SKILL.md` |
 | `/ultraplan-loop` | Deep per-step planning for platform-scale products | `commands/ultraplan-loop.md` + `skills/plan-loop/phases/ultraplan.md` |
 | `/frontend-animation` | Route to built-in GSAP, Motion.dev, and 3D core skills for frontend work | `commands/frontend-animation.md` + `skills/frontend-animation/SKILL.md` |
-| `/agent-builder` | Design/scaffold an AI agent (or agentic/dynamic workflow) as the product itself - auto-activates in `/plan-loop` and `/product-develop` | `commands/agent-builder.md` + `skills/agent-builder/SKILL.md` |
+| `/agent-builder` | Design/scaffold an AI agent (or agentic/dynamic workflow) as the product itself - auto-activates in `/plan-loop` and `/develop-product` | `commands/agent-builder.md` + `skills/agent-builder/SKILL.md` |
 | `/research-search` | Search arXiv, Research Square, and SSRN to ground a claim in evidence | `commands/research-search.md` + `skills/research-search/SKILL.md` |
 | `/diagnose-loop` | Diagnose a bug or performance regression - build a feedback loop that goes red on it first, hypothesise second | `commands/diagnose-loop.md` + `skills/diagnose-loop/SKILL.md` |
 
@@ -151,7 +151,7 @@ Reusable loop mechanics belong in `skills/` and `commands/`.
 During `/plan-loop`, detect scale (`loop plan-loop scale --write`). **Convenient** → standard step + feature spec. **Platform** → `PRODUCT_MAP.md` + ultraplan pack per sub-product/agent (`skills/plan-loop/phases/ultraplan.md`).
 
 ```text
-/feature-new → /spec-clarify → /spec-checklist → feature-plan → task-compiler → /product-develop → /feature-converge
+/feature-new → /spec-clarify → /spec-checklist → feature-plan → task-compiler → /develop-product → /feature-converge
 ```
 
 Platform: `loop plan-loop ultraplan next` before feature spec for each step.

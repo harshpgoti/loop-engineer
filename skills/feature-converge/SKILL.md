@@ -1,6 +1,6 @@
 ---
 name: feature-converge
-description: Compares active feature spec/plan/tasks against TASKS.yml and implementation drift. Use at /product-develop closeout or /feature-converge.
+description: Compares active feature spec/plan/tasks against TASKS.yml and implementation drift. Use at /develop-product closeout or /feature-converge.
 ---
 
 # Feature Converge
@@ -36,9 +36,9 @@ python scripts/feature_converge.py
 ## Output
 
 - `converge-report.md`
-- Recommended next command: `/product-develop`, `/spec-clarify`, or `/prod-gap`
+- Recommended next command: `/develop-product`, `/spec-clarify`, or `/prod-gap`
 
 ## When
 
-- End of each `/product-develop` session that touched code
+- End of each `/develop-product` session that touched code
 - Before `/prod-gap` for a feature milestone

@@ -1,6 +1,6 @@
 # /frontend-animation
 
-Built-in motion/3D skills are **auto-selected** during `/product-develop`. This command is for explicit animation work outside the normal build loop.
+Built-in motion/3D skills are **auto-selected** during `/develop-product`. This command is for explicit animation work outside the normal build loop.
 
 ## How To Interpret
 

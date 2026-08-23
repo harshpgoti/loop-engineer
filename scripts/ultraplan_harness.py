@@ -376,7 +376,7 @@ def update_ultraplan_status(workspace: Path, modules: list[dict] | None = None) 
     if next_step:
         lines.append(f"- Deep-plan **step {next_step['id']} - {next_step['title']}** (`skills/plan-loop/phases/ultraplan.md`)")
     else:
-        lines.append("- All ultraplan packs complete - run task-compiler per step or `/product-develop`.")
+        lines.append("- All ultraplan packs complete - run task-compiler per step or `/develop-product`.")
     lines.append("")
     path = ultraplan_status_file(workspace)
     path.parent.mkdir(parents=True, exist_ok=True)

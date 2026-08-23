@@ -70,7 +70,7 @@ gather open items (DOUBTS.md + spec open questions + blocked pre-dev gates + wea
 -> classify blocking vs deferrable
 -> walk blocking items with the user, one at a time
 -> record resolutions (DOUBTS.md/DECISIONS.md/spec/EVIDENCE) -> re-check gates
--> GO (clear to /product-develop) / NO-GO (blockers remain)
+-> GO (clear to /develop-product) / NO-GO (blockers remain)
 ```
 
 Plan-wide, interactive, write-enabled pre-development readiness sweep. Distinct from
@@ -80,7 +80,7 @@ report). Runs standalone or as the terminal phase inside `/plan-loop` (the harne
 
 Key skill: `skills/plan-loop/phases/resolve-doubts.md`
 
-## `/product-develop`
+## `/develop-product`
 
 ```text
 select task
@@ -99,7 +99,7 @@ select task
 
 Key skills:
 
-- `skills/product-develop/SKILL.md`
+- `skills/develop-product/SKILL.md`
 - `skills/implementation-planner/SKILL.md`
 - `skills/code-reviewer/SKILL.md`
 - `skills/qa-validation/SKILL.md`
@@ -136,7 +136,7 @@ read product plan/progress/source
 
 Use when the user asks what is missing, what blocks release, or what gaps remain.
 
-When called from `/product-develop` or `/loop-engine`, P0/P1 technical blockers should be routed back into development when safe. Human-required blockers should be recorded in `DOUBTS.md` and `HANDOFF.md` and asked to the user at loop closeout.
+When called from `/develop-product` or `/loop-engine`, P0/P1 technical blockers should be routed back into development when safe. Human-required blockers should be recorded in `DOUBTS.md` and `HANDOFF.md` and asked to the user at loop closeout.
 
 ## `/deployment-plan`
 
@@ -148,7 +148,7 @@ read decisions/doubts/plan-loop
 -> ask user only for unresolved items
 ```
 
-Run automatically at closeout of `/product-develop` and `/loop-engine`, and after `/release-check` when preparing launch.
+Run automatically at closeout of `/develop-product` and `/loop-engine`, and after `/release-check` when preparing launch.
 
 ## `/compact-loop`
 

@@ -157,7 +157,7 @@ class Slicing(Sandbox):
 class ReadOrder(Sandbox):
     def test_build_session_swaps_the_full_files_for_the_slice(self) -> None:
         tc.write_context(self.ws)
-        names = {p.name for p in session_bootstrap_paths(self.ws, "/product-develop")}
+        names = {p.name for p in session_bootstrap_paths(self.ws, "/develop-product")}
         self.assertIn("BUILD_CONTEXT.md", names)
         for dropped in ("TASKS.yml", "GATES.yml", "DOUBTS.md"):
             self.assertNotIn(dropped, names)
@@ -171,7 +171,7 @@ class ReadOrder(Sandbox):
         self.assertNotIn("BUILD_CONTEXT.md", names)
 
     def test_no_slice_means_no_swap(self) -> None:
-        names = {p.name for p in session_bootstrap_paths(self.ws, "/product-develop")}
+        names = {p.name for p in session_bootstrap_paths(self.ws, "/develop-product")}
         self.assertIn("TASKS.yml", names)
 
 

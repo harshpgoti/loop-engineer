@@ -80,7 +80,7 @@ python scripts/prod_gap.py --workspace ../product
 **Read-only - deliberately does not cascade.** Analysing and reporting is this
 command's product; recommending a next command is correct here, not a
 continuation failure. Any *fix* it identifies belongs to `/revise-plan`,
-`/product-develop`, or a `TASKS.yml` entry. See `docs/CONTINUATION.md`.
+`/develop-product`, or a `TASKS.yml` entry. See `docs/CONTINUATION.md`.
 
 ## Output
 

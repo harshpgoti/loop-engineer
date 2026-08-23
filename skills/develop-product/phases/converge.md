@@ -1,6 +1,6 @@
 # Phase: Converge
 
-> Loaded by `skills/product-develop/SKILL.md` when `BUILD PHASE: converge` - the code is
+> Loaded by `skills/develop-product/SKILL.md` when `BUILD PHASE: converge` - the code is
 > written and needs to be checked against what was specified. Load only this file.
 
 ## Purpose

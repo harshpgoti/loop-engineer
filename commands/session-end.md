@@ -29,4 +29,4 @@ loop session-end --stage
 
 ## Wired into
 
-Every `/plan-loop`, `/product-develop`, `/loop-engine` closeout - always run this last.
+Every `/plan-loop`, `/develop-product`, `/loop-engine` closeout - always run this last.

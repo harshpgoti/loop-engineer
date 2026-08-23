@@ -25,7 +25,7 @@ Runs two ways:
 
 ## Wired From
 
-- `/plan-loop` - terminal readiness phase before `/product-develop`.
+- `/plan-loop` - terminal readiness phase before `/develop-product`.
 - `/status`, `/ask-loop`, `/revise-plan` - point here when open doubts or blocked
   pre-development gates are detected.
 
@@ -42,7 +42,7 @@ GATHER OPEN ITEMS (DOUBTS.md + spec questions + blocked gates + weak evidence)
 
 Terminus: **tasks compiled + go/no-go for build.** On **GO**, continue into
 `task-compiler` if tasks aren't compiled yet (and, under `/loop-engine`, into
-`/product-develop` when build gates pass). On **NO-GO**, stopping is correct -
+`/develop-product` when build gates pass). On **NO-GO**, stopping is correct -
 that is a Stop Condition. See `docs/CONTINUATION.md`.
 
 ## Stop Conditions
@@ -57,5 +57,5 @@ that is a Stop Condition. See `docs/CONTINUATION.md`.
 1. Resolved this session (and where recorded)
 2. Gates moved to pass
 3. Remaining blockers (if any)
-4. Verdict: GO (clear to run `/product-develop`) or NO-GO (blockers remain)
+4. Verdict: GO (clear to run `/develop-product`) or NO-GO (blockers remain)
 5. Next command

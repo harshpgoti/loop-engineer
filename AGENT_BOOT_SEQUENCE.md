@@ -5,7 +5,7 @@ Normal use should be command-driven with **always-on lifecycle**:
 ```bash
 loop session-start --command /loop-engine --tool "<tool>"
 # read plan/SESSION_MANIFEST.md
-/plan-loop | /product-develop | /loop-engine
+/plan-loop | /develop-product | /loop-engine
 loop session-end
 ```
 
@@ -48,7 +48,7 @@ READ FIRST (in order):
 
 ROUTE BY COMMAND (each runs full cycle - see commands/*.md):
 - `/plan-loop` -> session-start → plan → feature spec → task-compiler → session-end
-- `/product-develop` -> session-start → auto-skills → build → converge → prod-gap → session-end
+- `/develop-product` -> session-start → auto-skills → build → converge → prod-gap → session-end
 - `/loop-engine` -> session-start → route plan OR develop (or both) → session-end
 - no command -> execute HANDOFF.md next action only
 

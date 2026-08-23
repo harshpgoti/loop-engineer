@@ -16,7 +16,7 @@ This is the human-mind file for the product loop. Every agent must update it aut
 
 - Created reusable loop command contracts:
   - `commands/plan-loop.md`
-  - `commands/product-develop.md`
+  - `commands/develop-product.md`
   - `commands/loop-engine.md`
 - Created canonical cross-tool skill pack in `skills/`.
 - Added adapters:

@@ -540,7 +540,7 @@ def _conflicts(
                 f"{label}: main says **{parent_text}**, `{name}` says **{child_text}** ({source}).",
                 f"Conflict with parent `{parent_name}` ({source}): **{label}** is **{parent_text}** at "
                 f"platform level but **{child_text}** here. Parent decisions are constraints - resolve "
-                "before the next `/product-develop`, or raise it with the platform plan.",
+                "before the next `/develop-product`, or raise it with the platform plan.",
             )
         )
     return findings

@@ -51,7 +51,7 @@ that boundary is this command's job, not the user's.
 | Spec needs clarify/checklist | `/spec-clarify` → `/spec-checklist` → `/resolve-doubts` → compile (run the chain, don't hand it back) |
 | Missing tasks | `skills/plan-loop/phases/task-compiler.md` |
 | Product is/includes an AI agent | `skills/agent-builder/SKILL.md` (`loop auto-agent-skills --write` first) |
-| Build gates pass | `commands/product-develop.md` full flow |
+| Build gates pass | `commands/develop-product.md` full flow |
 | Blocked on requirements mid-build | `/spec-clarify` |
 | After develop slice | `loop feature converge` + `skills/prod-gap/SKILL.md` |
 | `BUILD PHASE: evaluate` - the score no longer describes the current agent, or a case regressed | `skills/eval-loop/SKILL.md` (`loop eval`). Computed from a behaviour fingerprint, not judged - code review does not see behaviour |
@@ -95,7 +95,7 @@ say, and report what changed (`docs/CONTINUATION.md`).
 3. If scale is **platform** and ultraplan incomplete → `skills/plan-loop/phases/ultraplan.md` (one step per session).
 4. If no active feature or spec incomplete → feature workflow (`feature-new`, `spec-clarify`, `spec-checklist`).
 3. If tasks missing → `task-compiler`.
-4. If build gates pass → execute `skills/product-develop/SKILL.md` / `commands/product-develop.md`.
+4. If build gates pass → execute `skills/develop-product/SKILL.md` / `commands/develop-product.md`.
 5. Read `plan/AUTO_SKILLS.md` when manifest lists frontend skills.
 5a. Read `plan/AUTO_AGENT_SKILLS.md` when manifest lists agent-development skills (auto-detected at session-start) and execute `skills/agent-builder/SKILL.md`.
 6. After develop work → `feature-converge` + `prod-gap`.

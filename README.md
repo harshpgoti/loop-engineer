@@ -7,7 +7,7 @@
 | Loop | Skill / command | Purpose |
 |------|-----------------|--------|
 | **Step 1 - Planning** | `/plan-loop` or skill `skills/plan-loop` | Initialize product → brainstorm → fact-check → PRD → architecture → task breakdown |
-| **Step 2 - Build** | `/product-develop` or skill `skills/product-develop` | Implement → review → QA → security/compliance → CI/CD → deploy |
+| **Step 2 - Build** | `/develop-product` or skill `skills/develop-product` | Implement → review → QA → security/compliance → CI/CD → deploy |
 | **All-in-one** | `/loop-engine` or skill `skills/loop-engine` | Route between planning, task compilation, development, QA, and release gates |
 
 Everything else in this repo (AI-agent-development scaffolding, research search, feature specs, frontend animation, deployment, release checks, ...) is auto-detected and wired into these three - see [`docs/PROCESS.md`](docs/PROCESS.md) and the full command table in [`AGENTS.md`](AGENTS.md).
@@ -51,7 +51,7 @@ Use:
 ```text
 /setup-loop-engine
 /plan-loop
-/product-develop
+/develop-product
 /loop-engine
 ```
 
@@ -102,7 +102,7 @@ This is what makes memory durable across chat sessions and tool switches - see
 ## Questions get asked, not queued
 
 Three things used to sit in a file waiting for someone to remember them. All three are now
-raised in the session, with a recommended answer, by `/plan-loop`, `/product-develop`,
+raised in the session, with a recommended answer, by `/plan-loop`, `/develop-product`,
 `/loop-engine` and `/revise-plan`.
 
 **Doubts are asked in rounds.** A doubt can declare what it waits on:
@@ -191,10 +191,10 @@ already settled, numbered, every one carrying a recommended answer. Questions th
 an answer you have not given yet wait for the next round instead of being asked early - see
 [Questions get asked, not queued](#questions-get-asked-not-queued).
 
-### 2. Build - `/product-develop` (alias: `/develop-product`)
+### 2. Build - `/develop-product` (alias: `/develop-product`)
 
 ```text
-/product-develop
+/develop-product
 ```
 
 Builds from the approved plan, one task at a time: implementation plan → smallest safe diff → tests → code review → QA → security/compliance → docs → prod-gap. Frontend motion/3D and AI-agent work auto-route to the right built-in skills.
@@ -230,7 +230,7 @@ change to agent behaviour - a prompt, a model, a tool definition - which unit te
 ### Product & planning helpers
 
 ```text
-/agent-builder        # design/scaffold an AI agent as the product - auto-activates in /plan-loop + /product-develop
+/agent-builder        # design/scaffold an AI agent as the product - auto-activates in /plan-loop + /develop-product
 /research-search      # search arXiv / Research Square / SSRN, e.g. loop research "multi-agent evaluation"
 /feature-new          # new feature spec folder, e.g. loop feature new "auth login" --step plan/step_01.md
 /spec-clarify         # structured clarification on the active feature spec
@@ -352,7 +352,7 @@ python scripts/validate_template.py
 
 See [`STARTUP_LOOP_ENGINEERING_PLAYBOOK.md`](STARTUP_LOOP_ENGINEERING_PLAYBOOK.md) for architecture, stack, CI gates, and compliance baseline.
 
-See [`docs/PROCESS.md`](docs/PROCESS.md) for the `/plan-loop`, `/product-develop`, and `/loop-engine` process architecture.
+See [`docs/PROCESS.md`](docs/PROCESS.md) for the `/plan-loop`, `/develop-product`, and `/loop-engine` process architecture.
 
 ## How code gets built
 

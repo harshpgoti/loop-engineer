@@ -1,6 +1,6 @@
 ---
 name: frontend-animation
-description: Loop Engineer's single core skill for frontend motion, animation, 3D, and modern web design. Auto-activated during /product-develop when task/plan-loop signals animation, scroll effects, WebGL, or design work. Do not ask the user to pick a library - read plan/AUTO_SKILLS.md.
+description: Loop Engineer's single core skill for frontend motion, animation, 3D, and modern web design. Auto-activated during /develop-product when task/plan-loop signals animation, scroll effects, WebGL, or design work. Do not ask the user to pick a library - read plan/AUTO_SKILLS.md.
 ---
 
 # Frontend Animation & 3D (Auto)
@@ -11,7 +11,7 @@ never runs skill CLI commands or picks a library.
 
 ## Auto activation
 
-During `/product-develop`, after selecting a task, the agent **must** run:
+During `/develop-product`, after selecting a task, the agent **must** run:
 
 ```bash
 python scripts/frontend_skill_router.py --write

@@ -9,7 +9,7 @@ naming or linking these externally again inline, so there is one place to update
 
 | Section | Meaning |
 |---------|---------|
-| **Loop Engineer defaults** | Built into `/plan-loop`, `/product-develop`, `skills/`, and `~/.loop-engineer/data/` |
+| **Loop Engineer defaults** | Built into `/plan-loop`, `/develop-product`, `skills/`, and `~/.loop-engineer/data/` |
 | **Optional external extensions** | Third-party tools you may wire in when a gate or product need justifies it |
 | **Research paper sources** | Live sources `skills/research-search/SKILL.md` queries |
 | **Agent skill hub references** | External skill/plugin marketplaces `skills/agent-builder/SKILL.md` may consult, read-only |
@@ -27,7 +27,7 @@ Do not add an external tool just because it is listed. Add it only when `/plan-l
 | AI agent development | Architecture, scaffolding, skill authoring | `skills/agent-builder`, `agent/` scaffold |
 | Research grounding | Literature search for evidence-backed claims | `skills/research-search` |
 | Planning | PRD, ADRs, tasks, feature specs | `/plan-loop`, `plan/main_plan.md`, `plan/`, `plan/features/` |
-| Build | Implementation + gates | `/product-develop`, `TASKS.yml`, `GATES.yml` |
+| Build | Implementation + gates | `/develop-product`, `TASKS.yml`, `GATES.yml` |
 | Frontend motion / 3D | Built-in animation skills | `skills/frontend-animation`, `ui-motion`, `gsap-*`, `webgl-3d`, `react-3d` |
 | Review | Code + security review | `skills/code-reviewer`, `skills/security-compliance` |
 | Release | Deploy readiness | `/release-check`, `DEPLOYMENT_PLAN.md` |
@@ -54,7 +54,7 @@ Use these to extend Loop Engineer when the product plan needs more than the defa
 
 `skills/frontend-animation/` - a single core skill, nothing to install. Topic references inside cover the Motion library (React/Next UI motion), GSAP (tweens, timelines, ScrollTrigger, React, performance), Three.js/WebGL + React Three Fiber, and modern web design (a11y, Core Web Vitals), plus examples, starter scaffolds, and generator scripts.
 
-Router: `scripts/frontend_skill_router.py` writes `plan/AUTO_SKILLS.md` during `/product-develop` - agents read the selected topic references automatically; users never pick a library manually. See `docs/FRONTEND_ANIMATION.md`.
+Router: `scripts/frontend_skill_router.py` writes `plan/AUTO_SKILLS.md` during `/develop-product` - agents read the selected topic references automatically; users never pick a library manually. See `docs/FRONTEND_ANIMATION.md`.
 
 ### Suggested pairings (when you extend)
 

@@ -82,10 +82,10 @@ def recommend_next_command(main_plan: str, current_state: str, gates: str, tasks
         return "/plan-loop"
     if "blocked" in gates.lower():
         if "status: blocked" in tasks.lower():
-            return "/product-develop"
+            return "/develop-product"
         return "/loop-engine"
     if "in_progress" in tasks.lower() or "active" in tasks.lower():
-        return "/product-develop"
+        return "/develop-product"
     if "G-RELEASE-01" in gates and "pass" not in gates.lower():
         return "/release-check"
     return "/loop-engine"

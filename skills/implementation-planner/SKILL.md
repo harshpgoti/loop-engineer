@@ -1,6 +1,6 @@
 ---
 name: implementation-planner
-description: Plans implementation like a senior engineer before coding: reads the active task, identifies files/modules, risks, tests, rollout, and rollback. Use inside /product-develop before editing code.
+description: Plans implementation like a senior engineer before coding: reads the active task, identifies files/modules, risks, tests, rollout, and rollback. Use inside /develop-product before editing code.
 ---
 
 # Implementation Planner

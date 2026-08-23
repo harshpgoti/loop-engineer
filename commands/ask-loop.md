@@ -17,7 +17,7 @@ command explicitly.
 
 This command is **read-only**: it never edits plan, spec, decision, doubt, gate, task, or
 product-code files. If the answer implies a change the user wants made, hand off to
-`/revise-plan` (plan) or `/product-develop` (code) - do not edit here.
+`/revise-plan` (plan) or `/develop-product` (code) - do not edit here.
 
 **Deliberately does not cascade.** Recommending a next command *is* this command's
 product, not a continuation failure - the user asked a question, not for work to be
@@ -35,7 +35,7 @@ when a question is implementation-level, the product source code. See
 
 ## Wired From
 
-- Any time after `/plan-loop` or `/product-develop` when the user wants to understand what
+- Any time after `/plan-loop` or `/develop-product` when the user wants to understand what
   exists rather than change it.
 - `/status` points here for detail questions (it gives a fixed snapshot; this answers "why"
   and "how").

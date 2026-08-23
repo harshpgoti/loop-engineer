@@ -1,6 +1,6 @@
 # Phase: Release
 
-> Loaded by `skills/product-develop/SKILL.md` when `BUILD PHASE: release` - the build is
+> Loaded by `skills/develop-product/SKILL.md` when `BUILD PHASE: release` - the build is
 > complete and the remaining work is getting it shippable. Load only this file.
 
 ## Purpose

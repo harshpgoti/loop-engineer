@@ -19,7 +19,7 @@ Persistent memory that works in **Cursor, Claude Code, Codex, OpenCode, Grok, or
 Optional flags:
 
 ```bash
-loop session-start --command /product-develop --tool cursor
+loop session-start --command /develop-product --tool cursor
 loop session-end --summary "Built hero section; next: API wiring"
 ```
 
@@ -46,7 +46,7 @@ agent-authored skill files - and a single-product loop never fills it.
 
 ## Agent rules (all tools)
 
-1. **First action** when user runs `/plan-loop`, `/product-develop`, `/loop-engine`, or any product work: `loop session-start`
+1. **First action** when user runs `/plan-loop`, `/develop-product`, `/loop-engine`, or any product work: `loop session-start`
 2. **Read** `plan/SESSION_MANIFEST.md` and every file it lists
 3. **Last action** before ending the turn/session: update `HANDOFF.md` + `memories/MEMORY.md`, then `loop session-end`
 4. Do not skip because the tool changed - memory lives in the workspace, not the chat

@@ -278,7 +278,7 @@ def render_manifest(
             pass
 
     # Placed right after the hierarchy block: every command reads the manifest first,
-    # so this is the one channel that reaches /plan-loop, /product-develop,
+    # so this is the one channel that reaches /plan-loop, /develop-product,
     # /loop-engine and /revise-plan without wiring each of them separately.
     if findings:
         try:
@@ -356,7 +356,7 @@ def render_manifest(
                 "",
                 f"- **ID:** `{active.get('id')}` - {active.get('title', '')}",
                 f"- **Path:** `{active.get('path')}`",
-                "- Read `spec.md`, `feature-plan.md`, `tasks.md` in that folder during `/product-develop`.",
+                "- Read `spec.md`, `feature-plan.md`, `tasks.md` in that folder during `/develop-product`.",
             ]
         )
 
@@ -630,7 +630,7 @@ def session_end(
     actions = apply_report(workspace, report, stage_only=stage)
 
     converge_note = ""
-    if command and "product-develop" in (command or ""):
+    if command and "develop-product" in (command or ""):
         try:
             from feature_converge import converge
 
@@ -729,7 +729,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Always-on session lifecycle (start/end).")
     parser.add_argument("phase", choices=("start", "end"))
     parser.add_argument("--workspace", default=None)
-    parser.add_argument("--command", default=None, help="Active loop command e.g. /product-develop")
+    parser.add_argument("--command", default=None, help="Active loop command e.g. /develop-product")
     parser.add_argument("--tool", default=None, help="Tool hint e.g. cursor, claude, codex")
     parser.add_argument("--text", default="", help="Extra context for routers (user message).")
     parser.add_argument("--skip-recall", action="store_true")

@@ -1,6 +1,6 @@
 # Agent Architecture
 
-Filled in by `skills/agent-builder/SKILL.md` during `/plan-loop` or `/product-develop` when the product is, or includes, an AI agent. Reuse answers already in `DECISIONS.md` - do not re-ask the user once recorded.
+Filled in by `skills/agent-builder/SKILL.md` during `/plan-loop` or `/develop-product` when the product is, or includes, an AI agent. Reuse answers already in `DECISIONS.md` - do not re-ask the user once recorded.
 
 ## Agent type
 

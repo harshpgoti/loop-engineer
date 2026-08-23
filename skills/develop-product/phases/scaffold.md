@@ -1,6 +1,6 @@
 # Phase: Scaffold
 
-> Loaded by `skills/product-develop/SKILL.md` when `BUILD PHASE: scaffold` - no product
+> Loaded by `skills/develop-product/SKILL.md` when `BUILD PHASE: scaffold` - no product
 > source tree exists yet. Load only this file.
 
 ## Purpose

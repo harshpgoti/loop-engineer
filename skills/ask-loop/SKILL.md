@@ -7,7 +7,7 @@ description: Answer a free-form question about a plan or build that already exis
 
 ## Purpose
 
-After `/plan-loop` or `/product-develop` finishes, a user who wants to *understand* what
+After `/plan-loop` or `/develop-product` finishes, a user who wants to *understand* what
 exists has no entry point today. `/status` gives a fixed snapshot, not answers to questions.
 `/session-recall` searches past sessions, not current product state. `/revise-plan` changes
 the plan rather than reading it. Otherwise the user has to open a dozen plan files themselves
@@ -36,7 +36,7 @@ This command **never writes** to plan, spec, decision, doubt, gate, task, or pro
 files. The only file writes it performs are the session lifecycle log
 (`loop session-start` / `loop session-end`) and, optionally, a scratch answer file the user
 explicitly asks for. If the user wants something changed, hand off to `/revise-plan` (plan
-edits) or `/product-develop` (code) - do not edit here.
+edits) or `/develop-product` (code) - do not edit here.
 
 ## Required Reads - full context, always, no progressive disclosure
 
@@ -123,7 +123,7 @@ inventing one.
 2. Citations for each claim (file -> section, or code path:line)
 3. Any drift or undecided item surfaced while answering
 4. Suggested next command if the question implies an action (`/revise-plan`,
-   `/product-develop`, `/feature-new`, `/sync-loop-state`, `/feature-converge`) - otherwise none
+   `/develop-product`, `/feature-new`, `/sync-loop-state`, `/feature-converge`) - otherwise none
 
 ## Stop Conditions
 

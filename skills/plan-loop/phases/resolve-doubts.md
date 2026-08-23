@@ -140,16 +140,16 @@ doubts channel.
    if none)
 5. **Verdict** - the counts come from the harness, never from your own tally:
    - **GO** - "No blocking doubts remain, no findings open. Clear to run
-     `/product-develop`." (only when `loop doubts counts` reports `blocking` 0,
+     `/develop-product`." (only when `loop doubts counts` reports `blocking` 0,
      `loop findings list` reports nothing open, and the pre-dev gates pass)
    - **NO-GO** - "N blocker(s) remain: <list>. Resolve these before development."
-6. Next command (`/product-develop` on GO; otherwise what to do about each blocker)
+6. Next command (`/develop-product` on GO; otherwise what to do about each blocker)
 
 ## Continue automatically
 
 - **GO** -> load `phases/task-compiler.md` and compile tasks if they aren't yet;
   that is the planning terminus. Under `/loop-engine`, continue into
-  `commands/product-develop.md` when build gates pass. Do not stop and tell the
+  `commands/develop-product.md` when build gates pass. Do not stop and tell the
   user to run the next command.
 - **NO-GO** -> this is a legitimate Stop Condition (blocking items need the user).
   Report each remaining blocker and the specific question it needs answered - not

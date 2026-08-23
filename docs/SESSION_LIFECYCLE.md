@@ -16,7 +16,7 @@ Memory lives in the **product workspace** (`~/.loop-engineer/data/` or `<product
 ## Session start
 
 ```bash
-loop session-start --command /product-develop --tool cursor
+loop session-start --command /develop-product --tool cursor
 ```
 
 Produces:
@@ -81,7 +81,7 @@ Adjust paths if `loop` is not on PATH (use full path to `~/.loop-engineer/bin/lo
 
 | Situation | Start | End |
 |-----------|-------|-----|
-| `/plan-loop`, `/product-develop`, `/loop-engine` | Yes | Yes |
+| `/plan-loop`, `/develop-product`, `/loop-engine` | Yes | Yes |
 | Switching Cursor → Claude Code mid-product | Yes (refreshes manifest) | End previous tool first |
 | Quick question in product repo | Start if touching plan/code | End if you changed state files |
 

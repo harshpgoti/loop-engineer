@@ -1,6 +1,6 @@
 ---
 name: feature-workflow
-description: Routes feature spec folders under plan/features - create, clarify, checklist, compile tasks, develop, converge. Wired into /plan-loop and /product-develop.
+description: Routes feature spec folders under plan/features - create, clarify, checklist, compile tasks, develop, converge. Wired into /plan-loop and /develop-product.
 ---
 
 # Feature Workflow
@@ -45,7 +45,7 @@ loop feature converge
 
 - **`/plan-loop`:** After step plan, run `loop feature new` (or update active feature `spec.md`).
 - **`task-compiler`:** Write `tasks.md` in active feature; sync ids to `TASKS.yml`.
-- **`/product-develop`:** Read active feature `tasks.md` and `feature-plan.md`.
+- **`/develop-product`:** Read active feature `tasks.md` and `feature-plan.md`.
 - **`session-start`:** Manifest includes active feature artifacts.
 - **`session-end`:** Run `loop feature converge` when implementation changed.
 

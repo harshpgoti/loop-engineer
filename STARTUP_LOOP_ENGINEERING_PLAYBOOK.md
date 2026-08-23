@@ -24,7 +24,7 @@ Initialize product → brainstorm → evidence → interviews → score → PRD 
 
 **Exit:** `G-INIT-01`, `G-DISCOVERY-*`, and `G-ARCH-01`
 
-### Step 2 - Build (`/product-develop`)
+### Step 2 - Build (`/develop-product`)
 
 Scaffold → platform → first product step → UI → QA → security → CI/CD → staging → pilot
 
@@ -52,7 +52,7 @@ Use primary sources and standards for product-specific evidence. Use arXiv and R
 
 ## AI agent as the product
 
-If the product itself is, or includes, an AI agent (chatbot, workflow automation, multi-agent system), `skills/agent-builder/SKILL.md` auto-activates during `/plan-loop` and `/product-develop` - see `docs/AGENT_BUILDER.md`. It scaffolds `agent/AGENT_ARCHITECTURE.md`, `agent/skills/`, `agent/tools/`, `agent/evals/` and records the agent product's model choice in `agent/AGENT_ARCHITECTURE.md` and `DECISIONS.md`.
+If the product itself is, or includes, an AI agent (chatbot, workflow automation, multi-agent system), `skills/agent-builder/SKILL.md` auto-activates during `/plan-loop` and `/develop-product` - see `docs/AGENT_BUILDER.md`. It scaffolds `agent/AGENT_ARCHITECTURE.md`, `agent/skills/`, `agent/tools/`, `agent/evals/` and records the agent product's model choice in `agent/AGENT_ARCHITECTURE.md` and `DECISIONS.md`.
 
 ## Current Tasks
 

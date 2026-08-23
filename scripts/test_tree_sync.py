@@ -164,7 +164,7 @@ class AutoMaintenance(TreeSyncSandbox):
                 reason="test",
                 origin={"finding_id": "x"},
             )
-        session_start(self.sub_ws, command="/product-develop", tool="claude", skip_recall=True)
+        session_start(self.sub_ws, command="/develop-product", tool="claude", skip_recall=True)
         self.assertLessEqual(len(pw.list_pending(self.sub_ws)), 1)
 
 

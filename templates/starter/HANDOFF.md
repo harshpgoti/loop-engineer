@@ -10,7 +10,7 @@ This is a fresh loop OS template. Product data is not initialized.
 Primary commands:
 
 - `/plan-loop`
-- `/product-develop`
+- `/develop-product`
 - `/loop-engine`
 
 Do **not** scaffold a product repo until `/plan-loop` initializes `plan/main_plan.md` and `plan/`.
@@ -45,7 +45,7 @@ Deliverables:
 ## Context For Agents
 
 - Use `/plan-loop` for Step 1.
-- Use `/product-develop` for Step 2.
+- Use `/develop-product` for Step 2.
 - Use `/loop-engine` for all-in-one gated operation.
 - Always update `memories/MEMORY.md`, `DOUBTS.md`, and this file automatically.
 - Keep reusable logic in `skills/` and `commands/`.
