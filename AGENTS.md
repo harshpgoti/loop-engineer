@@ -54,6 +54,19 @@ questions with a recommended answer, by `/plan-loop`, `/product-develop`,
 Never tell the user to go run these - run them, ask the question, act on the answer
 (`docs/CONTINUATION.md`). `loop pending` is now only the opt-in `--stage` memory path.
 
+`loop doubts ask` asks **one round**: the blocking questions whose prerequisites are
+settled, each numbered with its recommended answer. A doubt's `Depends on:` puts it in a
+later round; its `Ask:` sends it to somebody who is not here, via
+`loop doubts questionnaire`. See `skills/plan-loop/phases/grill.md`.
+
+Two more channels report themselves into `plan/SESSION_MANIFEST.md`, so nobody has to
+remember a command:
+
+| | Command | What it raises |
+|---|---------|----------------|
+| The plan stopped using its own words | `loop glossary` | Where a synonym displaced by `CONTEXT.md` `## Language` is still in use |
+| The plan's fog is not clearing | `loop fog` → `loop fog promote <n>` | `## Not yet specified` patches that have sat unchanged - now either a stateable question or work you have decided against |
+
 ## App root resolution
 
 Commands and skills reference app files (`AGENTS.md`, `commands/`, `skills/`,

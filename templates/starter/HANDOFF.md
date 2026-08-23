@@ -35,6 +35,13 @@ Deliverables:
 | 4 | TASK-004 | PRD + architecture for first product step |
 | 5 | TASK-005 | Product repo bootstrap or connection after `G-ARCH-01` |
 
+## Load these
+
+| | |
+|---|---|
+| Command | `/plan-loop` |
+| Skills | `skills/plan-loop/SKILL.md`, then the phase file the `PHASE:` line names |
+
 ## Context For Agents
 
 - Use `/plan-loop` for Step 1.

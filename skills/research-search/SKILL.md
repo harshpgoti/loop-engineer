@@ -34,6 +34,20 @@ python scripts/research_search.py "<query>" --source arxiv --limit 5
 
 Importable: `scripts/research_search.py` exposes `search(query, sources=None, limit=10) -> dict[str, (ok, papers, message)]`.
 
+## Follow every claim to the source that owns it
+
+Investigate against **primary** sources: the paper, the specification, the regulator's own
+text, the vendor's own API docs, the source code. A blog post summarising a study, an
+analyst's write-up of a survey, a comparison article - each is somebody else's reading, and
+the number you need is usually a paraphrase of a paraphrase.
+
+When a secondary source is all you have, cite it as one and say so. `EVIDENCE_LOG.md` treats a
+claim's confidence as real; a secondary citation recorded as a verified fact quietly launders
+somebody's summary into your plan.
+
+The tell that you have not reached the source yet: you can quote the figure but cannot say
+what was measured, on whom, or when.
+
 ## Rules
 
 - Cite the returned `url` (arXiv abstract page or DOI link) in `EVIDENCE_LOG.md` - never just the search query.

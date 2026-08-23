@@ -51,6 +51,30 @@ agent-authored skill files - and a single-product loop never fills it.
 3. **Last action** before ending the turn/session: update `HANDOFF.md` + `memories/MEMORY.md`, then `loop session-end`
 4. Do not skip because the tool changed - memory lives in the workspace, not the chat
 
+## What HANDOFF.md has to carry
+
+The next agent starts cold. `HANDOFF.md` is the only thing that survives the gap, so it is
+written for someone with no memory of this session and no way to ask you a question.
+
+**Reference, never restate.** Anything already captured elsewhere - a spec, a decision, a
+task's acceptance criteria, a commit, a diff - gets named by its path, not copied. A copy goes
+stale the moment the original moves, and a handoff full of stale copies is worse than a short
+one. Say what changed and where it lives.
+
+Four things, in this order:
+
+1. **Continue here** - the state the next agent inherits, in a few sentences. What is done,
+   what is verified, and what must not be repeated.
+2. **The immediate next action** - one thing, specific enough to start on. Not a menu.
+3. **What is waiting on an input you do not control** - the task, and the exact input that
+   unblocks it. This is what stops the next session re-attempting work that cannot succeed.
+4. **Load these** - the command to run, and the skills that apply to this particular work.
+   The next agent cannot infer that a red test means `skills/diagnose-loop/SKILL.md`, or that
+   a seam decision means `skills/codebase-design/SKILL.md`. Name them.
+
+**Redact.** `AGENTS.md` #6 applies here too: no credentials, no regulated data, no customer
+identifiers - not in a path, a sample payload, or a quoted error.
+
 ## Idempotent
 
 Safe to run `session-start` multiple times per day; each run refreshes recall and manifest.

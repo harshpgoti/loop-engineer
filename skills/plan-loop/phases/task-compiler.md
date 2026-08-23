@@ -18,13 +18,45 @@ Turn strategy into small, gated engineering tasks.
 - `templates/test_plan.template.md`
 - `templates/feature_tasks.template.md`
 
+## Cut vertically
+
+A task is a **tracer bullet**: a narrow but complete path through every layer the behaviour
+touches - schema, service, interface, tests - not a horizontal slice of one layer. A finished
+task is demoable or verifiable on its own.
+
+"Add the claims table", "add the claims endpoint", "add the claims screen" is three tasks that
+each prove nothing and cannot be checked until all three land. "A user can see one imported
+claim" is one task that proves the whole path works, thinly.
+
+Prefactoring goes first: make the change easy, then make the easy change.
+
+## The one exception: a wide refactor
+
+One mechanical change whose blast radius fans across the codebase - rename a column, retype a
+shared symbol - cannot be a tracer bullet. A single edit breaks thousands of call sites and no
+vertical slice lands green. Sequence it **expand -> migrate -> contract** instead:
+
+| Task | What it does | Blocked by |
+|------|--------------|------------|
+| expand | Add the new form beside the old. Nothing breaks | - |
+| migrate (one per batch) | Move call sites over, batched by package or directory | expand |
+| contract | Delete the old form once no caller remains | every migrate |
+
+Tests stay green batch to batch because the old form still exists. When even a batch cannot
+stay green alone, keep the sequence but let the batches share an integration branch that all
+block a final integrate-and-verify task - green is promised there, and only there.
+
 ## Compilation Rules
 
 - Every task must map to a user-visible outcome, platform capability, risk reduction, or validation need.
-- Every development task needs acceptance criteria.
+- Every development task needs acceptance criteria, and each one is independently checkable.
 - Risky tasks need a gate in `GATES.yml`.
-- Tasks should be small enough for one focused agent session when possible.
-- Blockers must be explicit.
+- **Sized for one fresh context window.** A task an agent cannot hold in a single session gets
+  split, or it gets abandoned halfway and picked up wrong.
+- Name the **seam** the task's tests will observe from (`skills/codebase-design/SKILL.md`).
+  Prefer an existing seam, and the highest one that reaches the behaviour.
+- Blockers must be explicit: `blocked_by` names the tasks that genuinely gate this one, and a
+  task with none can start immediately. Work the frontier - whatever has no unfinished blocker.
 - Write human-readable tasks to active feature `tasks.md` using `[P]` for parallel-safe items and `files:` paths.
 - Sync the same task ids into `TASKS.yml` - do not maintain two conflicting lists.
 
@@ -51,6 +83,7 @@ Each task should include:
 - priority
 - blocked_by
 - acceptance
+- the seam its tests observe from
 
 ## Output
 
