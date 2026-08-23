@@ -25,6 +25,7 @@ PHASE_FILES = {
     "implement": "skills/product-develop/phases/implement.md",
     "test": "skills/product-develop/phases/test.md",
     "converge": "skills/product-develop/phases/converge.md",
+    "evaluate": "skills/eval-loop/SKILL.md",
     "release": "skills/product-develop/phases/release.md",
 }
 
@@ -34,6 +35,7 @@ PHASE_SKILLS = {
     "implement": ["skills/implementation-planner/SKILL.md", "skills/feature-workflow/SKILL.md"],
     "test": ["skills/qa-validation/SKILL.md"],
     "converge": ["skills/feature-converge/SKILL.md", "skills/code-reviewer/SKILL.md"],
+    "evaluate": ["skills/eval-loop/SKILL.md"],
     "release": [
         "skills/security-compliance/SKILL.md",
         "skills/prod-gap/SKILL.md",
@@ -83,11 +85,52 @@ def _release_gate_open(workspace: Path) -> bool:
     return "G-RELEASE-01" in text and "passed" not in text.split("G-RELEASE-01", 1)[1][:200]
 
 
+def _evals_needed(workspace: Path) -> str:
+    """Why the evals must run before anything else, or "" when they need not.
+
+    Deterministic on purpose. The previous trigger was a line of prose telling the
+    agent to run evals "after any change to agent behaviour", which asks the model to
+    judge whether behaviour changed - exactly the kind of decision this harness
+    computes instead. A recorded run carries a fingerprint of the behaviour surface;
+    if that surface has moved, the score no longer describes the current agent.
+    """
+    try:
+        import eval_suite
+    except Exception:
+        return ""
+    if not eval_suite.discover_cases(workspace):
+        return ""  # no suite: nothing to be stale about
+
+    change = eval_suite.regressions(workspace)
+    if change.get("regressed"):
+        return f"{len(change['regressed'])} eval case(s) regressed"
+    drift = eval_suite.behaviour_changed(workspace)
+    if drift["stale"]:
+        return drift["reason"]
+    gate = eval_suite.gate_status(workspace)
+    if not gate["ok"] and gate.get("score") is None:
+        return "eval cases exist but no run has been recorded"
+    return ""
+
+
 def compute_build_phase(workspace: Path) -> dict:
     """Return {phase, file, skills, pipeline, reason} for the active workspace."""
     tasks = _tasks(workspace)
     task = _active(workspace, tasks)
     remaining = [t for t in tasks if str(t.get("status", "")).lower() not in DONE]
+
+    evals = _evals_needed(workspace)
+    if evals and _has_source_tree(workspace):
+        # Ahead of implement and release both: building on an unscored change, or on
+        # a regression, means finding out later and unpicking more.
+        return {
+            "phase": "evaluate",
+            "file": PHASE_FILES["evaluate"],
+            "skills": PHASE_SKILLS["evaluate"],
+            "pipeline": list(PHASE_FILES),
+            "reason": evals,
+            "task": (task or {}).get("id"),
+        }
 
     if not _has_source_tree(workspace):
         phase, reason = "scaffold", "no product source tree yet - scaffold the repo before implementing"

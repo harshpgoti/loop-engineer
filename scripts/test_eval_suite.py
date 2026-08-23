@@ -207,5 +207,105 @@ class Surface(Sandbox):
         self.assertEqual([], ev.manifest_block(self.ws))
 
 
+class BehaviourDrift(Sandbox):
+    """A score describes the agent that earned it, not whatever the agent is now."""
+
+    def declare(self) -> None:
+        (self.product / "agent" / "evals" / "behaviour.json").write_text(
+            json.dumps({"behaviour": ["src/**/*.py"]}), encoding="utf-8"
+        )
+        (self.product / "src").mkdir(parents=True, exist_ok=True)
+        (self.product / "src" / "prompt.py").write_text("PROMPT = 'v1'\n", encoding="utf-8")
+
+    def test_a_declared_surface_beats_the_default_guess(self) -> None:
+        """The real surface in a real product was backend/app/agent - no default finds that."""
+        _globs, declared = ev.behaviour_globs(self.ws)
+        self.assertFalse(declared)
+        self.declare()
+        globs, declared = ev.behaviour_globs(self.ws)
+        self.assertTrue(declared)
+        self.assertEqual(["src/**/*.py"], globs)
+
+    def test_a_run_records_what_the_agent_looked_like(self) -> None:
+        self.declare()
+        ev.record_run(self.ws, self.results(set()))
+        self.assertIn("src/prompt.py", ev.latest_run(self.ws)["behaviour"])
+
+    def test_an_unchanged_agent_is_not_stale(self) -> None:
+        self.declare()
+        ev.record_run(self.ws, self.results(set()))
+        self.assertFalse(ev.behaviour_changed(self.ws)["stale"])
+
+    def test_changing_the_agent_invalidates_the_score(self) -> None:
+        self.declare()
+        ev.record_run(self.ws, self.results(set()))
+        (self.product / "src" / "prompt.py").write_text("PROMPT = 'v2'\n", encoding="utf-8")
+        drift = ev.behaviour_changed(self.ws)
+        self.assertTrue(drift["stale"])
+        self.assertIn("src/prompt.py", drift["changed"])
+
+    def test_a_stale_score_does_not_satisfy_the_gate(self) -> None:
+        self.declare()
+        ev.record_run(self.ws, self.results(set()))
+        self.assertTrue(ev.gate_status(self.ws)["ok"])
+        (self.product / "src" / "prompt.py").write_text("PROMPT = 'v2'\n", encoding="utf-8")
+        status = ev.gate_status(self.ws)
+        self.assertFalse(status["ok"])
+        self.assertIn("behaviour changed", status["reason"])
+
+    def test_adding_a_behaviour_file_counts_as_a_change(self) -> None:
+        self.declare()
+        ev.record_run(self.ws, self.results(set()))
+        (self.product / "src" / "tools.py").write_text("def t(): pass\n", encoding="utf-8")
+        self.assertTrue(ev.behaviour_changed(self.ws)["stale"])
+
+    def test_no_cases_means_no_staleness_to_report(self) -> None:
+        shutil.rmtree(self.product / "agent")
+        self.assertFalse(ev.behaviour_changed(self.ws)["stale"])
+
+
+class BuildRouting(Sandbox):
+    """The trigger is computed, not judged - /product-develop reaches it on its own."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        (self.ws / "TASKS.yml").write_text(
+            "tasks:\n  - id: TASK-001\n    title: t\n    gate: G-A\n    status: in_progress\n",
+            encoding="utf-8",
+        )
+        (self.product / "src").mkdir(parents=True, exist_ok=True)
+        (self.product / "src" / "prompt.py").write_text("PROMPT = 'v1'\n", encoding="utf-8")
+        (self.product / "agent" / "evals" / "behaviour.json").write_text(
+            json.dumps({"behaviour": ["src/**/*.py"]}), encoding="utf-8"
+        )
+
+    def phase(self) -> str:
+        import build_phase
+
+        return build_phase.compute_build_phase(self.ws)["phase"]
+
+    def test_cases_with_no_run_route_to_evaluate(self) -> None:
+        self.assertEqual("evaluate", self.phase())
+
+    def test_a_clean_scored_suite_routes_to_the_real_work(self) -> None:
+        ev.record_run(self.ws, self.results(set()))
+        self.assertEqual("implement", self.phase())
+
+    def test_a_regression_routes_back_to_evaluate(self) -> None:
+        ev.record_run(self.ws, self.results(set()))
+        ev.record_run(self.ws, self.results({"c-001"}))
+        self.assertEqual("evaluate", self.phase())
+
+    def test_a_behaviour_change_routes_back_to_evaluate(self) -> None:
+        """The whole point: nobody had to notice, and nobody had to decide."""
+        ev.record_run(self.ws, self.results(set()))
+        self.assertEqual("implement", self.phase())
+        (self.product / "src" / "prompt.py").write_text("PROMPT = 'v2'\n", encoding="utf-8")
+        self.assertEqual("evaluate", self.phase())
+
+    def test_a_product_with_no_eval_suite_is_unaffected(self) -> None:
+        shutil.rmtree(self.product / "agent")
+        self.assertEqual("implement", self.phase())
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

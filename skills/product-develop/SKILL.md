@@ -36,8 +36,8 @@ Then load **one** phase file from the router below, and only the skills it names
 
 ## Build phase router
 
-`scripts/build_phase.py` computes the phase from `TASKS.yml`, `GATES.yml` and the source
-tree, and writes a `BUILD PHASE:` line into the manifest. Rules first, never a model
+`scripts/build_phase.py` computes the phase from `TASKS.yml`, `GATES.yml`, the source
+tree, and the eval suite's behaviour fingerprint, and writes a `BUILD PHASE:` line into the manifest. Rules first, never a model
 judgement (`AGENTS.md` non-negotiable #4).
 
 | Phase | Selected when | File | Skills it loads |
@@ -46,6 +46,7 @@ judgement (`AGENTS.md` non-negotiable #4).
 | **implement** | a task is active | `phases/implement.md` | implementation-planner, feature-workflow |
 | **test** | the active task is QA-phase | `phases/test.md` | qa-validation |
 | **converge** | task built, awaiting verification | `phases/converge.md` | feature-converge, code-reviewer |
+| **evaluate** | eval cases exist and the last score no longer describes the current agent, or a case regressed | `skills/eval-loop/SKILL.md` | eval-loop |
 | **release** | tasks complete, release gate open | `phases/release.md` | security-compliance, prod-gap, deployment-plan, cicd-release |
 
 Read on demand, not up front: `skills/agent-builder/SKILL.md` (when the product is or
@@ -108,8 +109,6 @@ Run `loop session-start --command /product-develop` first and `loop session-end`
 - Run relevant tests or record why not.
 - Update active feature `tasks.md` checkboxes and `TASKS.yml` status.
 - Run `loop feature converge` (or `/feature-converge`) - also runs on `loop session-end` for `/product-develop`.
-- Run `loop eval` after any change to agent **behaviour** - a prompt, model, tool or
-  retrieval change passes code review and unit tests while behaviour gets worse.
 - Run `prod-gap` after meaningful development work.
 - Run `deployment-plan` at loop closeout to write `DEPLOYMENT_PLAN.md`.
 - Reuse cloud, LLM, and deployment answers already in `DECISIONS.md`, resolved `DOUBTS.md`, or `plan/main_plan.md`.

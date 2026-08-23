@@ -107,6 +107,88 @@ def suites(workspace: Path) -> dict[str, int]:
 
 
 # ---------------------------------------------------------------------------
+# behaviour fingerprint - what makes a recorded run stale
+# ---------------------------------------------------------------------------
+
+BEHAVIOUR_FILE = "behaviour.json"
+
+# Where agent behaviour usually lives when nobody has said otherwise. A guess, and
+# reported as one: the real surface in a real product was `backend/app/agent/`,
+# `services/llm_gateway.py` and `rules/`, none of which a fixed list would have found.
+DEFAULT_BEHAVIOUR_GLOBS = (
+    "agent/**/*.py", "agent/**/*.md", "agent/**/*.yml",
+    "**/prompts/**/*", "**/llm_gateway.py", "**/router_core.py",
+)
+
+
+def behaviour_globs(workspace: Path) -> tuple[list[str], bool]:
+    """Globs defining behaviour, and whether the product declared them.
+
+    Declared beats guessed for the same reason integrations do: a default that
+    silently misses the real surface produces a fingerprint that never changes, and
+    a staleness check that never fires is worse than none.
+    """
+    root = eval_root(workspace)
+    if root is not None:
+        path = root / BEHAVIOUR_FILE
+        if path.is_file():
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+                globs = data.get("behaviour") if isinstance(data, dict) else data
+                if isinstance(globs, list) and globs:
+                    return [str(g) for g in globs], True
+            except (json.JSONDecodeError, OSError):
+                pass
+    return list(DEFAULT_BEHAVIOUR_GLOBS), False
+
+
+def behaviour_fingerprint(workspace: Path) -> dict[str, str]:
+    """path -> content hash for every file that defines how the agent behaves."""
+    try:
+        from freshness import content_hash
+    except ImportError:
+        return {}
+
+    product = workspace.parent if workspace.name == ".loop-engineer" else workspace
+    globs, _declared = behaviour_globs(workspace)
+    found: dict[str, str] = {}
+    for pattern in globs:
+        for path in sorted(product.glob(pattern)):
+            if not path.is_file() or any(part in ("node_modules", ".venv", "__pycache__", ".git") for part in path.parts):
+                continue
+            digest = content_hash(path)
+            if digest:
+                found[path.relative_to(product).as_posix()] = digest
+            if len(found) > 400:
+                return found
+    return found
+
+
+def behaviour_changed(workspace: Path) -> dict:
+    """Whether the agent has changed since the last run was scored.
+
+    This is the deterministic answer to "does this need re-running", replacing a
+    prose instruction that asked the model to decide whether behaviour had changed.
+    """
+    run = latest_run(workspace)
+    empty = {"stale": False, "reason": "", "changed": [], "declared": behaviour_globs(workspace)[1]}
+    if not run:
+        return empty
+    recorded = run.get("behaviour") or {}
+    if not recorded:
+        return dict(empty, stale=False, reason="the last run recorded no fingerprint")
+
+    current = behaviour_fingerprint(workspace)
+    changed = sorted(set(recorded) ^ set(current)) + sorted(
+        path for path in set(recorded) & set(current) if recorded[path] != current[path]
+    )
+    if not changed:
+        return empty
+    names = ", ".join(changed[:3]) + (", ..." if len(changed) > 3 else "")
+    return dict(empty, stale=True, reason=f"agent behaviour changed since the last run ({names})", changed=changed)
+
+
+# ---------------------------------------------------------------------------
 # runs
 # ---------------------------------------------------------------------------
 
@@ -147,6 +229,8 @@ def record_run(workspace: Path, results: dict[str, dict], *, model: str = "", no
         "score": round(passed / len(cleaned), 4) if cleaned else 0.0,
         "notes": notes.strip(),
         "results": cleaned,
+        # What the agent looked like when this score was earned.
+        "behaviour": behaviour_fingerprint(workspace),
     }
 
     directory.mkdir(parents=True, exist_ok=True)
@@ -268,6 +352,9 @@ def gate_status(workspace: Path, *, threshold: float = DEFAULT_THRESHOLD) -> dic
     if run.get("results") and coverage < 1.0:
         missing = len(cases) - len(scored & set(cases))
         return {"ok": False, "reason": f"{missing} case(s) not exercised in the last run", "score": score, "coverage": coverage}
+    drift = behaviour_changed(workspace)
+    if drift["stale"]:
+        return {"ok": False, "reason": drift["reason"], "score": score, "coverage": coverage}
     if score < threshold:
         return {"ok": False, "reason": f"score {score:.0%} is below the {threshold:.0%} bar", "score": score, "coverage": coverage}
     return {"ok": True, "reason": f"score {score:.0%} over {len(cases)} case(s)", "score": score, "coverage": coverage}
@@ -454,6 +541,11 @@ def manifest_block(workspace: Path, *, threshold: float = DEFAULT_THRESHOLD) -> 
         )
     if not gate["ok"]:
         lines.append(f"- Eval gate not satisfied: {gate['reason']} - `loop eval`")
+    if behaviour_changed(workspace)["stale"]:
+        lines.append(
+            "  - The last score no longer describes the current agent. Re-run the cases "
+            "before trusting it, and before the gate."
+        )
     lines.append("")
     return lines
 
