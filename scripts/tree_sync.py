@@ -25,6 +25,7 @@ from pathlib import Path
 import hierarchy_sync
 from workspace_tree import ROLE_MAIN, read_meta, refresh
 from workspace_utils import resolve_workspace
+from workspace_utils import console_utf8
 
 
 def _ultraplan_status(workspace: Path) -> str | None:
@@ -130,6 +131,7 @@ def describe(result: dict) -> str:
 
 
 def main() -> int:
+    console_utf8()
     parser = argparse.ArgumentParser(description="Sync main product and sub-products from either end.")
     parser.add_argument("--workspace", default=None)
     parser.add_argument(

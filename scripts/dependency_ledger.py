@@ -260,7 +260,9 @@ def declaration_for(book: dict[str, dict], row: dict) -> dict | None:
 
 
 def main() -> int:
-    from workspace_utils import resolve_workspace
+    from workspace_utils import console_utf8, resolve_workspace
+
+    console_utf8()
 
     parser = argparse.ArgumentParser(description="Integrations this workspace has declared.")
     parser.add_argument("--workspace", default=None)

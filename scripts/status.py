@@ -8,6 +8,7 @@ from datetime import date
 from pathlib import Path
 
 from workspace_utils import ROOT, load_config, resolve_workspace
+from workspace_utils import console_utf8
 
 
 STATE_FILES = [
@@ -186,6 +187,7 @@ def append_session_log(workspace: Path) -> None:
 
 
 def main() -> int:
+    console_utf8()
     parser = argparse.ArgumentParser(description="Write STATUS.md for a product workspace.")
     parser.add_argument("--workspace", default=None, help="Product workspace path.")
     args = parser.parse_args()

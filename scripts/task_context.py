@@ -350,7 +350,9 @@ def write_context(workspace: Path) -> Path | None:
 
 
 def main() -> int:
-    from workspace_utils import resolve_workspace
+    from workspace_utils import console_utf8, resolve_workspace
+
+    console_utf8()
 
     parser = argparse.ArgumentParser(description="Write plan/BUILD_CONTEXT.md for the active task.")
     parser.add_argument("--workspace", default=None)

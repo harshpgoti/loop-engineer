@@ -573,6 +573,7 @@ def recall_stats(workspace: Path) -> dict:
         return {"searches": 0, "hits": 0}
 
 
+
 def search_archive(workspace: Path, term: str) -> list[str]:
     """Find an answer in the archive without loading it into context."""
     hits: list[str] = []
@@ -649,7 +650,9 @@ def describe(results: list[dict]) -> str:
 
 
 def main() -> int:
-    from workspace_utils import resolve_workspace
+    from workspace_utils import console_utf8, resolve_workspace
+
+    console_utf8()
 
     parser = argparse.ArgumentParser(description="Compact finished work; keep the ledger inline.")
     parser.add_argument("--workspace", default=None)

@@ -133,6 +133,7 @@ REQUIRED_PATHS = [
     "scripts/dependency_ledger.py",
     "scripts/graph_index.py",
     "scripts/graph_schema.py",
+    "scripts/evidence_review.py",
     "scripts/task_context.py",
     "scripts/freshness.py",
     "scripts/hierarchy_sync.py",

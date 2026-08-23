@@ -194,6 +194,41 @@ def check_dangling(graph: dict) -> list[dict]:
     ]
 
 
+def check_expired_evidence(graph: dict, workspace: Path | None = None) -> list[dict]:
+    """A decision resting on a claim that is past its re-check date.
+
+    Raised as information, never as a verdict. The claim is uncertain, not disproved,
+    and an LLM asked whether a decision still holds is measured 30% wrong on exactly
+    this kind - principle and infrastructure decisions (arXiv:2602.07609). So this
+    surfaces the pair and lets a human look; it never supersedes anything.
+    """
+    if workspace is None:
+        return []
+    try:
+        import evidence_review
+
+        expired = {e["id"]: e for e in evidence_review.review_due(workspace)}
+    except Exception:
+        return []
+    if not expired:
+        return []
+
+    findings = []
+    for src, rel, dst in graph["edges"]:
+        if rel != "cites" or dst not in expired:
+            continue
+        if _kind(graph, src) != gi.DECISION:
+            continue
+        entry = expired[dst]
+        findings.append(
+            _finding("decision-on-expired-evidence", INFO, src,
+                     f"`{src}` rests on `{dst}`, whose validity window closed {entry['due']}.",
+                     f"Re-check {dst} or record a fresh `Date checked`. The decision is not wrong - "
+                     "its support is simply no longer current.")
+        )
+    return findings
+
+
 RULES = (
     check_edge_types,
     check_supersession,
@@ -203,6 +238,9 @@ RULES = (
     check_unsupported_decisions,
 )
 
+# Rules that need the workspace, not just the graph.
+WORKSPACE_RULES = (check_expired_evidence,)
+
 
 def validate(workspace: Path, graph: dict | None = None) -> list[dict]:
     graph = graph if graph is not None else gi.build(workspace)
@@ -210,6 +248,11 @@ def validate(workspace: Path, graph: dict | None = None) -> list[dict]:
     for rule in RULES:
         try:
             findings.extend(rule(graph))
+        except Exception:
+            continue
+    for rule in WORKSPACE_RULES:
+        try:
+            findings.extend(rule(graph, workspace))
         except Exception:
             continue
     order = {ERROR: 0, WARN: 1, INFO: 2}
@@ -242,7 +285,9 @@ def describe(findings: list[dict], *, verbose: bool = False) -> str:
 
 
 def main() -> int:
-    from workspace_utils import resolve_workspace
+    from workspace_utils import console_utf8, resolve_workspace
+
+    console_utf8()
 
     parser = argparse.ArgumentParser(description="Check the reference graph against the model.")
     parser.add_argument("--workspace", default=None)

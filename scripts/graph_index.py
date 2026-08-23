@@ -113,6 +113,35 @@ def record_history(workspace: Path, graph: dict, *, today: str | None = None) ->
     return history
 
 
+# Edge churn worth remembering, in days. Beyond this a closed edge is history nobody
+# queries: the *decision* about a finding lives in `finding_log`, and `as-of` past
+# this horizon is answering about a plan that no longer resembles the current one.
+HISTORY_RETENTION_DAYS = 400
+
+
+def prune_history(workspace: Path, *, keep_days: int = HISTORY_RETENTION_DAYS, today: str | None = None) -> int:
+    """Drop long-closed edges. Open edges are never touched, whatever their age."""
+    from datetime import date, datetime, timedelta
+
+    stamp = today or date.today().isoformat()
+    try:
+        cutoff = (datetime.strptime(stamp, "%Y-%m-%d").date() - timedelta(days=keep_days)).isoformat()
+    except ValueError:
+        return 0
+
+    history = read_history(workspace)
+    log = history["edges"]
+    stale = [k for k, v in log.items() if v.get("closed_at") and v["closed_at"] < cutoff]
+    for key in stale:
+        del log[key]
+    if stale:
+        history["edges"] = log
+        history_path(workspace).write_text(
+            json.dumps(history, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+    return len(stale)
+
+
 def correct(workspace: Path, edge: list[str], *, note: str = "") -> bool:
     """Mark an edge as never having been valid, rather than no longer valid."""
     from datetime import date
@@ -584,7 +613,9 @@ def describe(graph: dict) -> str:
 
 
 def main() -> int:
-    from workspace_utils import resolve_workspace
+    from workspace_utils import console_utf8, resolve_workspace
+
+    console_utf8()
 
     parser = argparse.ArgumentParser(description="Index how this workspace's records reference each other.")
     parser.add_argument("--workspace", default=None)

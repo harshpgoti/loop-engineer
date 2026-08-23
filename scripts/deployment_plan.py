@@ -22,6 +22,9 @@ STATE_FILES = [
 ]
 
 
+FULL_FILE = 2_000_000
+
+
 def read_text(path: Path, max_chars: int = 8000) -> str:
     if not path.exists():
         return ""
@@ -63,7 +66,10 @@ def append_open_doubts(workspace: Path, open_topics: list) -> None:
     if not open_topics:
         return
     doubts_path = workspace / "DOUBTS.md"
-    existing = read_text(doubts_path)
+    # The whole file, because this is a dedupe decision. Reading 8,000 chars of a
+    # 25,959-char DOUBTS.md meant any DQ-DEP entry past the cut looked absent and got
+    # re-asked and re-appended - the file grows, the cut stays, and it repeats.
+    existing = read_text(doubts_path, FULL_FILE)
     additions: list[str] = []
     for topic in open_topics:
         if doubt_exists(topic.doubt_id, existing):

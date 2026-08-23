@@ -11,6 +11,12 @@ from source_tree_scan import scan_source_tree
 from workspace_utils import ROOT, resolve_workspace
 
 
+# A reader that *decides* on a file gets all of it. These budgets exist for text
+# embedded in a rendered report; applying them before a parse silently answered
+# from a fraction of the file. On a real workspace that meant 78% of GATES.yml of GATES.yml
+# was invisible so the release verdict rested on a fifth of the gates.
+FULL_FILE = 2_000_000
+
 def read_text(path: Path, max_chars: int = 4000) -> str:
     if not path.exists():
         return ""
@@ -57,7 +63,7 @@ def analyze(workspace: Path) -> str:
     from memory_paths import main_plan_file
 
     main_plan = read_text(main_plan_file(workspace))
-    gates = read_text(workspace / "GATES.yml")
+    gates = read_text(workspace / "GATES.yml", FULL_FILE)
     prod_gap = read_text(workspace / "plan" / "PROD-GAP.md")
     test_plan = read_text(workspace / "docs" / "TEST_PLAN.md")
     current_state = read_text(workspace / "CURRENT_STATE.md")

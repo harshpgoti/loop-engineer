@@ -26,6 +26,7 @@ from parent_context import PARENT_CONTEXT_FILE, write_context
 from subproducts_report import SUBPRODUCTS_FILE, write_report
 from workspace_tree import ROLE_MAIN, describe_tree, refresh
 from workspace_utils import resolve_workspace
+from workspace_utils import console_utf8
 
 
 def _drop_stale(path: Path, result: dict) -> None:
@@ -191,6 +192,7 @@ def manifest_block(workspace: Path, result: dict) -> list[str]:
 
 
 def main() -> int:
+    console_utf8()
     parser = argparse.ArgumentParser(description="Refresh product hierarchy links and reports.")
     parser.add_argument("--workspace", default=None)
     parser.add_argument(

@@ -13,8 +13,19 @@ SCRIPTS = ROOT / "scripts"
 
 
 def run_script(script: str, args: list[str]) -> int:
+    """Run a loop script, with a console that can print what a product actually says.
+
+    Windows consoles default to cp1252, so any product text containing a character
+    outside it - a `>=`, an em dash, an accented name - raised UnicodeEncodeError and
+    took the whole command down mid-output. `loop findings ask` died on a single
+    U+2265 in a real workspace. This is the one chokepoint every script goes through.
+    """
+    import os
+
+    env = dict(os.environ)
+    env.setdefault("PYTHONIOENCODING", "utf-8:replace")
     cmd = [sys.executable, str(SCRIPTS / script), *args]
-    result = subprocess.run(cmd, check=False)
+    result = subprocess.run(cmd, check=False, env=env)
     return int(result.returncode)
 
 
@@ -290,6 +301,15 @@ def cmd_session_lifecycle(args: argparse.Namespace) -> int:
     if getattr(args, "summary", None):
         extra.extend(["--summary", args.summary])
     return run_script("session_lifecycle.py", extra)
+
+
+def cmd_evidence(args: argparse.Namespace) -> int:
+    extra = _workspace_args(args)
+    if getattr(args, 'verbose', False):
+        extra.append('--verbose')
+    if getattr(args, 'today', None):
+        extra.extend(['--today', args.today])
+    return run_script('evidence_review.py', extra)
 
 
 def cmd_fresh(args: argparse.Namespace) -> int:
@@ -715,6 +735,12 @@ def build_parser() -> argparse.ArgumentParser:
     ws_role.add_argument("role", nargs="?", default=None, choices=["main", "sub", "standalone"])
     ws_role.add_argument("--workspace", default=argparse.SUPPRESS)
     ws_role.set_defaults(func=cmd_workspace)
+
+    evidence = sub.add_parser("evidence", help="Evidence past its validity window - uncertain, not disproved.")
+    evidence.add_argument("--workspace", default=argparse.SUPPRESS)
+    evidence.add_argument("--verbose", action="store_true", help="Include undated entries.")
+    evidence.add_argument("--today", default=None, help="Evaluate as of a date (YYYY-MM-DD).")
+    evidence.set_defaults(func=cmd_evidence)
 
     fresh = sub.add_parser("fresh", help="Which generated files no longer match their sources.")
     fresh.add_argument("--workspace", default=argparse.SUPPRESS)

@@ -283,6 +283,17 @@ def _auto_maintenance(workspace: Path) -> list[str]:
     except Exception:
         pass
 
+    try:  # claims whose validity window has closed - epistemic, not mechanical
+        from evidence_review import review_due
+
+        due = review_due(workspace)
+        if due:
+            actions.append(
+                f"{len(due)} evidence entr(ies) past their validity window - `loop evidence`"
+            )
+    except Exception:
+        pass
+
     try:  # generated files that no longer match what they were generated from
         from freshness import stale_views
 
@@ -512,6 +523,7 @@ def session_end(
         if graph["nodes"]:
             graph_index.write(workspace, graph)
             closed = graph_index.record_history(workspace, graph)
+            graph_index.prune_history(workspace)
             withdrawn = sum(1 for e in closed["edges"].values() if e.get("closed_at") == _today())
             if withdrawn:
                 actions.append(f"graph: {withdrawn} reference(s) withdrawn this session")

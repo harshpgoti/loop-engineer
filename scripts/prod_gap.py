@@ -26,6 +26,12 @@ STATE_FILES = [
 ]
 
 
+# A reader that *decides* on a file gets all of it. These budgets exist for text
+# embedded in a rendered report; applying them before a parse silently answered
+# from a fraction of the file. On a real workspace that meant 94% of TASKS.yml of TASKS.yml and GATES.yml
+# was invisible so blocked-task and blocked-gate findings came from 6% of the file.
+FULL_FILE = 2_000_000
+
 def read_text(path: Path, max_chars: int = 2500) -> str:
     if not path.exists():
         return ""
@@ -68,8 +74,8 @@ def analyze(workspace: Path) -> str:
 
     main_plan = read_text(main_plan_file(workspace))
     current_state = read_text(workspace / "CURRENT_STATE.md")
-    tasks = read_text(workspace / "TASKS.yml")
-    gates = read_text(workspace / "GATES.yml")
+    tasks = read_text(workspace / "TASKS.yml", FULL_FILE)
+    gates = read_text(workspace / "GATES.yml", FULL_FILE)
     evidence = read_text(workspace / "EVIDENCE_LOG.md")
     decisions = read_text(workspace / "DECISIONS.md")
 

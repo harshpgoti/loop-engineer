@@ -16,6 +16,7 @@ from pathlib import Path
 import hierarchy_drift as drift
 from workspace_tree import ROLE_MAIN, product_folder, refresh
 from workspace_utils import ROOT, resolve_workspace
+from workspace_utils import console_utf8
 
 
 SUBPRODUCTS_FILE = "plan/SUBPRODUCTS.md"
@@ -276,6 +277,7 @@ def write_report(
 
 
 def main() -> int:
+    console_utf8()
     parser = argparse.ArgumentParser(description="Roll sub-product workspaces up into plan/SUBPRODUCTS.md.")
     parser.add_argument("--workspace", default=None)
     parser.add_argument("--print", action="store_true", help="Print instead of writing.")

@@ -12,6 +12,12 @@ from feature_paths import feature_artifact_paths, read_active_feature
 from workspace_utils import resolve_workspace
 
 
+# A reader that *decides* on a file gets all of it. These budgets exist for text
+# embedded in a rendered report; applying them before a parse silently answered
+# from a fraction of the file. On a real workspace that meant 79% of TASKS.yml of TASKS.yml
+# was invisible so id cross-referencing ran on a fifth of the tasks.
+FULL_FILE = 2_000_000
+
 def read_text(path: Path, limit: int = 8000) -> str:
     if not path.exists():
         return ""
@@ -105,7 +111,7 @@ def converge(workspace: Path) -> tuple[Path | None, list[str]]:
     elif tasks_md:
         suggestions.append("All feature tasks checked - run `/prod-gap` for release readiness.")
 
-    tasks_yml = read_text(workspace / "TASKS.yml")
+    tasks_yml = read_text(workspace / "TASKS.yml", FULL_FILE)
     if tasks_md and tasks_yml:
         yaml_ids = extract_task_ids(tasks_yml)
         if yaml_ids and not any("TASK-" in ln for ln in extract_feature_task_lines(tasks_md)):

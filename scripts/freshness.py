@@ -209,7 +209,9 @@ def stale_views(workspace: Path) -> list[dict]:
 
 
 def main() -> int:
-    from workspace_utils import resolve_workspace
+    from workspace_utils import console_utf8, resolve_workspace
+
+    console_utf8()
 
     parser = argparse.ArgumentParser(description="Which generated files no longer match their sources.")
     parser.add_argument("--workspace", default=None)

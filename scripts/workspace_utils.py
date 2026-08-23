@@ -12,6 +12,22 @@ from workspace_resolver import resolve_effective_workspace
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def console_utf8() -> None:
+    """Let this process print product text on a cp1252 console.
+
+    `loop` sets PYTHONIOENCODING for the scripts it launches; this covers running a
+    script directly, which is what the skills' documented `python scripts/x.py` lines
+    do. Replacement is deliberate - a mangled character beats a crashed command.
+    """
+    import sys
+
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
+
 def config_path() -> Path:
     """Registry location: global ~/.loop-engineer/data/registry/workspaces.json.
 

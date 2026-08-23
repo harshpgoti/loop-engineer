@@ -500,7 +500,9 @@ def describe(workspace: Path, *, verbose: bool = False) -> str:
 
 
 def main() -> int:
-    from workspace_utils import resolve_workspace
+    from workspace_utils import console_utf8, resolve_workspace
+
+    console_utf8()
 
     parser = argparse.ArgumentParser(description="Read and update DOUBTS.md deterministically.")
     parser.add_argument("--workspace", default=None)

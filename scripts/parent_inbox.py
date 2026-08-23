@@ -23,6 +23,7 @@ from pathlib import Path
 
 import finding_log
 from workspace_utils import resolve_workspace
+from workspace_utils import console_utf8
 
 # Kinds that are the sub-product's business. Map-level findings (`unbuilt-row`,
 # `missing-product-map`) belong to whoever owns the master plan.
@@ -255,6 +256,7 @@ def describe(data: dict, *, verbose: bool = False) -> str:
 
 
 def main() -> int:
+    console_utf8()
     parser = argparse.ArgumentParser(description="Findings this sub-product owes its parent an answer about.")
     parser.add_argument("--workspace", default=None)
     sub = parser.add_subparsers(dest="cmd")
