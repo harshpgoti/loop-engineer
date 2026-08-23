@@ -41,6 +41,20 @@ OpenCode also auto-loads `~/.claude/skills/` and `~/.agents/skills/`, and dedupe
 skill `name`. A router whose `name` disagrees with its folder stops those copies
 collapsing, so every install writes `name: loop-<command>` to match the folder.
 
+`loop skills` also grants read access to the app root in
+`~/.config/opencode/opencode.json[c]`:
+
+```json
+"permission": { "external_directory": { "*": "ask", "~/.loop-engineer/**": "allow" } }
+```
+
+Without it OpenCode asks for external-directory access on the first loop command in
+every new product folder, and the answer is always yes - a prompt that teaches people to
+click through prompts. Order matters: OpenCode applies the **last** matching rule, so the
+broad `ask` is written first. An existing value is never overwritten, and a config that is
+not plain JSON is left alone with the snippet printed instead, because OpenCode refuses to
+start on invalid config.
+
 Config is read once at startup - restart OpenCode after installing.
 
 ## Required Behavior

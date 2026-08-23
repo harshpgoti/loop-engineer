@@ -151,5 +151,107 @@ class RouterNaming(unittest.TestCase):
         self.assertIn(f"name: {install_skills.DIR_PREFIX}plan-loop", text)
 
 
+class RouterTarget(unittest.TestCase):
+    """Which app root the routers name.
+
+    Installing from a working checkout repointed every router at that checkout, so
+    `/loop-engine` in an unrelated product started reading `<checkout>/AGENTS.md`.
+    Nothing in the install output said so.
+    """
+
+    def setUp(self) -> None:
+        import install_skills
+
+        self.mod = install_skills
+        self.addCleanup(self.mod.set_app_root, install_skills.ROOT)
+
+    def test_the_installed_runtime_wins_over_a_checkout(self) -> None:
+        chosen = self.mod.router_app_root()
+        self.assertTrue(
+            chosen == self.mod.ROOT or (chosen / "AGENTS.md").is_file(),
+            "router target must be a real app root",
+        )
+
+    def test_from_here_aims_at_the_checkout(self) -> None:
+        self.assertEqual(self.mod.ROOT, self.mod.router_app_root(from_here=True))
+
+    def test_routers_name_whichever_root_was_chosen(self) -> None:
+        self.mod.set_app_root(Path("/somewhere/app"))
+        self.assertIn("/somewhere/app/AGENTS.md", self.mod.render_router("status"))
+        self.assertIn("/somewhere/app/AGENTS.md", self.mod.render_command("status"))
+
+    def test_the_permission_glob_covers_the_default_home(self) -> None:
+        self.assertIn("~/.loop-engineer/**", self.mod.app_globs())
+
+
+class PermissionGrant(unittest.TestCase):
+    """A prompt whose answer is always yes teaches people to click through prompts."""
+
+    def setUp(self) -> None:
+        import install_skills
+
+        self.mod = install_skills
+        self.dir = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.dir, True)
+
+    def config(self):
+        import json
+
+        return json.loads((self.dir / "opencode.json").read_text(encoding="utf-8"))
+
+    def test_a_missing_config_is_created_with_the_grant(self) -> None:
+        _path, added, _note = self.mod.ensure_permissions(self.dir, dry_run=False)
+        self.assertIn("~/.loop-engineer/**", added)
+        rules = self.config()["permission"]["external_directory"]
+        self.assertEqual("allow", rules["~/.loop-engineer/**"])
+
+    def test_the_broad_ask_comes_before_the_allow(self) -> None:
+        """opencode applies the LAST matching rule, so ordering is the whole behaviour."""
+        self.mod.ensure_permissions(self.dir, dry_run=False)
+        keys = list(self.config()["permission"]["external_directory"])
+        self.assertEqual("*", keys[0])
+        self.assertIn("~/.loop-engineer/**", keys[1:])
+
+    def test_running_twice_changes_nothing(self) -> None:
+        self.mod.ensure_permissions(self.dir, dry_run=False)
+        _p, added, note = self.mod.ensure_permissions(self.dir, dry_run=False)
+        self.assertEqual([], added)
+        self.assertEqual("already granted", note)
+
+    def test_an_existing_rule_is_never_overwritten(self) -> None:
+        import json
+
+        (self.dir / "opencode.json").write_text(
+            json.dumps({"permission": {"external_directory": {"~/.loop-engineer/**": "deny"}}}),
+            encoding="utf-8",
+        )
+        self.mod.ensure_permissions(self.dir, dry_run=False)
+        self.assertEqual("deny", self.config()["permission"]["external_directory"]["~/.loop-engineer/**"])
+
+    def test_a_config_we_cannot_parse_is_left_alone(self) -> None:
+        """opencode refuses to start on invalid config - never gamble with theirs."""
+        jsonc = self.dir / "opencode.jsonc"
+        jsonc.write_text(
+            chr(123) + " // a comment" + chr(10) + '  "model": "x"' + chr(10) + chr(125),
+            encoding="utf-8",
+        )
+        before = jsonc.read_text(encoding="utf-8")
+        _p, added, note = self.mod.ensure_permissions(self.dir, dry_run=False)
+        self.assertEqual([], added)
+        self.assertIn("not plain JSON", note)
+        self.assertEqual(before, jsonc.read_text(encoding="utf-8"))
+
+    def test_other_settings_survive(self) -> None:
+        import json
+
+        (self.dir / "opencode.json").write_text(json.dumps({"model": "anthropic/x"}), encoding="utf-8")
+        self.mod.ensure_permissions(self.dir, dry_run=False)
+        self.assertEqual("anthropic/x", self.config()["model"])
+
+    def test_dry_run_writes_nothing(self) -> None:
+        self.mod.ensure_permissions(self.dir, dry_run=True)
+        self.assertFalse((self.dir / "opencode.json").exists())
+
+
 if __name__ == "__main__":
     unittest.main()

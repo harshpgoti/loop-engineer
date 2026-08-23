@@ -110,6 +110,92 @@ SLASH_COMMAND_HOSTS: dict[str, dict[str, str]] = {
 }
 
 
+# A router points at the installed app, which by construction sits outside whatever
+# product folder the user is working in. opencode guards reads outside the project with
+# its `external_directory` permission, so without a rule it asks on the first loop
+# command in every new workspace - and the answer is always yes, which makes it a prompt
+# that teaches people to click through prompts.
+#
+# Config lives at `~/.config/opencode/opencode.json[c]`. opencode hard-fails on invalid
+# config, so this only ever writes a file it could parse, and never edits a value the
+# user already set.
+PERMISSION_HOSTS: dict[str, dict[str, str]] = {
+    "opencode": {"user": "~/.config/opencode", "project": ".opencode"},
+}
+CONFIG_NAMES = ("opencode.jsonc", "opencode.json")
+SCHEMA_URL = "https://opencode.ai/config.json"
+
+
+def app_globs() -> list[str]:
+    """Paths a router may send an agent to read, as permission globs."""
+    globs = ["~/.loop-engineer/**"]
+    try:
+        from loop_home import loop_home
+
+        home = loop_home().resolve().as_posix()
+        if not home.startswith(str(Path.home().as_posix()) + "/.loop-engineer"):
+            globs.append(f"{home}/**")
+    except Exception:  # noqa: BLE001 - a missing home must not stop the install
+        pass
+    app = APP_ROOT.resolve().as_posix()
+    if not any(app.startswith(g.rstrip("*").rstrip("/").replace("~", Path.home().as_posix())) for g in globs):
+        globs.append(f"{app}/**")
+    return globs
+
+
+def _config_path(folder: Path) -> Path:
+    for name in CONFIG_NAMES:
+        if (folder / name).is_file():
+            return folder / name
+    return folder / CONFIG_NAMES[1]
+
+
+def ensure_permissions(folder: Path, *, dry_run: bool) -> tuple[Path, list[str], str]:
+    """Grant read access to the app root. Returns (path, globs added, note)."""
+    path = _config_path(folder)
+    config: dict = {}
+    if path.is_file():
+        raw = path.read_text(encoding="utf-8", errors="ignore")
+        try:
+            config = json.loads(raw) if raw.strip() else {}
+        except json.JSONDecodeError:
+            # Comments, trailing commas, or a hand-rolled JSONC file. Rewriting it
+            # would drop whatever the author wrote there, and a broken opencode config
+            # stops opencode starting - so say what to add and change nothing.
+            return path, [], "not plain JSON - left alone"
+    if not isinstance(config, dict):
+        return path, [], "not an object - left alone"
+
+    permission = config.setdefault("permission", {})
+    if not isinstance(permission, dict):
+        return path, [], "`permission` is not an object - left alone"
+    external = permission.setdefault("external_directory", {})
+    if isinstance(external, str):
+        return path, [], f"`external_directory` is already {external!r} - left alone"
+    if not isinstance(external, dict):
+        return path, [], "`external_directory` is not an object - left alone"
+
+    added: list[str] = []
+    # opencode evaluates the LAST matching rule, so the broad default goes in first and
+    # every allow is appended after it.
+    if not external:
+        external["*"] = "ask"
+        added.append("*")
+    for glob in app_globs():
+        if glob in external:
+            continue
+        external[glob] = "allow"
+        added.append(glob)
+
+    if not added:
+        return path, [], "already granted"
+    config.setdefault("$schema", SCHEMA_URL)
+    if not dry_run:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
+    return path, added, ""
+
+
 def render_command(name: str, target: str | None = None) -> str:
     """A slash command for a host that keeps commands separate from skills.
 
@@ -160,6 +246,36 @@ def command_names() -> list[str]:
     return sorted(p.stem for p in COMMANDS_DIR.glob("*.md") if p.is_file())
 
 
+# Where the routers send agents. Running install from a working checkout used to point
+# every router at that checkout - so a user who happened to have the repo cloned had
+# their routers silently repointed at it, and `/loop-engine` in an unrelated product
+# started reading `<checkout>/AGENTS.md`. The installed runtime is the default target
+# whenever it exists; `--from-here` is how a contributor aims at their checkout, and the
+# summary always prints which one was used so it can never move without saying so.
+def router_app_root(from_here: bool = False) -> Path:
+    if from_here:
+        return ROOT
+    try:
+        from loop_home import app_path
+
+        installed = app_path()
+    except Exception:  # noqa: BLE001 - no loop home yet; this checkout is the runtime
+        return ROOT
+    if installed.resolve() == ROOT.resolve():
+        return ROOT
+    if (installed / "AGENTS.md").is_file():
+        return installed
+    return ROOT
+
+
+APP_ROOT = ROOT
+
+
+def set_app_root(path: Path) -> None:
+    global APP_ROOT
+    APP_ROOT = path
+
+
 def command_description(name: str) -> str:
     """First non-empty, non-heading line of the command file, cleaned for YAML."""
     path = COMMANDS_DIR / f"{name}.md"
@@ -185,7 +301,7 @@ def render_router(name: str, target: str | None = None) -> str:
         trigger = f" Alias for /{target}; invoke when the user types /{name}."
     else:
         trigger = f" Invoke when the user types /{name} or asks for this workflow."
-    app = ROOT.as_posix()
+    app = APP_ROOT.as_posix()
     skill_line = (
         f"3. `{app}/skills/{target}/SKILL.md`\n"
         if (SKILLS_DIR / target / "SKILL.md").exists()
@@ -293,7 +409,7 @@ def write_manifest(dest: Path, installed_dirs: list[str]) -> None:
         "generator": GENERATOR,
         "version": 3,
         "kind": "router",
-        "app_root": ROOT.as_posix(),
+        "app_root": APP_ROOT.as_posix(),
         "installed": sorted(installed_dirs),
     }
     (dest / MANIFEST_NAME).write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
@@ -412,7 +528,17 @@ def uninstall_dest(dest: Path, *, dry_run: bool) -> int:
     return removed
 
 
-def cmd_install(hosts: list[str], scope: str, project_root: Path, *, dry_run: bool, keep_legacy: bool = False) -> int:
+def cmd_install(
+    hosts: list[str],
+    scope: str,
+    project_root: Path,
+    *,
+    dry_run: bool,
+    keep_legacy: bool = False,
+    from_here: bool = False,
+) -> int:
+    set_app_root(router_app_root(from_here))
+    print(f"Routers will point at: {APP_ROOT}")
     names = command_names()
     if not names:
         print(f"No command files found in {COMMANDS_DIR}", file=sys.stderr)
@@ -449,6 +575,17 @@ def cmd_install(hosts: list[str], scope: str, project_root: Path, *, dry_run: bo
         total_p += n
         print(f"  [{host}] {w} slash command(s) -> {cmd_dest}")
 
+    for host in selected:
+        cfg = PERMISSION_HOSTS.get(host)
+        if not cfg:
+            continue
+        path, added, note = ensure_permissions(_resolve(cfg[scope], project_root), dry_run=dry_run)
+        if added:
+            print(f"  [{host}] granted read access to the app in {path}: {', '.join(added)}")
+        elif note not in ("", "already granted"):
+            print(f"  [{host}] {path}: {note} - add this yourself:")
+            print('           "permission": {"external_directory": {"*": "ask", "~/.loop-engineer/**": "allow"}}')
+
     if not keep_legacy:
         for host in hosts:
             legacy_dest, n = prune_legacy_commands(host, scope, project_root, dry_run=dry_run)
@@ -458,7 +595,7 @@ def cmd_install(hosts: list[str], scope: str, project_root: Path, *, dry_run: bo
 
     verb = "Would install" if dry_run else "Installed"
     print(f"{verb} routers to {dests} location(s); {total_w} written, {total_p} pruned, {total_s} skipped.")
-    print("Routers point at the installed app; canonical command/skill edits need no reinstall.")
+    print(f"Routers point at {APP_ROOT}; canonical command/skill edits need no reinstall.")
     if dry_run:
         print("Dry run only - re-run without --dry-run to apply.")
     return 0
@@ -509,6 +646,11 @@ def main() -> int:
     parser.add_argument("--uninstall", action="store_true", help="Remove Loop-installed routers.")
     parser.add_argument("--list", action="store_true", help="Show what Loop installed.")
     parser.add_argument("--dry-run", action="store_true", help="Show what would change; write nothing.")
+    parser.add_argument(
+        "--from-here",
+        action="store_true",
+        help="Point routers at this checkout instead of the installed runtime.",
+    )
     parser.add_argument("--keep-legacy-commands", action="store_true", help="Keep pre-router command wrappers left by Loop <= v2 instead of pruning them.")
     args = parser.parse_args()
 
@@ -522,7 +664,7 @@ def main() -> int:
         return cmd_uninstall(hosts, scope, project_root, dry_run=args.dry_run)
     return cmd_install(
         hosts, scope, project_root, dry_run=args.dry_run, keep_legacy=args.keep_legacy_commands
-    )
+    , from_here=args.from_here)
 
 
 if __name__ == "__main__":
