@@ -75,6 +75,7 @@ These live in the **workspace data root** (`~/.loop-engineer/data/` or `<product
 | `memories/USER.md` | User profile and durable preferences |
 | `memories/SOUL.md` | Agent voice/behavior for this product |
 | `DOUBTS.md` | Open user questions and grill points |
+| `CONTEXT.md` | Repo map, conventions, and `## Language` - the product's own words |
 | `plan/main_plan.md` | Full product plan for the current user |
 | `plan/` | Per-step product plans |
 | `CURRENT_STATE.md` | What is true right now |
@@ -97,6 +98,70 @@ loop session-end --summary "<progress>"
 
 This is what makes memory durable across chat sessions and tool switches - see
 [`docs/SESSION_LIFECYCLE.md`](docs/SESSION_LIFECYCLE.md). The agent runs it, not the user.
+
+## Questions get asked, not queued
+
+Three things used to sit in a file waiting for someone to remember them. All three are now
+raised in the session, with a recommended answer, by `/plan-loop`, `/product-develop`,
+`/loop-engine` and `/revise-plan`.
+
+**Doubts are asked in rounds.** A doubt can declare what it waits on:
+
+```markdown
+### DQ-009: Which PMS do we integrate first?
+- **Status:** open
+- **Blocking:** yes
+- **Depends on:** DQ-005
+- **Default if unavailable:** Whichever the design partner already runs.
+```
+
+Without that line this gets asked in the same breath as DQ-005, and the only honest answer is
+"ask me again once I have a partner". With it, the round holds DQ-009 back and says what it is
+waiting on. Answering **or deferring** DQ-005 advances the frontier - going with the default is
+a decision. A prerequisite written only in prose gets caught by `loop doubts lint`.
+
+**Questions that are not yours to answer leave the critical path.** Mark one
+`- **Ask:** the clearinghouse rep` and `loop doubts questionnaire` writes their questions out as
+a document to send, with the assumption we proceed on if nobody replies.
+
+**A parent product's disagreements** are derived fresh every session from both plans and asked
+the same way, never queued. See [`docs/PRODUCT_HIERARCHY.md`](docs/PRODUCT_HIERARCHY.md).
+
+## What the plan knows it does not know
+
+A plan has three kinds of unknown, and each has somewhere to live:
+
+| | Where | |
+|---|---|---|
+| A question you can state | `DOUBTS.md` | Asked in rounds, with a recommendation |
+| A decision you can see coming but cannot yet phrase | `plan/main_plan.md` → `## Not yet specified` | Timed; chased once it stops clearing |
+| Work you have ruled out | `plan/main_plan.md` → `## Out of scope` | Never graduates - stops it being re-suggested |
+
+The test for the middle one is whether you can **state** it precisely now, not whether you can
+answer it. Fog is meant to clear, so it is timed from when the patch first appeared: after 28
+days the session manifest says so, and it is now either a question you can state
+(`loop fog promote <n>`) or work you quietly decided against.
+
+```bash
+loop fog                 # every patch, and how long each has sat
+loop fog promote 2       # state one as a doubt, in your own wording, and clear it from the plan
+```
+
+## The product's own words
+
+`CONTEXT.md` gets a `## Language` section: one opinionated name per concept, and the synonyms
+it displaces.
+
+```markdown
+**Denial**
+A claim the payer adjudicated and refused to pay.
+_Avoid_: rejection, decline
+```
+
+`loop glossary` counts where a displaced synonym is still used across the plan, most-entrenched
+first, and surfaces it in the session manifest. It **reports and never rewrites** - when two
+words turn out to name different things the answer is two definitions, not a rename, and that
+call is yours.
 
 ## Command Usage
 
@@ -121,6 +186,11 @@ loop setup --use-cwd --source /path/to/other-tool --scan   # different structure
 
 Initializes the product on first run (asks name, target user, problem, first step, deployment targets), then: grill → product council → fact-check → PRD → architecture → feature spec → task compiler. Auto-detects platform-vs-convenient scale and routes `/ultraplan-loop` when needed.
 
+Grilling happens in **rounds**. Each round is the set of questions whose prerequisites are
+already settled, numbered, every one carrying a recommended answer. Questions that depend on
+an answer you have not given yet wait for the next round instead of being asked early - see
+[Questions get asked, not queued](#questions-get-asked-not-queued).
+
 ### 2. Build - `/product-develop` (alias: `/develop-product`)
 
 ```text
@@ -128,6 +198,11 @@ Initializes the product on first run (asks name, target user, problem, first ste
 ```
 
 Builds from the approved plan, one task at a time: implementation plan → smallest safe diff → tests → code review → QA → security/compliance → docs → prod-gap. Frontend motion/3D and AI-agent work auto-route to the right built-in skills.
+
+Code review runs on two axes reported separately - **Spec** (does it do what the task asked?)
+and **Standards** (is it built the way this repo builds things?) - because a change can pass
+either while failing the other. A red test whose cause is not obvious routes to
+`/diagnose-loop`.
 
 ### 3. All-in-one - `/loop-engine`
 
@@ -137,6 +212,20 @@ Builds from the approved plan, one task at a time: implementation plan → small
 ```
 
 The primary entry point: routes between planning and development based on gates - give it an idea and keep re-running it.
+
+### Ask, revise, unblock
+
+```text
+/ask-loop             # answer a question about the plan or the build from full context - read-only, cites sources
+/revise-plan          # correct or extend an existing plan; routes the edit to the right file
+/resolve-doubts       # clear every open blocker plan-wide, then give a go/no-go for development
+/diagnose-loop        # something is broken: build a loop that goes red on it, then hypothesise
+/eval-loop            # score the product's golden cases, catch regressions, let the failures pick the next task
+```
+
+`/diagnose-loop` refuses to theorise before it can name one command it has already run that
+drives the real code path and asserts the symptom. `/eval-loop` also runs itself after any
+change to agent behaviour - a prompt, a model, a tool definition - which unit tests cannot see.
 
 ### Product & planning helpers
 
@@ -148,7 +237,6 @@ The primary entry point: routes between planning and development based on gates 
 /spec-checklist       # spec quality gate before feature-plan
 /feature-converge     # post-build drift check vs spec/tasks
 /ultraplan-loop            # deep per-step planning for platform-scale products
-/product-tree         # main product <-> sub-product workspaces, roll-up, and drift vs the master plan
 /frontend-animation   # route to built-in GSAP / Motion.dev / 3D skills
 ```
 
@@ -170,6 +258,11 @@ sub-product's workspace - the difference is that the main plan can now see them,
 when a sub-product's plan contradicts it (conflicting cloud, datastore, or decision;
 unmapped sub-product; missing contract). Corrections are **staged** into the sub-product
 for approval, never written into it. Single-product workspaces are unaffected.
+
+```text
+/product-tree         # roles, roll-up, and where a sub-product's plan contradicts the master plan
+/product-tree-sync    # make both ends agree - run it from either folder when you are not sure
+```
 
 ```bash
 loop workspace tree      # role, parent, sub-products
@@ -253,7 +346,33 @@ See [`STARTUP_LOOP_ENGINEERING_PLAYBOOK.md`](STARTUP_LOOP_ENGINEERING_PLAYBOOK.m
 
 See [`docs/PROCESS.md`](docs/PROCESS.md) for the `/plan-loop`, `/product-develop`, and `/loop-engine` process architecture.
 
+## How code gets built
+
+Four reference skills the build loop loads when they apply. None of them needs a command -
+the phase that needs one reads it.
+
+| Skill | When it loads | What it settles |
+|-------|---------------|-----------------|
+| [`codebase-design`](skills/codebase-design/SKILL.md) | Placing a seam or shaping an interface | Shared words: module, interface, depth, seam, adapter, leverage, locality |
+| [`tdd`](skills/tdd/SKILL.md) | Writing or reviewing tests | Which seam to test at, and the three ways a test ends up proving nothing |
+| [`code-reviewer`](skills/code-reviewer/SKILL.md) | After code edits | Spec and Standards as separate axes, plus a twelve-smell baseline |
+| [`diagnose-loop`](skills/diagnose-loop/SKILL.md) | A bug the diff does not explain | A feedback loop that goes red before any theory is allowed |
+
+The bar `tdd` adds to "tests required" is mostly about the **tautological test** - where the
+expected value is computed the way the code computes it, so the test passes by construction and
+can never disagree with the code:
+
+```python
+expected = sum(i.price for i in items)      # recomputes the implementation
+assert calculate_total(items) == expected   # proves nothing
+
+assert calculate_total([{"price": 10}, {"price": 5}]) == 15   # an independent fact
+```
+
 ## Quality Checks
+
+Every check below is deterministic, and each one exists because something drifted without
+anyone noticing: an unreachable command, an orphaned skill, a README five commits stale.
 
 ```bash
 python scripts/validate_template.py

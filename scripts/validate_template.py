@@ -455,6 +455,35 @@ def check_skill_reachability(errors: list[str]) -> None:
         )
 
 
+# README.md is the only one of these files a human reads before installing anything, and
+# it is the one nothing was checking. It drifted five commits: `/ask-loop`, `/revise-plan`,
+# `/resolve-doubts`, `/eval-loop`, `/product-tree-sync` and `/diagnose-loop` all shipped
+# without ever appearing in it. AGENTS.md's Portable Commands table is the source of truth;
+# an alias row does not need its own README entry, since it points at a command that has one.
+COMMAND_ROW = re.compile(r"^\| `(/[a-z0-9-]+)` \| (?P<meaning>[^|]*)\|", re.M)
+
+
+def documented_commands() -> list[tuple[str, str]]:
+    text = (ROOT / "AGENTS.md").read_text(encoding="utf-8", errors="ignore")
+    return [(m.group(1), m.group("meaning").strip()) for m in COMMAND_ROW.finditer(text)]
+
+
+def check_readme_covers_commands(errors: list[str]) -> None:
+    pairs = documented_commands()
+    if not pairs:
+        errors.append("AGENTS.md has no Portable Commands table - nothing can be checked against it.")
+        return
+    readme = (ROOT / "README.md").read_text(encoding="utf-8", errors="ignore")
+    for name, meaning in pairs:
+        if meaning.lower().startswith("alias for"):
+            continue
+        if name not in readme:
+            errors.append(
+                f"`{name}` is in AGENTS.md's Portable Commands table but not in README.md, "
+                "so nobody reading the README knows it exists. Add it to the matching section."
+            )
+
+
 def check_skill_frontmatter(errors: list[str]) -> None:
     for skill_path in (ROOT / "skills").glob("*/SKILL.md"):
         text = skill_path.read_text(encoding="utf-8", errors="ignore")
@@ -509,6 +538,7 @@ def main() -> int:
     check_main_loop_coverage(errors)
     check_command_reachability(errors)
     check_skill_reachability(errors)
+    check_readme_covers_commands(errors)
 
     if errors:
         print("Template validation failed:\n")
