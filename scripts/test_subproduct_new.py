@@ -80,6 +80,21 @@ class Refusals(Sandbox):
     def test_a_single_digit_row_still_matches(self) -> None:
         self.assertEqual("01", sp.plan_row(self.main, "1").row_id)
 
+    def test_row_ids_are_read_the_way_people_type_them(self) -> None:
+        """`16, 17, 18` is how the list gets said, so it has to be how it parses."""
+        self.assertEqual(["01", "03"], sp.expand_rows(["01,", "03"]))
+        self.assertEqual(["01", "02", "03"], sp.expand_rows(["01,02,03"]))
+        self.assertEqual(["01"], sp.expand_rows([" #1 "]))
+
+    def test_a_dormant_row_is_refused_without_force(self) -> None:
+        """`list` marks it `later`; one typed row id must not bypass that."""
+        plan = sp.plan_row(self.main, "03")
+        self.assertFalse(plan.ok)
+        self.assertIn("has not started", plan.blockers[0])
+
+    def test_force_carves_out_a_dormant_row_anyway(self) -> None:
+        self.assertTrue(sp.plan_row(self.main, "03", force=True).ok)
+
 
 class FolderNaming(Sandbox):
     def test_the_folder_comes_from_the_row_title(self) -> None:

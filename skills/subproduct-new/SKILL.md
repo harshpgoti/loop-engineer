@@ -45,6 +45,16 @@ Scope - and the result is printed, not applied. The new workspace compiles its o
 from the plan it inherited, which is the normal path; retiring the main product's copies
 is a deliberate edit afterwards.
 
+## It stops at the workspace
+
+This command does **not** run `/loop-engine`. It prints the `cd` and the next command and
+stops there, because the build belongs to a different workspace and a different session:
+the new workspace has its own manifest, its own recall, its own gates, and `loop
+session-start` has to run inside it. Chaining straight into a build would skip all of that
+and build the new product using the main product's session state.
+
+So: carve the rows out here, then move.
+
 ## Reading the list
 
 | Mark | Meaning |

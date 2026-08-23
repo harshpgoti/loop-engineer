@@ -326,6 +326,8 @@ def cmd_subproduct(args: argparse.Namespace) -> int:
         tail += list(args.rows)
         if args.dry_run:
             tail.append("--dry-run")
+        if getattr(args, "force", False):
+            tail.append("--force")
     return run_script("subproduct_new.py", _workspace_args(args) + tail)
 
 
@@ -803,6 +805,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp_new = sp_sub.add_parser("new", help="Create a workspace for each map row given.")
     sp_new.add_argument("rows", nargs="+")
     sp_new.add_argument("--dry-run", action="store_true")
+    sp_new.add_argument("--force", action="store_true")
     sp_new.add_argument("--workspace", default=argparse.SUPPRESS)
     sp_new.set_defaults(func=cmd_subproduct)
     sp.set_defaults(func=cmd_subproduct)

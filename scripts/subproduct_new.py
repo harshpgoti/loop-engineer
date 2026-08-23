@@ -42,6 +42,7 @@ class Plan:
     folder: Path | None = None
     workspace: Path | None = None
     step_plan: Path | None = None
+    dormant: bool = False
     gates: list[str] = field(default_factory=list)
     tasks: list[str] = field(default_factory=list)
     blockers: list[str] = field(default_factory=list)
@@ -137,14 +138,35 @@ def task_candidates(main_ws: Path, row_id: str, title: str) -> list[str]:
     return [str(t.get("id")) for t in tasks if isinstance(t, dict) and str(t.get("gate")) in gates]
 
 
-def plan_row(main_ws: Path, row_id: str) -> Plan:
+def normalize_row(raw: str) -> str:
+    """`16,` `#16` ` 16 ` and `16` all mean row 16.
+
+    People type the list the way they say it. Rejecting `16,` with "no row 16," is a
+    parser complaining about punctuation while pretending the row does not exist.
+    """
+    cleaned = str(raw).strip().strip(",;").lstrip("#").strip()
+    if cleaned.isdigit() and len(cleaned) == 1:
+        return f"0{cleaned}"
+    return cleaned
+
+
+def expand_rows(raw: list[str]) -> list[str]:
+    """Row ids from however they were typed, including `16,17,18` as one argument."""
+    out: list[str] = []
+    for item in raw:
+        for part in str(item).replace(";", ",").split(","):
+            row = normalize_row(part)
+            if row and row not in out:
+                out.append(row)
+    return out
+
+
+def plan_row(main_ws: Path, row_id: str, *, force: bool = False) -> Plan:
     """Everything that would happen for one row, including why it cannot."""
     from plan_paths import slugify
     from workspace_tree import has_local_loop_data, local_data_dir, read_meta
 
-    row_id = row_id.strip().lstrip("#")
-    if row_id.isdigit() and len(row_id) == 1:
-        row_id = f"0{row_id}"
+    row_id = normalize_row(row_id)
 
     plan = Plan(row_id=row_id)
     row = next((r for r in _rows(main_ws) if str(r.get("id")) == row_id), None)
@@ -183,6 +205,19 @@ def plan_row(main_ws: Path, row_id: str) -> Plan:
     if slugify(folder.name) != slugify(plan.title):
         plan.blockers.append(
             f"`{folder.name}` does not slug-match the row title, so `map_id` would not bind."
+        )
+        return plan
+
+    from hierarchy_drift import row_is_dormant
+
+    plan.dormant = row_is_dormant(row)
+    if plan.dormant and not force:
+        # `list` marks these `later`; without the same guard here, one typed row id
+        # creates an empty workspace for work the plan has already parked.
+        plan.blockers.append(
+            f"Row {row_id} is `{str(row.get('status') or 'dormant').strip()}` - the plan says it has "
+            "not started. Carving it out now creates an empty workspace to keep in sync. "
+            "Check DECISIONS.md, then pass --force if you really mean it."
         )
         return plan
 
@@ -229,12 +264,12 @@ def _hand_over_plan(plan: Plan) -> str:
     return f"plan seeded from `{plan.step_plan.name}`"
 
 
-def create(main_ws: Path, row_id: str, *, dry_run: bool = False) -> dict:
+def create(main_ws: Path, row_id: str, *, dry_run: bool = False, force: bool = False) -> dict:
     """Create one sub-product workspace from a map row. Idempotent by refusal."""
     import setup_loop_engine as setup
     from workspace_tree import link
 
-    plan = plan_row(main_ws, row_id)
+    plan = plan_row(main_ws, row_id, force=force)
     result: dict = {
         "row": plan.row_id,
         "title": plan.title,
@@ -351,6 +386,7 @@ def main() -> int:
     new_p = sub.add_parser("new", help="Create a workspace for each map row given.")
     new_p.add_argument("rows", nargs="+", help="Map row ids, e.g. 17 18")
     new_p.add_argument("--dry-run", action="store_true")
+    new_p.add_argument("--force", action="store_true", help="Carve out a row the plan says is dormant.")
 
     sub.add_parser("list", help="Rows typed `sub-product`, and which are ready to carve out.")
 
@@ -383,8 +419,8 @@ def main() -> int:
         return 0
 
     failures = 0
-    for row_id in args.rows:
-        result = create(main_ws, row_id, dry_run=args.dry_run)
+    for row_id in expand_rows(args.rows):
+        result = create(main_ws, row_id, dry_run=args.dry_run, force=args.force)
         print(describe(result))
         print()
         if result["blockers"]:
