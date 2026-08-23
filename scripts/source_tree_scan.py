@@ -185,9 +185,34 @@ def has_lock_file(root: Path) -> bool:
     return any(path_exists(root, name) for name in LOCK_FILES)
 
 
+TEST_DIR_NAMES = ("tests", "test", "__tests__", "spec")
+
+
 def has_test_folder(root: Path) -> bool:
-    test_names = ("tests", "test", "__tests__", "spec")
-    return any((root / name).exists() for name in test_names)
+    """Tests anywhere in the first few levels, not only at the very top.
+
+    A service-split repo keeps them at `backend/tests/` and `e2e/tests/`, and checking
+    only the root reported "no test folder" as a launch blocker for a product with two
+    test suites - which the same scan was already reading in order to grep them.
+    """
+    if any((root / name).is_dir() for name in TEST_DIR_NAMES):
+        return True
+    for child in root.iterdir() if root.is_dir() else []:
+        if not child.is_dir() or child.name in SKIP_DIRS or child.name.startswith("."):
+            continue
+        if any((child / name).is_dir() for name in TEST_DIR_NAMES):
+            return True
+    return False
+
+
+def is_test_file(relative: str) -> bool:
+    """Whether a path is test code, for rules that should treat fixtures differently."""
+    lowered = relative.lower().replace("\\", "/")
+    parts = lowered.split("/")
+    if any(part in TEST_DIR_NAMES for part in parts):
+        return True
+    name = parts[-1]
+    return name.startswith("test_") or ".test." in name or ".spec." in name or name.endswith("_test.py")
 
 
 def has_migration_folder(root: Path) -> bool:
@@ -266,12 +291,19 @@ def scan_source_tree(workspace: Path) -> SourceTreeFindings:
     if findings.fixme_count:
         findings.p1.append(f"Found {findings.fixme_count} FIXME marker(s) in source tree.")
 
-    if findings.secret_hits:
+    real_hits = [rel for rel in findings.secret_hits if not is_test_file(rel)]
+    fixture_hits = [rel for rel in findings.secret_hits if is_test_file(rel)]
+    if fixture_hits:
+        findings.p1.append(
+            f"Secret-like patterns in {len(fixture_hits)} test file(s) - usually fixtures, "
+            "worth a look but not a launch blocker."
+        )
+    if real_hits:
         findings.p0.append("Possible hardcoded secret patterns detected in source files.")
         findings.security.append(
             "Review files with secret-like patterns and move credentials to environment variables or a secret manager."
         )
-        for rel in findings.secret_hits[:10]:
+        for rel in real_hits[:10]:
             findings.security.append(f"Review `{rel}` for secret-like content.")
 
     return findings

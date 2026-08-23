@@ -64,6 +64,32 @@ def _advance_watermark(workspace: Path, tree: dict) -> str | None:
     return str(wm.sync(workspace, Path(parent_ws), map_id=map_id))
 
 
+def drop_resolved(children: list[dict], findings: list[dict]) -> list[dict]:
+    """Remove findings the affected sub-product has already answered.
+
+    A resolution lives in the sub-product's own `.loop/finding-log.json`, because that
+    is where the decision was made. Without consulting it the main product kept
+    counting answered findings as launch blockers - five of them on a real workspace,
+    after the sub-product had accepted three and deferred two and its own inbox read
+    zero. Reporting a question as open after it has been answered is the failure this
+    whole mechanism exists to prevent.
+    """
+    try:
+        import finding_log
+    except ImportError:
+        return findings
+
+    by_name = {child["name"]: child for child in children if not child.get("missing")}
+    kept = []
+    for item in findings:
+        child = by_name.get(item.get("sub"))
+        workspace = child.get("data_dir") if child else None
+        if workspace and finding_log.resolution_for(Path(workspace), item) is not None:
+            continue
+        kept.append(item)
+    return kept
+
+
 def run(workspace: Path, *, stage: bool = True) -> dict:
     """Refresh the hierarchy and regenerate whichever report this workspace needs."""
     tree = refresh(workspace)
@@ -100,7 +126,7 @@ def run(workspace: Path, *, stage: bool = True) -> dict:
         _drop_stale(workspace / SUBPRODUCTS_FILE, result)
 
     if tree.get("role") == ROLE_MAIN and tree.get("children"):
-        findings = drift.check_children(workspace, tree["children"])
+        findings = drop_resolved(tree["children"], drift.check_children(workspace, tree["children"]))
         # Reported here, answered there: each sub-product recomputes its own share
         # of these and raises them with the user during its next command.
         path, _ = write_report(workspace, tree, {}, findings)
@@ -137,7 +163,7 @@ def readiness(workspace: Path) -> dict:
     if children:
         from subproducts_report import collect_child
 
-        findings = drift.check_children(workspace, children)
+        findings = drop_resolved(children, drift.check_children(workspace, children))
         counts = drift.summarize(findings)
         lines.append(
             f"- **Sub-products:** {len(children)} - see `plan/SUBPRODUCTS.md` "

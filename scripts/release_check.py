@@ -59,7 +59,14 @@ def _hierarchy(workspace: Path) -> dict:
         return {"children": 0, "blockers": []}
 
 
-def analyze(workspace: Path) -> str:
+def assess(workspace: Path) -> dict:
+    """What blocks release, what merely warns, and what already passes.
+
+    Split out of `analyze` so readiness can be *reported* without rendering and
+    writing RELEASE_CHECK.md. Release state was previously invisible until the very
+    end of a build, which is the pattern that gets found reactively - during the
+    release, when unpicking is most expensive.
+    """
     from memory_paths import main_plan_file
 
     main_plan = read_text(main_plan_file(workspace))
@@ -126,6 +133,24 @@ def analyze(workspace: Path) -> str:
 
     ready = not blockers
     status = "READY" if ready and not warnings else "NOT READY" if blockers else "READY WITH WARNINGS"
+    return {
+        "blockers": blockers,
+        "warnings": warnings,
+        "passed": passed,
+        "ready": ready,
+        "status": status,
+        "findings": findings,
+        "main_plan": main_plan,
+        "current_state": current_state,
+        "prod_gap": prod_gap,
+    }
+
+
+def analyze(workspace: Path) -> str:
+    state = assess(workspace)
+    blockers, warnings, passed = state["blockers"], state["warnings"], state["passed"]
+    findings, status = state["findings"], state["status"]
+    main_plan, current_state = state["main_plan"], state["current_state"]
 
     return render(
         load_template(),

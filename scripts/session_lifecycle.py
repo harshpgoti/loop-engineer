@@ -165,6 +165,23 @@ def attention_block(workspace: Path) -> list[str]:
     except Exception:
         pass
 
+    try:  # what still stands between this build and a release
+        from release_check import assess
+        from source_tree_scan import find_source_root
+
+        # Only once something is being built - a plan-stage workspace has nothing to
+        # be un-ready about, and saying so every session is noise.
+        if find_source_root(workspace) is not None:
+            state = assess(workspace)
+            if state["blockers"]:
+                head = "; ".join(b.split(" - ")[0] for b in state["blockers"][:2])
+                items.append(
+                    (f"{len(state['blockers'])} launch blocker(s) remain ({head}"
+                     f"{', ...' if len(state['blockers']) > 2 else ''})",
+                     "`loop release-check` - the full report, with warnings"))
+    except Exception:
+        pass
+
     try:
         from state_archive import recall_stats
         from state_archive import DECISIONS_ARCHIVE, EVIDENCE_ARCHIVE, TASKS_ARCHIVE

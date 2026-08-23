@@ -110,6 +110,8 @@ Run `loop session-start --command /product-develop` first and `loop session-end`
 - Update active feature `tasks.md` checkboxes and `TASKS.yml` status.
 - Run `loop feature converge` (or `/feature-converge`) - also runs on `loop session-end` for `/product-develop`.
 - Run `prod-gap` after meaningful development work.
+- Run `loop release-check` when the manifest reports launch blockers - it reports what
+  remains, which is worth knowing while there is still time to act on it.
 - Run `deployment-plan` at loop closeout to write `DEPLOYMENT_PLAN.md`.
 - Reuse cloud, LLM, and deployment answers already in `DECISIONS.md`, resolved `DOUBTS.md`, or `plan/main_plan.md`.
 - Ask the user only for unresolved deployment questions.

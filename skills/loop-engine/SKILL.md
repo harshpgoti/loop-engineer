@@ -55,6 +55,8 @@ that boundary is this command's job, not the user's.
 | Blocked on requirements mid-build | `/spec-clarify` |
 | After develop slice | `loop feature converge` + `skills/prod-gap/SKILL.md` |
 | `BUILD PHASE: evaluate` - the score no longer describes the current agent, or a case regressed | `skills/eval-loop/SKILL.md` (`loop eval`). Computed from a behaviour fingerprint, not judged - code review does not see behaviour |
+| Launch blockers reported in the manifest | `skills/release-check/SKILL.md` (`loop release-check`) - it says what remains, so read it during build rather than discovering it at the end |
+| Meaningful work unit complete | `skills/deployment-plan/SKILL.md` (`loop deployment-plan`) |
 | Release in scope | `skills/cicd-release/SKILL.md` |
 | Long session | `skills/compact-loop/SKILL.md` |
 | Memory/handoff/gates/tasks look inconsistent mid-loop | `skills/sync-loop-state/SKILL.md` (`loop sync`), then resume |
