@@ -104,6 +104,7 @@ The user should be able to type these commands in Cursor, Codex, Claude Code, Gr
 | `/frontend-animation` | Route to built-in GSAP, Motion.dev, and 3D core skills for frontend work | `commands/frontend-animation.md` + `skills/frontend-animation/SKILL.md` |
 | `/agent-builder` | Design/scaffold an AI agent (or agentic/dynamic workflow) as the product itself - auto-activates in `/plan-loop` and `/product-develop` | `commands/agent-builder.md` + `skills/agent-builder/SKILL.md` |
 | `/research-search` | Search arXiv, Research Square, and SSRN to ground a claim in evidence | `commands/research-search.md` + `skills/research-search/SKILL.md` |
+| `/diagnose-loop` | Diagnose a bug or performance regression - build a feedback loop that goes red on it first, hypothesise second | `commands/diagnose-loop.md` + `skills/diagnose-loop/SKILL.md` |
 
 If a tool does not support slash commands natively, interpret a plain user message containing one of the commands as a request to read the matching command file and execute it.
 
@@ -173,7 +174,13 @@ Use these before major work:
 - `skills/plan-loop/phases/council.md` before major product, architecture, or release decisions.
 - `skills/plan-loop/phases/task-compiler.md` after planning and before development.
 - `skills/implementation-planner/SKILL.md` before code edits.
-- `skills/code-reviewer/SKILL.md` after code edits.
+- `skills/codebase-design/SKILL.md` when placing a seam or shaping an interface - the shared
+  vocabulary the planner, the tests, and the review all use.
+- `skills/tdd/SKILL.md` when writing tests - the bar `AGENTS.md` #10 is measured against.
+- `skills/code-reviewer/SKILL.md` after code edits. Two axes, reported separately: Spec (does
+  it do what the task asked?) and Standards (is it built the way this repo builds things?).
+- `skills/diagnose-loop/SKILL.md` when something is broken and the cause is not obvious from
+  the diff.
 
 ## Memory layout (tool vs data)
 

@@ -89,7 +89,8 @@ SESSION-END
 | Plan branch | Full `/plan-loop` cycle | `commands/plan-loop.md` |
 | Plan branch | Feature spec | `feature new` → `spec-clarify` → `spec-checklist` → `task-compiler` |
 | Develop branch | Full `/product-develop` cycle | `commands/product-develop.md` |
-| Develop branch | Build + review | `implementation-planner`, `code-reviewer`, `qa-validation`, `security-compliance` |
+| Develop branch | Build + review | `implementation-planner`, `codebase-design`, `tdd`, `code-reviewer`, `qa-validation`, `security-compliance` |
+| Anything broken | Diagnose, do not guess | `/diagnose-loop` |
 | Develop branch | Drift + gaps | `feature converge`, `/prod-gap` |
 | Either | Deployment | `/deployment-plan` |
 | Either | Release (if in scope) | `cicd-release` |
@@ -152,7 +153,7 @@ When routing to develop, follow **`commands/product-develop.md`** in full:
 
 ```text
 select task (active feature tasks.md + TASKS.yml)
-→ implementation-planner → build → test → code-reviewer
+→ implementation-planner → build → test → (diagnose-loop if red) → code-reviewer
 → qa-validation → security-compliance (when applicable)
 → update tasks.md + TASKS.yml → prod-gap → feature-converge
 → deployment-plan → memory + handoff

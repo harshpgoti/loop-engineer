@@ -77,7 +77,8 @@ SESSION-START â†’ RECALL â†’ AUTO-SKILLS â†’ SELECT TASK â†’
 | Bootstrap | Manifest + recall + auto-skills | `SESSION_MANIFEST.md`, `AUTO_SKILLS.md` |
 | Pre-build | Active feature tasks | `tasks.md` + `TASKS.yml` |
 | Blocked? | Clarify spec | `/spec-clarify` |
-| Build | Plan diff + implement | `implementation-planner` |
+| Build | Plan diff + implement | `implementation-planner`, `codebase-design` |
+| Broken? | Diagnose before theorising | `/diagnose-loop` |
 | Frontend | Motion/3D skills | Read `AUTO_SKILLS.md` - do not ask user for library |
 | Quality | Review + QA + security | `code-reviewer`, `qa-validation`, `security-compliance` |
 | Sync | Tasks + converge | Update `tasks.md`; `loop feature converge` |
@@ -115,10 +116,13 @@ loop recall
 
 For each task:
 
-1. Run `skills/implementation-planner/SKILL.md`.
+1. Run `skills/implementation-planner/SKILL.md`. Name the seams the tests will observe
+   from before writing one (`skills/codebase-design/SKILL.md`, `skills/tdd/SKILL.md`).
 2. Implement the smallest safe diff.
-3. Run relevant tests/checks.
-4. Run `skills/code-reviewer/SKILL.md`.
+3. Run relevant tests/checks. A red test whose cause is not obvious from the diff routes to
+   `/diagnose-loop` - build the loop that goes red before forming a theory.
+4. Run `skills/code-reviewer/SKILL.md`. Two axes, reported separately, neither re-ranked
+   against the other.
 5. Run `skills/qa-validation/SKILL.md` when behavior changes.
 6. Run `skills/security-compliance/SKILL.md` when data, auth, external calls, or risk changes.
 7. Update docs and handoff.

@@ -419,6 +419,42 @@ def check_command_reachability(errors: list[str]) -> None:
         errors.append(f"MANUAL_BY_DESIGN lists `loop {name}`, which is no longer a command - drop it.")
 
 
+# A skill nothing points at is as unreachable as a CLI command nothing names. Users type
+# slash commands, so the only skills that ever run are the ones a command file reaches -
+# directly, or through another skill it already reaches. Reference skills such as
+# `codebase-design` are reached that way and are fine; a skill reached by nothing is dead
+# weight that still costs a reader's attention every time they scan the folder.
+def _skill_refs(text: str, known: set[str]) -> set[str]:
+    return set(re.findall(r"skills/([a-z0-9-]+)/", text)) & known
+
+
+def check_skill_reachability(errors: list[str]) -> None:
+    skills = {p.parent.name: p.parent for p in (ROOT / "skills").glob("*/SKILL.md")}
+    if not skills:
+        return
+    entry = list(ROOT.glob("*.md")) + list((ROOT / "commands").glob("*.md"))
+    queue = [
+        name
+        for path in entry
+        for name in _skill_refs(path.read_text(encoding="utf-8", errors="ignore"), set(skills))
+    ]
+    seen: set[str] = set()
+    while queue:
+        name = queue.pop()
+        if name in seen:
+            continue
+        seen.add(name)
+        for path in skills[name].rglob("*.md"):
+            queue += _skill_refs(path.read_text(encoding="utf-8", errors="ignore"), set(skills))
+
+    for name in sorted(set(skills) - seen):
+        errors.append(
+            f"`skills/{name}/` is reached by no command file and by no skill a command "
+            "reaches, so nothing will ever load it. Point at it from the command that owns "
+            "the capability, or from a skill that command already reads."
+        )
+
+
 def check_skill_frontmatter(errors: list[str]) -> None:
     for skill_path in (ROOT / "skills").glob("*/SKILL.md"):
         text = skill_path.read_text(encoding="utf-8", errors="ignore")
@@ -472,6 +508,7 @@ def main() -> int:
     check_feature_wiring(errors)
     check_main_loop_coverage(errors)
     check_command_reachability(errors)
+    check_skill_reachability(errors)
 
     if errors:
         print("Template validation failed:\n")

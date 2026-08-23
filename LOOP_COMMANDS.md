@@ -35,6 +35,7 @@ Use these directly in any agent that can access the repo:
 /loop-engine <idea>
 /ultraplan-loop
 /agent-builder
+/diagnose-loop
 /research-search
 ```
 
@@ -99,6 +100,7 @@ The agent must route the command through `commands/*.md` and update `memories/ME
 | `/ultraplan-loop` | `commands/ultraplan-loop.md` | Deep planning per step when scale is platform |
 | `/agent-builder` | `commands/agent-builder.md` | Design/scaffold an AI agent (or agentic/dynamic workflow) as the product |
 | `/research-search` | `commands/research-search.md` | Search arXiv, Research Square, and SSRN to ground a claim |
+| `/diagnose-loop` | `commands/diagnose-loop.md` | Build a feedback loop that goes red on a bug, then hypothesise |
 | `/upgrade-loop-engineer` | `commands/upgrade-loop-engineer.md` | Safe tool update without overwriting product data |
 
 ## Aliases

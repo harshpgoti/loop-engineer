@@ -13,7 +13,8 @@ Build the one task named in `plan/BUILD_CONTEXT.md`, in the smallest safe diff.
    doubts that block it. This replaces reading `TASKS.yml` and `GATES.yml` whole.
 2. `plan/SESSION_MANIFEST.md`
 3. Active feature: `spec.md`, `feature-plan.md`, `tasks.md`
-4. `skills/implementation-planner/SKILL.md`
+4. `skills/implementation-planner/SKILL.md`, and `skills/codebase-design/SKILL.md`
+   when the change places a seam or shapes an interface
 5. `skills/feature-workflow/SKILL.md`
 6. `plan/AUTO_SKILLS.md` / `plan/AUTO_AGENT_SKILLS.md` when present
 
@@ -29,8 +30,9 @@ in the `release` phase.
 2. **Plan the diff** with `skills/implementation-planner/SKILL.md` before editing.
 3. **Implement the smallest change** that satisfies the task's `acceptance` list.
    Match surrounding conventions; no drive-by refactors (`AGENTS.md` #9).
-4. **Write the tests with the code** (`AGENTS.md` #10). No task is done without them,
-   or a documented reason they could not run.
+4. **Write the tests with the code** (`AGENTS.md` #10), at the seam the plan named, to
+   the bar in `skills/tdd/SKILL.md`. No task is done without them, or a documented reason
+   they could not run.
 5. **Update the task's status** in `TASKS.yml` when it is genuinely complete - that is
    the source of truth, and it is what moves the next session on.
 
