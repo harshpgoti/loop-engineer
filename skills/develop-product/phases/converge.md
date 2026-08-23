@@ -37,6 +37,9 @@ Confirm what was built is what was planned, and close the loop on the task.
 
 - **Converged, gate moved, tasks remain** -> continue: pick up the next task rather than
   ending the turn.
+- **Converged and nothing is left, and the product has eval cases** -> continue into
+  `skills/eval-loop/SKILL.md` first. Agent behaviour changes are invisible to unit tests,
+  so the score has to move before release, not after.
 - **Converged and nothing is left** -> continue into `phases/release.md`.
 - **A gap needs a product decision** -> Stop Condition, named.
 

@@ -186,6 +186,12 @@ Return:
 6. Files changed
 7. Feature converge status (`converge-report.md`)
 8. Production gap status (`plan/PROD-GAP.md` updated, top blockers)
+
+The release phase runs `security-compliance`, `loop deployment-plan` and
+`loop release-check` itself - they are steps 2, 3 and 5 of `phases/release.md`, not
+follow-up work. Do not end a run by listing them as next steps; either the phase ran
+them and you report their results, or you stopped at a named Stop Condition before
+reaching it.
 9. Deployment plan status (`DEPLOYMENT_PLAN.md` updated, reused decisions, open deployment questions)
 10. Human-required blockers to ask user
 11. Compact status (`COMPACT.md` updated or why not needed)

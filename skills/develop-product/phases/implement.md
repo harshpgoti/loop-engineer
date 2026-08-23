@@ -47,8 +47,11 @@ Reversible synthetic scaffolding is allowed when the doubts are recorded.
 
 ## Continue automatically
 
-- **Task complete, tests green** -> mark it done, then continue: the next
-  `loop session-start` routes to `test` or `converge`. Do not stop to report.
+- **Task complete, tests green** -> mark it done and **continue in this turn** into
+  `phases/test.md`. Naming the next session as the thing that continues is how a build
+  turn ends early: the user gets a summary and a list of commands to run, when the loop
+  was supposed to keep going. A new session is the fallback if this one is interrupted,
+  not the handover.
 - **A blocking question has no answer you can derive** -> Stop Condition. Name it and
   what you need (`docs/CONTINUATION.md`).
 
