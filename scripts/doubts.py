@@ -48,6 +48,11 @@ NON_BLOCKING = (
 )
 BLOCKING = ("blocks ", "blocker", "p0", "before build", "blocking")
 
+# `Ask:` names who holds the answer. These mean "the person running the loop", so the
+# question is asked in-session; anything else is a question for someone who is not here,
+# and goes out as a questionnaire instead of blocking the build until they wander past.
+SELF_WORDS = {"user", "you", "me", "self", "owner", "founder", "the user", "us", "team"}
+
 
 @dataclass
 class Doubt:
@@ -62,7 +67,19 @@ class Doubt:
     note: str = ""
     line: int = 0
     superseded_by: str = ""
+    depends_on: list[str] = field(default_factory=list)
+    ask: str = ""
     issues: list[str] = field(default_factory=list)
+
+    @property
+    def owner(self) -> str:
+        """Who holds the answer. Absent an `Ask:` field, the user does."""
+        return self.ask.strip() or "user"
+
+    @property
+    def delegated(self) -> bool:
+        """Whether somebody other than the user has to answer this."""
+        return self.owner.strip().lower().rstrip(".") not in SELF_WORDS
 
     @property
     def is_open(self) -> bool:
@@ -257,6 +274,10 @@ def parse(workspace: Path) -> list[Doubt]:
             current.why = value
         elif key.startswith("default"):
             current.default = value
+        elif key.startswith(("depends", "blocked by", "after")):
+            current.depends_on = [m.upper() for m in ID_IN_TEXT.findall(value.upper())]
+        elif key == "ask" or key.startswith("ask "):
+            current.ask = value
         elif key.startswith(("resolution", "resolved", "answer", "deferral")):
             # `answer` is what `state_archive` leaves behind when it compacts a
             # resolved entry - the rationale moves to plan/archive/, this stays.
@@ -264,7 +285,40 @@ def parse(workspace: Path) -> list[Doubt]:
 
     close()
     _apply_supersessions(workspace, entries)
+    _check_dependencies(entries)
     return entries
+
+
+def _check_dependencies(entries: list[Doubt]) -> None:
+    """Bad `Depends on:` references, reported rather than silently obeyed."""
+    known = {d.id for d in entries}
+    for item in entries:
+        for ref in item.depends_on:
+            if ref == item.id:
+                item.issues.append("depends on itself")
+            elif ref not in known:
+                item.issues.append(f"depends on {ref}, which is not a doubt in this file")
+    # Prerequisites written in prose instead of in a field. The real ones look like
+    # `Default if unavailable: Decide when DQ-005 resolves.` - an ordering the author
+    # already knows and the frontier cannot see, so the question gets asked a round early.
+    open_ids = {d.id for d in entries if d.is_open and not d.superseded_by}
+    for item in entries:
+        if not item.is_open:
+            continue
+        prose = " ".join((item.question, item.why, item.default, item.title))
+        for ref in sorted(set(ID_IN_TEXT.findall(prose.upper()))):
+            if ref != item.id and ref in open_ids and ref not in item.depends_on:
+                item.issues.append(
+                    f"names {ref} but does not declare it - add `- **Depends on:** {ref}` "
+                    "if this cannot be answered until that one is"
+                )
+
+    for cycle in _cycles(entries):
+        loop = " -> ".join(cycle + [cycle[0]])
+        for node in cycle:
+            for item in entries:
+                if item.id == node:
+                    item.issues.append(f"prerequisite loop: {loop} - all of them get asked together")
 
 
 def _apply_supersessions(workspace: Path, entries: list[Doubt]) -> None:
@@ -315,6 +369,118 @@ def open_doubts(workspace: Path) -> list[Doubt]:
 
 def blocking_doubts(workspace: Path) -> list[Doubt]:
     return [d for d in open_doubts(workspace) if d.blocking]
+
+
+# ---------------------------------------------------------------------------
+# the frontier - which questions can honestly be asked right now
+# ---------------------------------------------------------------------------
+#
+# Asking every blocking doubt at once asks the user to answer questions whose answers
+# depend on answers they have not given yet. On this repo's own sub-product that meant
+# 17 questions in one wall of text, several of them unanswerable until earlier ones
+# landed. So a doubt may declare `- **Depends on:** DQ-003` and the frontier is what is
+# left once you remove everything still waiting on an unsettled question.
+#
+# Settled means resolved, deferred, or superseded. A deferral is a decision ("go with
+# the default for now"), so it unblocks whatever waited on it.
+
+
+def _settled_ids(entries: list[Doubt]) -> set[str]:
+    return {d.id for d in entries if d.status != OPEN or d.superseded_by}
+
+
+def _cycles(entries: list[Doubt]) -> list[list[str]]:
+    """Prerequisite loops, which would otherwise wait on each other forever."""
+    by_id = {d.id: d for d in entries}
+    open_ids = {d.id for d in entries if d.is_open and not d.superseded_by}
+    found: list[list[str]] = []
+    seen: set[str] = set()
+
+    def walk(node: str, path: list[str]) -> None:
+        if node in path:
+            cycle = path[path.index(node):]
+            key = tuple(sorted(cycle))
+            if key not in seen:
+                seen.add(key)
+                found.append(cycle)
+            return
+        if node not in open_ids:
+            return
+        for nxt in by_id[node].depends_on:
+            if nxt in by_id:
+                walk(nxt, path + [node])
+
+    for item in entries:
+        if item.is_open and not item.superseded_by:
+            walk(item.id, [])
+    return found
+
+
+def waiting_on(doubt: Doubt, entries: list[Doubt]) -> list[str]:
+    """Prerequisites of this doubt that are still open.
+
+    A prerequisite id nobody recognises counts as settled, not as an eternal block. A
+    typo in a `Depends on:` line would otherwise delete the question from every round
+    without saying a word - the exact kind of silent disappearance this harness keeps
+    finding. `lint` reports it instead.
+    """
+    known = {d.id for d in entries}
+    settled = _settled_ids(entries)
+    return [ref for ref in doubt.depends_on if ref in known and ref not in settled and ref != doubt.id]
+
+
+def frontier(workspace: Path) -> list[Doubt]:
+    """The blocking questions whose prerequisites are settled and whose answer is the user's.
+
+    Ask this whole list in one round. Nothing else can be answered honestly yet.
+    """
+    entries = parse(workspace)
+    in_a_cycle = {node for cycle in _cycles(entries) for node in cycle}
+    ready = []
+    for item in entries:
+        if not (item.is_open and item.blocking) or item.delegated:
+            continue
+        # A cycle has no honest ordering, so ask all of it rather than ask none of it.
+        if item.id in in_a_cycle or not waiting_on(item, entries):
+            ready.append(item)
+    return ready
+
+
+def blocked_behind(workspace: Path) -> list[tuple[Doubt, list[str]]]:
+    """Blocking questions held back this round, and the doubts each is waiting on."""
+    entries = parse(workspace)
+    in_a_cycle = {node for cycle in _cycles(entries) for node in cycle}
+    held = []
+    for item in entries:
+        if not (item.is_open and item.blocking) or item.delegated or item.id in in_a_cycle:
+            continue
+        waiting = waiting_on(item, entries)
+        if waiting:
+            held.append((item, waiting))
+    return held
+
+
+def delegated_doubts(workspace: Path) -> list[Doubt]:
+    """Open questions somebody other than the user has to answer."""
+    return [d for d in open_doubts(workspace) if d.delegated]
+
+
+def rounds(workspace: Path) -> list[list[str]]:
+    """Every remaining round, so a plan can say how many exchanges are left."""
+    entries = [d for d in parse(workspace) if d.is_open and d.blocking and not d.delegated]
+    known = {d.id for d in parse(workspace)}
+    settled = _settled_ids(parse(workspace))
+    remaining = {d.id: [r for r in d.depends_on if r in known and r not in settled and r != d.id] for d in entries}
+    result: list[list[str]] = []
+    while remaining:
+        ready = sorted(i for i, deps in remaining.items() if not any(dep in remaining for dep in deps))
+        if not ready:  # a cycle - the rest go out together
+            result.append(sorted(remaining))
+            break
+        result.append(ready)
+        for i in ready:
+            remaining.pop(i)
+    return result
 
 
 def counts(workspace: Path) -> dict[str, int]:
@@ -427,6 +593,8 @@ def add(
     why: str = "",
     default: str = "",
     blocking: bool = True,
+    depends_on: list[str] | None = None,
+    ask: str = "",
     doubt_id: str | None = None,
     prefix: str = "DQ",
 ) -> str | None:
@@ -450,6 +618,10 @@ def add(
         entry.append(f"- **Why it matters:** {why}")
     if default:
         entry.append(f"- **Default if unavailable:** {default}")
+    if depends_on:
+        entry.append(f"- **Depends on:** {', '.join(depends_on)}")
+    if ask:
+        entry.append(f"- **Ask:** {ask}")
 
     path = doubts_file(workspace)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -469,7 +641,94 @@ def question(doubt: Doubt) -> dict:
         "recommended": recommended,
         "recommended_source": source,
         "options": ["answer it", "accept the default", "defer it"],
+        "owner": doubt.owner,
+        "depends_on": list(doubt.depends_on),
     }
+
+
+# ---------------------------------------------------------------------------
+# questionnaires - questions the user cannot answer alone
+# ---------------------------------------------------------------------------
+#
+# Some doubts are not the user's to settle: what the payer actually returns on a 835,
+# which regulator owns a field, what the incumbent charges. Left in DOUBTS.md they block
+# development until somebody happens to be in the room. Marked `- **Ask:** <who>` they
+# leave the build's critical path and go out as a document that person fills in async.
+
+
+def _slug(text: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", text.strip().lower()).strip("-") or "questionnaire"
+
+
+def recipients(workspace: Path) -> dict[str, list[Doubt]]:
+    """Open questions grouped by who has to answer them, blocking ones first."""
+    grouped: dict[str, list[Doubt]] = {}
+    for item in delegated_doubts(workspace):
+        grouped.setdefault(item.owner, []).append(item)
+    for items in grouped.values():
+        items.sort(key=lambda d: (not d.blocking, d.id))
+    return grouped
+
+
+def questionnaire(workspace: Path, recipient: str, *, product: str = "") -> str:
+    """One recipient's questions as a document they can fill in without you present."""
+    items = recipients(workspace).get(recipient, [])
+    product = product or workspace.parent.name if workspace.name == ".loop-engineer" else workspace.name
+    lines = [
+        f"# Questions for {recipient}",
+        "",
+        f"**From:** the {product} team &nbsp;&nbsp; **To:** {recipient}",
+        "",
+        "**Why this exists:** each question below is currently blocking a build decision. "
+        "Your answer goes straight into the product's decision log, so please answer the ones "
+        "you can and say so plainly on the ones you cannot.",
+        "",
+        "## How to answer",
+        "",
+        "- Write under each **Answer:** line. Partial answers are useful.",
+        '- "I do not know" is a real answer - it tells us to go find it elsewhere rather than assume.',
+        "- Where a **Our assumption if we do not hear back** line appears, that is what we will do. "
+        "Correcting it is the highest-value thing you can do here.",
+        "",
+    ]
+    if not items:
+        lines += ["## Questions", "", "_No open questions are currently assigned to this recipient._", ""]
+        return "\n".join(lines)
+
+    blocking = [d for d in items if d.blocking]
+    other = [d for d in items if not d.blocking]
+    for heading, group in (("Blocking the build", blocking), ("Also useful", other)):
+        if not group:
+            continue
+        lines += [f"## {heading}", ""]
+        for item in group:
+            lines.append(f"### {item.id}: {item.question or item.title}")
+            if item.why:
+                lines.append(f"_Why this matters: {item.why}_")
+            lines.append("")
+            if item.default:
+                lines.append(f"**Our assumption if we do not hear back:** {item.default}")
+                lines.append("")
+            lines.append("**Answer:**")
+            lines.append("")
+            lines.append("")
+    lines += [
+        "## Anything else?",
+        "",
+        "Is there something we did not ask that we should know about?",
+        "",
+        "**Answer:**",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def write_questionnaire(workspace: Path, recipient: str) -> Path:
+    """Write the recipient's questionnaire and return its path."""
+    path = workspace / "plan" / "questionnaires" / f"{_slug(recipient)}.md"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(questionnaire(workspace, recipient) + "\n", encoding="utf-8")
+    return path
 
 
 def describe(workspace: Path, *, verbose: bool = False) -> str:
@@ -511,7 +770,9 @@ def main() -> int:
     listing = sub.add_parser("list", help="Open doubts and their status.")
     listing.add_argument("--verbose", action="store_true")
 
-    sub.add_parser("ask", help="Open blocking doubts as questions with recommended answers.")
+    sub.add_parser("ask", help="This round of questions: the ones whose prerequisites are settled.")
+    q_p = sub.add_parser("questionnaire", help="Write out questions somebody other than the user must answer.")
+    q_p.add_argument("recipient", nargs="?", default="", help="One recipient; omit to write every recipient's doc.")
     sub.add_parser("lint", help="Entries whose status contradicts their content.")
     sub.add_parser("counts", help="One authoritative count for every command to use.")
 
@@ -523,6 +784,15 @@ def main() -> int:
     defer_p = sub.add_parser("defer", help="Mark a doubt deferred, recording why.")
     defer_p.add_argument("doubt_id")
     defer_p.add_argument("reason")
+
+    add_p = sub.add_parser("add", help="Record a new question so the next session inherits it.")
+    add_p.add_argument("title")
+    add_p.add_argument("question")
+    add_p.add_argument("--why", default="")
+    add_p.add_argument("--default", dest="default_answer", default="", help="The recommended answer.")
+    add_p.add_argument("--depends-on", default="", help="Comma-separated doubt ids that come first.")
+    add_p.add_argument("--ask", default="", help="Who holds the answer, when it is not the user.")
+    add_p.add_argument("--non-blocking", action="store_true")
 
     args = parser.parse_args()
     workspace = resolve_workspace(args.workspace)
@@ -537,6 +807,23 @@ def main() -> int:
         ok = defer(workspace, args.doubt_id, args.reason)
         print(f"{args.doubt_id}: deferred" if ok else f"No doubt with id {args.doubt_id!r}")
         return 0 if ok else 1
+
+    if cmd == "add":
+        new_id = add(
+            workspace,
+            title=args.title,
+            question=args.question,
+            why=args.why,
+            default=args.default_answer,
+            blocking=not args.non_blocking,
+            depends_on=[p.strip().upper() for p in args.depends_on.split(",") if p.strip()],
+            ask=args.ask,
+        )
+        if new_id is None:
+            print("A doubt with that question is already recorded - nothing added.")
+            return 0
+        print(f"{new_id}: recorded")
+        return 0
 
     if cmd == "counts":
         for key, value in counts(workspace).items():
@@ -554,21 +841,65 @@ def main() -> int:
                 print(f"  - {issue}")
         return 0
 
+    if cmd == "questionnaire":
+        grouped = recipients(workspace)
+        if not grouped:
+            print("No open doubt names anybody but the user - nothing to send out.")
+            print("Mark one with `- **Ask:** <who>` to move it off the build's critical path.")
+            return 0
+        wanted = [args.recipient] if args.recipient else sorted(grouped)
+        for who in wanted:
+            if who not in grouped:
+                print(f"No open doubts assigned to {who!r}. Known: {', '.join(sorted(grouped))}")
+                return 1
+            path = write_questionnaire(workspace, who)
+            ids = ", ".join(d.id for d in grouped[who])
+            print(f"{who}: {len(grouped[who])} question(s) -> {path}")
+            print(f"  covers {ids}")
+            print("  answers come back with `loop doubts resolve <id> \"<answer>\"`")
+        return 0
+
     if cmd == "ask":
+        ready = frontier(workspace)
+        held = blocked_behind(workspace)
+        away = delegated_doubts(workspace)
         blocking = blocking_doubts(workspace)
+
         if not blocking:
             print("No blocking doubts. Development is not held up by open questions.")
+            if away:
+                print(f"{len(away)} question(s) are out with someone else - `loop doubts questionnaire`.")
             return 0
-        for index, item in enumerate(blocking, start=1):
+
+        if not ready:
+            # Every blocking question is waiting on someone who is not here. Saying
+            # "no questions" would read as "you are clear to build", which is a lie.
+            print(f"{len(blocking)} blocking question(s), none of them the user's to answer.")
+            for item in away:
+                print(f"  {item.id} -> {item.owner}: {item.question or item.title}")
+            print("Run `loop doubts questionnaire` to send them out.")
+            return 0
+
+        rounds_left = len(rounds(workspace))
+        print(f"ROUND 1 of {rounds_left} - {len(ready)} question(s) answerable now.")
+        if held:
+            print(f"{len(held)} more open once these land. {len(away)} are out with someone else.")
+        print()
+        for index, item in enumerate(ready, start=1):
             q = question(item)
-            print(f"[{index}/{len(blocking)}] {q['id']}: {q['question']}")
+            print(f"Q{index}. {q['id']} - {q['question']}")
             if q["why"]:
                 print(f"  Why it matters: {q['why']}")
             if q["recommended"]:
-                print(f"  Recommended: {q['recommended']}")
-                print(f"  (from {q['recommended_source']})")
+                print(f"  -> Recommended: {q['recommended']}")
+                print(f"     (from {q['recommended_source']})")
             else:
-                print("  No recorded default - this needs a real answer.")
+                print("  -> No recorded default - this one needs a real answer.")
+            print()
+        if held:
+            print("Held for a later round:")
+            for item, waiting in held:
+                print(f"  {item.id} waits on {', '.join(waiting)} - {item.title}")
             print()
         return 0
 

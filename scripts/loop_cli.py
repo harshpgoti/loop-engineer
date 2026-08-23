@@ -372,16 +372,31 @@ def cmd_findings(args: argparse.Namespace) -> int:
 
 def cmd_doubts(args: argparse.Namespace) -> int:
     cmd = getattr(args, "doubts_cmd", None) or "list"
-    extra = _workspace_args(args)
+    # `--workspace` is a top-level option on doubts.py, so it has to precede the
+    # subcommand. Appending it produced "unrecognized arguments: --workspace" for every
+    # doubts call that named a workspace - the same ordering bug `loop graph` had.
+    tail: list[str] = [cmd]
     if cmd == "resolve":
-        extra = ["resolve", args.doubt_id, args.answer] + (["--decision", args.decision] if args.decision else []) + extra
+        tail += [args.doubt_id, args.answer] + (["--decision", args.decision] if args.decision else [])
     elif cmd == "defer":
-        extra = ["defer", args.doubt_id, args.reason] + extra
+        tail += [args.doubt_id, args.reason]
     elif cmd == "list":
-        extra = ["list"] + (["--verbose"] if getattr(args, "verbose", False) else []) + extra
-    else:
-        extra = [cmd] + extra
-    return run_script("doubts.py", extra)
+        tail += ["--verbose"] if getattr(args, "verbose", False) else []
+    elif cmd == "add":
+        tail += [args.title, args.question]
+        for flag, value in (
+            ("--why", args.why),
+            ("--default", args.default_answer),
+            ("--depends-on", args.depends_on),
+            ("--ask", args.ask),
+        ):
+            if value:
+                tail += [flag, value]
+        if args.non_blocking:
+            tail.append("--non-blocking")
+    elif cmd == "questionnaire":
+        tail += [args.recipient] if getattr(args, "recipient", "") else []
+    return run_script("doubts.py", _workspace_args(args) + tail)
 
 
 def cmd_workspace(args: argparse.Namespace) -> int:
@@ -841,19 +856,35 @@ def build_parser() -> argparse.ArgumentParser:
     d_list.add_argument("--workspace", default=argparse.SUPPRESS)
     d_list.set_defaults(func=cmd_doubts)
     for name, helptext in (
-        ("ask", "Open blocking doubts as questions with recommended answers."),
+        ("ask", "This round of questions: the ones whose prerequisites are settled."),
         ("lint", "Entries whose status contradicts their content."),
         ("counts", "One authoritative count for every command to use."),
     ):
         parser_obj = doubts_sub.add_parser(name, help=helptext)
         parser_obj.add_argument("--workspace", default=argparse.SUPPRESS)
         parser_obj.set_defaults(func=cmd_doubts)
+    d_quest = doubts_sub.add_parser(
+        "questionnaire", help="Write out questions somebody other than the user must answer."
+    )
+    d_quest.add_argument("recipient", nargs="?", default="")
+    d_quest.add_argument("--workspace", default=argparse.SUPPRESS)
+    d_quest.set_defaults(func=cmd_doubts)
     d_resolve = doubts_sub.add_parser("resolve", help="Mark a doubt resolved, recording the answer.")
     d_resolve.add_argument("doubt_id")
     d_resolve.add_argument("answer")
     d_resolve.add_argument("--decision", default="", help="DECISIONS.md id to cross-link, e.g. D-014")
     d_resolve.add_argument("--workspace", default=argparse.SUPPRESS)
     d_resolve.set_defaults(func=cmd_doubts)
+    d_add = doubts_sub.add_parser("add", help="Record a new question so the next session inherits it.")
+    d_add.add_argument("title")
+    d_add.add_argument("question")
+    d_add.add_argument("--why", default="")
+    d_add.add_argument("--default", dest="default_answer", default="")
+    d_add.add_argument("--depends-on", default="")
+    d_add.add_argument("--ask", default="")
+    d_add.add_argument("--non-blocking", action="store_true")
+    d_add.add_argument("--workspace", default=argparse.SUPPRESS)
+    d_add.set_defaults(func=cmd_doubts)
     d_defer = doubts_sub.add_parser("defer", help="Mark a doubt deferred, recording why.")
     d_defer.add_argument("doubt_id")
     d_defer.add_argument("reason")

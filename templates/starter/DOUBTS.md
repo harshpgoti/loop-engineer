@@ -9,9 +9,10 @@ This file captures open questions, user decisions, contradictions, and grill poi
 - **Never hand-edit a status.** Use the commands, so the count every other command reads actually moves:
 
   ```bash
-  loop doubts ask                                   # blocking doubts, each with its recommended answer
+  loop doubts ask                                   # this round only, each with its recommended answer
   loop doubts resolve DQ-001 "<answer>" --decision D-014
   loop doubts defer   DQ-002 "<why, and what it blocks>"
+  loop doubts questionnaire                         # questions somebody else has to answer
   loop doubts lint                                  # entries whose status contradicts their content
   ```
 
@@ -30,9 +31,47 @@ invisible to the parser, and therefore to every command:
 | `Question` | yes | The question itself |
 | `Why it matters` | no | What it affects |
 | `Default if unavailable` | no | **This is the recommended answer** the agent offers when it raises the question. Write it as the thing you would actually do |
+| `Depends on` | no | Doubt ids that must be settled first. Puts this question in a **later round** instead of the current one |
+| `Ask` | no | Who holds the answer, when it is not the user. Takes the question off the build's critical path and into a questionnaire |
 
 Only a **blocking** open doubt holds up task compilation. Mark a commercial or
 nice-to-have question `Blocking: no` and it stays visible without stalling the build.
+
+## Rounds, not a wall of questions
+
+`loop doubts ask` asks the **frontier**: the blocking questions whose prerequisites are
+already settled. Everything else waits, and the output says what it waits on.
+
+```markdown
+### DQ-009: Which PMS do we integrate first?
+- **Status:** open
+- **Blocking:** yes
+- **Depends on:** DQ-005
+- **Question:** Tebra, DrChrono, or WebPT?
+- **Default if unavailable:** Whichever the design partner already runs.
+```
+
+Without the `Depends on:` line this gets asked in the same breath as DQ-005, and the only
+honest answer is "ask me again once I have a partner". Resolving **or deferring** DQ-005
+moves DQ-009 into the next round; a deferral counts, because going with the default is a
+decision. Prerequisite loops are asked together rather than never, and reported by `lint`.
+
+`lint` also catches the common case: a prerequisite written in prose
+(`Default if unavailable: Decide when DQ-005 resolves.`) that no code can see.
+
+## Questions that are not yours to answer
+
+Some questions need a payer rep, a clinician, an accountant, a lawyer. Left unmarked they
+block the build until that person happens to be in the room.
+
+```markdown
+- **Ask:** the clearinghouse rep
+```
+
+That doubt leaves the round entirely. `loop doubts questionnaire` writes
+`plan/questionnaires/<who>.md` - their questions, why each one matters, and the assumption
+we proceed on if they never reply - to send async. Answers come back through
+`loop doubts resolve`, so the reply lands in the same place every other answer does.
 
 ## Questions that stop mattering
 

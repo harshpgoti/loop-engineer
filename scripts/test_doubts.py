@@ -306,5 +306,176 @@ class Suggestions(Sandbox):
         self.assertTrue(q["options"])
 
 
+CHAINED = """# Doubts
+
+## Open Doubts
+
+### DQ-001: Who is the design partner
+- **Status:** open
+- **Blocking:** yes
+- **Question:** Which clinic signs first?
+- **Default if unavailable:** Physical therapy.
+
+### DQ-002: Which PMS to integrate
+- **Status:** open
+- **Blocking:** yes
+- **Depends on:** DQ-001
+- **Question:** Tebra or DrChrono?
+- **Default if unavailable:** Whichever the partner already runs.
+
+### DQ-003: Which fields to map
+- **Status:** open
+- **Blocking:** yes
+- **Depends on:** DQ-002
+- **Question:** Which claim fields does the mapper need?
+
+### DQ-004: What does the payer return
+- **Status:** open
+- **Blocking:** yes
+- **Ask:** the clearinghouse rep
+- **Question:** Does the 835 carry a decline reason?
+"""
+
+BAD_REF = """# Doubts
+
+## Open Doubts
+
+### DQ-001: A
+- **Status:** open
+- **Blocking:** yes
+- **Depends on:** DQ-999
+- **Question:** q
+"""
+
+LOOPED = """# Doubts
+
+## Open Doubts
+
+### DQ-001: A
+- **Status:** open
+- **Blocking:** yes
+- **Depends on:** DQ-002
+- **Question:** a
+
+### DQ-002: B
+- **Status:** open
+- **Blocking:** yes
+- **Depends on:** DQ-001
+- **Question:** b
+"""
+
+PROSE_ONLY = """# Doubts
+
+## Open Doubts
+
+### DQ-005: Partner
+- **Status:** open
+- **Blocking:** yes
+- **Question:** Which clinic?
+
+### DQ-009: PMS
+- **Status:** open
+- **Blocking:** yes
+- **Question:** Which PMS first?
+- **Default if unavailable:** Decide when DQ-005 resolves.
+"""
+
+
+class Sandbox(unittest.TestCase):
+    def workspace(self, body: str) -> Path:
+        folder = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, folder, True)
+        (folder / "DOUBTS.md").write_text(body, encoding="utf-8")
+        return folder
+
+    @staticmethod
+    def ids(items) -> list:
+        return [d.id for d in items]
+
+
+class Frontier(Sandbox):
+    """Asking a question whose answer depends on an unasked question wastes the round."""
+
+    def setUp(self) -> None:
+        self.dir = self.workspace(CHAINED)
+
+    def test_only_the_answerable_question_is_asked(self) -> None:
+        self.assertEqual(["DQ-001"], self.ids(doubts.frontier(self.dir)))
+
+    def test_the_rest_are_held_with_what_they_wait_on(self) -> None:
+        held = {d.id: waiting for d, waiting in doubts.blocked_behind(self.dir)}
+        self.assertEqual({"DQ-002": ["DQ-001"], "DQ-003": ["DQ-002"]}, held)
+
+    def test_answering_one_advances_the_frontier(self) -> None:
+        doubts.resolve(self.dir, "DQ-001", "Physical therapy.")
+        self.assertEqual(["DQ-002"], self.ids(doubts.frontier(self.dir)))
+
+    def test_a_deferral_also_advances_it(self) -> None:
+        """Deferring is a decision - go with the default - not an eternal wait."""
+        doubts.defer(self.dir, "DQ-001", "No partner yet.")
+        self.assertEqual(["DQ-002"], self.ids(doubts.frontier(self.dir)))
+
+    def test_rounds_reports_how_many_exchanges_remain(self) -> None:
+        self.assertEqual([["DQ-001"], ["DQ-002"], ["DQ-003"]], doubts.rounds(self.dir))
+
+    def test_a_delegated_question_never_enters_a_round(self) -> None:
+        self.assertIn("DQ-004", {d.id for d in doubts.blocking_doubts(self.dir)})
+        self.assertNotIn("DQ-004", {d.id for d in doubts.frontier(self.dir)})
+        self.assertEqual(["DQ-004"], self.ids(doubts.delegated_doubts(self.dir)))
+
+    def test_an_undeclared_owner_is_the_user(self) -> None:
+        first = next(d for d in doubts.parse(self.dir) if d.id == "DQ-001")
+        self.assertEqual("user", first.owner)
+        self.assertFalse(first.delegated)
+
+
+class BadDependencies(Sandbox):
+    """A prerequisite that cannot be satisfied must be reported, never silently obeyed."""
+
+    def test_a_typo_does_not_delete_the_question(self) -> None:
+        ws = self.workspace(BAD_REF)
+        self.assertEqual(["DQ-001"], self.ids(doubts.frontier(ws)))
+        self.assertTrue(any("DQ-999" in i for i in doubts.parse(ws)[0].issues))
+
+    def test_a_loop_is_reported_and_asked_together(self) -> None:
+        ws = self.workspace(LOOPED)
+        self.assertEqual({"DQ-001", "DQ-002"}, {d.id for d in doubts.frontier(ws)})
+        self.assertEqual([], doubts.blocked_behind(ws))
+        self.assertTrue(any("loop" in i for d in doubts.parse(ws) for i in d.issues))
+
+    def test_a_prerequisite_written_only_in_prose_is_surfaced(self) -> None:
+        """Taken from the real sub-product: 'Decide when DQ-005 resolves.'"""
+        ws = self.workspace(PROSE_ONLY)
+        nine = next(d for d in doubts.parse(ws) if d.id == "DQ-009")
+        self.assertTrue(any("DQ-005" in i and "Depends on" in i for i in nine.issues))
+        # Surfaced, not acted on - the edge stays the author's to declare.
+        self.assertEqual({"DQ-005", "DQ-009"}, {d.id for d in doubts.frontier(ws)})
+
+
+class Questionnaire(Sandbox):
+    """A question the user cannot answer should leave the build's critical path."""
+
+    def setUp(self) -> None:
+        self.dir = self.workspace(CHAINED)
+
+    def test_recipients_are_grouped_by_who_answers(self) -> None:
+        self.assertEqual(["the clearinghouse rep"], sorted(doubts.recipients(self.dir)))
+
+    def test_the_document_carries_the_question_and_the_assumption(self) -> None:
+        text = doubts.questionnaire(self.dir, "the clearinghouse rep")
+        self.assertIn("DQ-004", text)
+        self.assertIn("Does the 835 carry a decline reason?", text)
+        self.assertIn("**Answer:**", text)
+        self.assertIn("Anything else?", text)
+
+    def test_it_is_written_where_the_answers_can_come_back(self) -> None:
+        path = doubts.write_questionnaire(self.dir, "the clearinghouse rep")
+        self.assertTrue(path.is_file())
+        self.assertEqual("questionnaires", path.parent.name)
+
+    def test_an_unknown_recipient_gets_an_empty_document_not_a_crash(self) -> None:
+        self.assertIn("No open questions", doubts.questionnaire(self.dir, "nobody"))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
