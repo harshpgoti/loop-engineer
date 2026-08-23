@@ -227,16 +227,22 @@ def plan_row(main_ws: Path, row_id: str, *, force: bool = False) -> Plan:
     return plan
 
 
+# `- **Name:**` is not decoration: `loop status` reads it, and without it a workspace
+# carrying a full inherited plan still reported "Product: Uninitialized". Every identity
+# field the harness reads has to be written here, not left for the first session to guess.
 HANDOVER_HEADER = """# {title}
 
-> Carved out of the main product as **map row {row_id}** on {today}.
+- **Name:** {title}
+- **Role:** sub-product of {parent}, map row {row_id}
+- **Carved out:** {today} from the main product's `{source}`
+
 > Inherited platform decisions live in `plan/PARENT_CONTEXT.md` - read that first.
-> The plan below came from the main product's `{source}`; sharpen it here, not there.
+> Sharpen this plan here, not in the main product.
 
 """
 
 
-def _hand_over_plan(plan: Plan) -> str:
+def _hand_over_plan(plan: Plan, parent_name: str) -> str:
     """Seed the new workspace's plan from the row's step plan in the main product."""
     from datetime import date
 
@@ -250,6 +256,7 @@ def _hand_over_plan(plan: Plan) -> str:
     header = HANDOVER_HEADER.format(
         title=plan.title,
         row_id=plan.row_id,
+        parent=parent_name,
         today=date.today().isoformat(),
         source=plan.step_plan.name,
     )
@@ -262,6 +269,27 @@ def _hand_over_plan(plan: Plan) -> str:
         body = plan.step_plan.read_text(encoding="utf-8", errors="ignore")
     target.write_text(header + body, encoding="utf-8")
     return f"plan seeded from `{plan.step_plan.name}`"
+
+
+def _register(name: str, workspace: Path) -> None:
+    """Add the new workspace to the global registry, without making it the current one.
+
+    `setup`'s own register sets `config["current"]`, which is right when a human runs
+    setup and wrong here: carving out three rows would leave the last one as the global
+    default. Skipping registration entirely was worse - `loop status` then reported some
+    other product's name beside this workspace's path.
+    """
+    from workspace_utils import load_config, save_config
+
+    try:
+        config = load_config()
+        config.setdefault("workspaces", {})[name] = {
+            "path": str(workspace.resolve()),
+            "memory_mode": "local",
+        }
+        save_config(config)
+    except Exception:  # noqa: BLE001 - a registry problem must not fail the carve
+        pass
 
 
 def create(main_ws: Path, row_id: str, *, dry_run: bool = False, force: bool = False) -> dict:
@@ -303,8 +331,9 @@ def create(main_ws: Path, row_id: str, *, dry_run: bool = False, force: bool = F
         if setup.copy_missing_file(relative, plan.workspace) == "created":
             seeded += 1
     result["steps"].append(f"seeded {seeded} starter file(s), memory layout and state.db")
-    result["steps"].append(_hand_over_plan(plan))
+    result["steps"].append(_hand_over_plan(plan, main_folder(main_ws).name))
 
+    _register(plan.title, plan.workspace)
     link(main_ws, plan.folder, name=plan.title, map_id=plan.row_id)
     result["steps"].append(f"linked to the main product as map row {plan.row_id}")
 

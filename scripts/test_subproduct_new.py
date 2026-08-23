@@ -134,6 +134,28 @@ class Listing(Sandbox):
 
 
 class Creating(Sandbox):
+    """`create` registers the new workspace, so every test here stubs the registry.
+
+    Without this the suite writes a temp path into the user's real
+    `~/.loop-engineer` config every run - a test with a side effect on the machine
+    it is run on.
+    """
+
+    def setUp(self) -> None:
+        super().setUp()
+        import workspace_utils
+
+        self.registry: dict = {"workspaces": {}, "current": "unchanged"}
+        real_load, real_save = workspace_utils.load_config, workspace_utils.save_config
+        workspace_utils.load_config = lambda: self.registry
+        workspace_utils.save_config = lambda cfg: self.registry.update(cfg)
+
+        def restore() -> None:
+            workspace_utils.load_config = real_load
+            workspace_utils.save_config = real_save
+
+        self.addCleanup(restore)
+
     def test_dry_run_writes_nothing(self) -> None:
         sp.create(self.main, "01", dry_run=True)
         self.assertFalse((self.root / "Platform" / "Auth Service").exists())
@@ -157,6 +179,27 @@ class Creating(Sandbox):
         """The handover header names plan/PARENT_CONTEXT.md - it has to exist."""
         result = sp.create(self.main, "01")
         self.assertTrue((Path(result["workspace"]) / "plan" / "PARENT_CONTEXT.md").is_file())
+
+    def test_the_plan_carries_the_identity_status_reads(self) -> None:
+        """Without `- **Name:**`, a workspace with a full plan reports Uninitialized."""
+        result = sp.create(self.main, "01")
+        text = (Path(result["workspace"]) / "plan" / "main_plan.md").read_text(encoding="utf-8")
+        self.assertIn("- **Name:** Auth Service", text)
+        self.assertIn("map row 01", text)
+
+    def test_the_new_workspace_is_registered_without_stealing_current(self) -> None:
+        """Carving three rows must not leave the last one as the global default.
+
+        The registry is stubbed in setUp, so this asserts on it without touching the
+        real config.
+        """
+        result = sp.create(self.main, "01")
+        self.assertIn("Auth Service", self.registry["workspaces"])
+        self.assertEqual(
+            str(Path(result["workspace"]).resolve()),
+            self.registry["workspaces"]["Auth Service"]["path"],
+        )
+        self.assertEqual("unchanged", self.registry["current"])
 
     def test_creating_twice_refuses_rather_than_overwrites(self) -> None:
         sp.create(self.main, "01")
