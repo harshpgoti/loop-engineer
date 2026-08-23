@@ -952,5 +952,45 @@ class TestMapBinding(TreeSandbox):
         self.assertEqual("01", bound)
 
 
+class QualifiedDecisionBullets(unittest.TestCase):
+    """An ADR that settles several things qualifies each bullet.
+
+    `- **Decision - Cognito is authentication only.**` matched nothing, so the whole
+    section yielded no value and never crossed into a sub-product. On the real main
+    product that silently withheld "keep authorization wholly in Postgres" and the
+    row-level-security requirement from two sub-products, which then built on SQLite.
+    """
+
+    ADR = (
+        "## D-018: Account model" + chr(10) + chr(10)
+        + "- **Decision - the model:** organization then facility then user." + chr(10)
+        + "- **Decision - Cognito is authentication only.** Keep authorization in Postgres." + chr(10)
+        + "- **Decision - tenant isolation gets a second layer.** Add row-level security." + chr(10)
+        + "- **Rationale:** boilerplate that must never be harvested." + chr(10)
+    )
+
+    def entries(self):
+        return drift.decision_entries(self.ADR)
+
+    def test_every_qualified_bullet_becomes_its_own_decision(self) -> None:
+        self.assertEqual(3, len(self.entries()))
+
+    def test_the_datastore_call_survives_the_crossing(self) -> None:
+        values = " ".join(value for _label, value in self.entries().values())
+        self.assertIn("Postgres", values)
+        self.assertIn("row-level security", values)
+
+    def test_a_bare_decision_bullet_still_works(self) -> None:
+        text = "## D-007: Datastore" + chr(10) + chr(10) + "- **Decision:** Postgres." + chr(10)
+        entries = drift.decision_entries(text)
+        self.assertEqual(1, len(entries))
+        self.assertIn("Postgres", next(iter(entries.values()))[1])
+
+    def test_adr_boilerplate_is_still_never_harvested(self) -> None:
+        """The reason bare bullets are not harvested: every ADR repeats these."""
+        labels = " ".join(label for label, _v in self.entries().values()).lower()
+        self.assertNotIn("rationale", labels)
+
+
 if __name__ == "__main__":
     unittest.main()

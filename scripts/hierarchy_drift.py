@@ -137,7 +137,18 @@ def deployment_labels(workspace: Path) -> dict[str, tuple[str, str]]:
 
 
 ADR_HEADING = re.compile(r"^([A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*)\s*[:.]\s*(.+)$")
-DECISION_BULLET = re.compile(r"^[-*]\s+\*\*Decision:?\*\*:?\s*(.+)$", re.I)
+# A real ADR does not always write a bare `- **Decision:**`. When one section settles
+# several things it qualifies each bullet - `- **Decision - Cognito is authentication
+# only.**`, `- **Decision - tenant isolation gets a second layer.**` - and the bare-only
+# pattern matched none of them. That dropped the whole ADR from the surface a
+# sub-product inherits: on the real main product, D-M-018 carried the account model,
+# "keep authorization wholly in Postgres" and the row-level-security requirement, and
+# none of it reached the two sub-products, which then built on SQLite unopposed while
+# the drift check reported clean.
+DECISION_BULLET = re.compile(
+    r"^[-*]\s+\*\*Decision\s*(?:[-‐-―:]\s*(?P<qualifier>[^*]+?))?\s*:?\*\*:?\s*(?P<value>.+)$",
+    re.I,
+)
 
 
 def _adr_topic(heading: str) -> str:
@@ -211,10 +222,15 @@ def decision_entries(text: str, *, skip_sections: tuple[str, ...] = ()) -> dict[
             in_decision_table = False  # any non-table line ends the table
 
         bullet = DECISION_BULLET.match(stripped)
-        if bullet and heading and not is_placeholder(bullet.group(1)):
+        if bullet and heading and not is_placeholder(bullet.group("value")):
             topic = _adr_topic(heading)
             if topic:
-                pairs.setdefault(normalize_key(topic), (topic, bullet.group(1).strip()))
+                # Each qualified bullet is its own decision. Keying them all on the ADR
+                # heading would keep only the first, which is how five decisions became
+                # one and the datastore call stopped travelling.
+                qualifier = (bullet.group("qualifier") or "").strip().rstrip(".:")
+                label = f"{topic} - {qualifier}" if qualifier else topic
+                pairs.setdefault(normalize_key(label), (label, bullet.group("value").strip()))
 
     return pairs
 
