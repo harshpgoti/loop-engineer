@@ -28,6 +28,7 @@ Use these directly in any agent that can access the repo:
 /spec-checklist
 /resolve-doubts
 /feature-converge
+/eval-loop
 /product-tree
 /product-tree-sync
 /plan-loop <idea>
@@ -92,6 +93,7 @@ The agent must route the command through `commands/*.md` and update `memories/ME
 | `/spec-checklist` | `commands/spec-checklist.md` | Spec quality gate before feature-plan |
 | `/resolve-doubts` | `commands/resolve-doubts.md` | Interactively clear all open doubts/blockers plan-wide, ending in a go/no-go for development |
 | `/feature-converge` | `commands/feature-converge.md` | Drift check after implementation |
+| `/eval-loop` | `commands/eval-loop.md` | Score golden cases, record runs, catch regressions |
 | `/product-tree` | `commands/product-tree.md` | Show sub-product workspaces, their roll-up, and drift vs the master plan |
 | `/product-tree-sync` | `commands/product-tree-sync.md` | Sync main product ⇄ sub-products from either folder |
 | `/ultraplan-loop` | `commands/ultraplan-loop.md` | Deep planning per step when scale is platform |

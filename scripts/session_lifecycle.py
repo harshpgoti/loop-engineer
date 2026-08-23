@@ -272,6 +272,13 @@ def render_manifest(
             pass
 
     try:
+        from eval_suite import manifest_block as evals_block
+
+        lines.extend(evals_block(workspace))
+    except Exception:
+        pass
+
+    try:
         lines.extend(attention_block(workspace))
     except Exception:
         pass

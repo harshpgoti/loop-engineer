@@ -31,7 +31,7 @@ Also runs directly on `/agent-builder`.
 6. For any tool the agent can call, document it under `agent/tools/` with its JSON schema and whether it is destructive. Destructive/high-risk tools require human approval per **AGENTS.md rule 5** - say so explicitly.
 7. When a design choice is non-obvious (an eval methodology, a safety pattern, a memory architecture), ground it with `skills/research-search/SKILL.md` (arXiv / Research Square) and cite the source in `EVIDENCE_LOG.md` - don't assert it from vibes.
 8. Optionally research comparable skill patterns in the agent skill hubs listed in `tools/registry.md` via `WebFetch` - **read-only reference, never vendor or install their packages.** Loop Engineer's own agent-skill format (SKILL.md frontmatter) is deliberately a portable shape so patterns transfer without a dependency.
-9. Wire evals: golden cases under `agent/evals/`, tied into `skills/qa-validation/SKILL.md` - an agent PR should not merge on code review alone if agent *behavior* is what changed.
+9. Wire evals with `skills/eval-loop/SKILL.md` - golden cases under `agent/evals/`, tied into `skills/qa-validation/SKILL.md` - an agent PR should not merge on code review alone if agent *behavior* is what changed.
 10. Update `TASKS.yml`, `DECISIONS.md`, `HANDOFF.md` with what was decided/built.
 
 ## Rules

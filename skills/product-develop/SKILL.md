@@ -108,6 +108,8 @@ Run `loop session-start --command /product-develop` first and `loop session-end`
 - Run relevant tests or record why not.
 - Update active feature `tasks.md` checkboxes and `TASKS.yml` status.
 - Run `loop feature converge` (or `/feature-converge`) - also runs on `loop session-end` for `/product-develop`.
+- Run `loop eval` after any change to agent **behaviour** - a prompt, model, tool or
+  retrieval change passes code review and unit tests while behaviour gets worse.
 - Run `prod-gap` after meaningful development work.
 - Run `deployment-plan` at loop closeout to write `DEPLOYMENT_PLAN.md`.
 - Reuse cloud, LLM, and deployment answers already in `DECISIONS.md`, resolved `DOUBTS.md`, or `plan/main_plan.md`.

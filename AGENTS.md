@@ -97,6 +97,7 @@ The user should be able to type these commands in Cursor, Codex, Claude Code, Gr
 | `/spec-checklist` | Spec quality gate before feature-plan | `commands/spec-checklist.md` + `skills/plan-loop/phases/spec-checklist.md` |
 | `/resolve-doubts` | Interactively clear all open doubts/blockers plan-wide, then give a go/no-go for development | `commands/resolve-doubts.md` + `skills/plan-loop/phases/resolve-doubts.md` |
 | `/feature-converge` | Post-build drift check vs spec/tasks | `commands/feature-converge.md` + `skills/feature-converge/SKILL.md` |
+| `/eval-loop` | Score the product's golden cases, record the run, find regressions, and let the failure pattern decide what to build next | `commands/eval-loop.md` + `skills/eval-loop/SKILL.md` |
 | `/product-tree` | Show main product ⇄ sub-product workspaces, their roll-up, and where a sub-product's plan contradicts the master plan | `commands/product-tree.md` + `skills/product-tree/SKILL.md` |
 | `/product-tree-sync` | Make main product and sub-products agree, run from either folder - refreshes both ends and stages drift notes | `commands/product-tree-sync.md` + `skills/product-tree-sync/SKILL.md` |
 | `/ultraplan-loop` | Deep per-step planning for platform-scale products | `commands/ultraplan-loop.md` + `skills/plan-loop/phases/ultraplan.md` |

@@ -54,6 +54,8 @@ that boundary is this command's job, not the user's.
 | Build gates pass | `commands/product-develop.md` full flow |
 | Blocked on requirements mid-build | `/spec-clarify` |
 | After develop slice | `loop feature converge` + `skills/prod-gap/SKILL.md` |
+| Agent *behaviour* changed (prompt, model, tool, retrieval) | `skills/eval-loop/SKILL.md` (`loop eval`) - code review does not see behaviour |
+| Eval gate blocked or a case regressed | `skills/eval-loop/SKILL.md` |
 | Release in scope | `skills/cicd-release/SKILL.md` |
 | Long session | `skills/compact-loop/SKILL.md` |
 | Memory/handoff/gates/tasks look inconsistent mid-loop | `skills/sync-loop-state/SKILL.md` (`loop sync`), then resume |

@@ -303,6 +303,22 @@ def cmd_session_lifecycle(args: argparse.Namespace) -> int:
     return run_script("session_lifecycle.py", extra)
 
 
+def cmd_eval(args: argparse.Namespace) -> int:
+    cmd = getattr(args, 'eval_cmd', None) or 'status'
+    extra = _workspace_args(args)
+    if getattr(args, 'threshold', None) is not None:
+        extra.extend(['--threshold', str(args.threshold)])
+    if cmd == 'record':
+        tail = ['record', args.results]
+        if args.model:
+            tail.extend(['--model', args.model])
+        if args.notes:
+            tail.extend(['--notes', args.notes])
+    else:
+        tail = [cmd]
+    return run_script('eval_suite.py', extra + tail)
+
+
 def cmd_evidence(args: argparse.Namespace) -> int:
     extra = _workspace_args(args)
     if getattr(args, 'verbose', False):
@@ -735,6 +751,25 @@ def build_parser() -> argparse.ArgumentParser:
     ws_role.add_argument("role", nargs="?", default=None, choices=["main", "sub", "standalone"])
     ws_role.add_argument("--workspace", default=argparse.SUPPRESS)
     ws_role.set_defaults(func=cmd_workspace)
+
+    ev = sub.add_parser("eval", help="Eval cases, recorded runs, regressions, error analysis.")
+    ev.add_argument("--workspace", default=argparse.SUPPRESS)
+    ev.add_argument("--threshold", type=float, default=None)
+    ev_sub = ev.add_subparsers(dest="eval_cmd")
+    for name, helptext in (("status", "Cases, last score, gate, regressions."),
+                           ("cases", "Discovered case ids by suite."),
+                           ("analyse", "Write plan/EVAL_ANALYSIS.md from the last run.")):
+        obj = ev_sub.add_parser(name, help=helptext)
+        obj.add_argument("--workspace", default=argparse.SUPPRESS)
+        obj.add_argument("--threshold", type=float, default=None)
+        obj.set_defaults(func=cmd_eval)
+    ev_rec = ev_sub.add_parser("record", help="Persist a scored run from a JSON results file.")
+    ev_rec.add_argument("results")
+    ev_rec.add_argument("--model", default="")
+    ev_rec.add_argument("--notes", default="")
+    ev_rec.add_argument("--workspace", default=argparse.SUPPRESS)
+    ev_rec.set_defaults(func=cmd_eval)
+    ev.set_defaults(func=cmd_eval)
 
     evidence = sub.add_parser("evidence", help="Evidence past its validity window - uncertain, not disproved.")
     evidence.add_argument("--workspace", default=argparse.SUPPRESS)
