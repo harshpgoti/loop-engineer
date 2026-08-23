@@ -299,5 +299,69 @@ class TestMigration008(unittest.TestCase):
         self.assertIn("memory layout already organized", results)
 
 
+
+
+class CommandReachability(unittest.TestCase):
+    """A capability nothing names is a capability that never runs.
+
+    Four checks shipped in exactly that state - `loop evidence`, `loop fresh`,
+    `loop graph`, `loop archive` - and an audit by hand was the only thing that
+    found them. This makes the rule the suite's problem instead of mine.
+    """
+
+    def setUp(self) -> None:
+        import validate_template
+
+        self.vt = validate_template
+
+    def test_the_current_surface_is_fully_reachable(self) -> None:
+        errors: list[str] = []
+        self.vt.check_command_reachability(errors)
+        self.assertEqual([], errors)
+
+    def test_an_unwired_command_fails_validation(self) -> None:
+        original = self.vt.loop_subcommands
+        self.vt.loop_subcommands = lambda: original() + ["zzz-orphan"]
+        try:
+            errors: list[str] = []
+            self.vt.check_command_reachability(errors)
+        finally:
+            self.vt.loop_subcommands = original
+        self.assertTrue(any("zzz-orphan" in e for e in errors))
+
+    def test_a_manual_by_design_command_is_exempt(self) -> None:
+        original = self.vt.loop_subcommands
+        self.vt.loop_subcommands = lambda: original() + ["zzz-orphan"]
+        self.vt.MANUAL_BY_DESIGN["zzz-orphan"] = "test exemption"
+        try:
+            errors: list[str] = []
+            self.vt.check_command_reachability(errors)
+        finally:
+            self.vt.loop_subcommands = original
+            del self.vt.MANUAL_BY_DESIGN["zzz-orphan"]
+        self.assertEqual([], errors)
+
+    def test_a_retired_exemption_is_reported(self) -> None:
+        """An exemption outliving its command is a stale excuse, not a rule."""
+        self.vt.MANUAL_BY_DESIGN["zzz-gone"] = "no longer exists"
+        try:
+            errors: list[str] = []
+            self.vt.check_command_reachability(errors)
+        finally:
+            del self.vt.MANUAL_BY_DESIGN["zzz-gone"]
+        self.assertTrue(any("zzz-gone" in e for e in errors))
+
+    def test_slash_and_skill_forms_count_as_reachable(self) -> None:
+        """`compact` is reached as `/compact-loop`, `sync` as `/sync-loop-state`."""
+        errors: list[str] = []
+        self.vt.check_command_reachability(errors)
+        joined = " ".join(errors)
+        for name in ("compact", "status", "sync"):
+            self.assertNotIn(f"loop {name}`", joined)
+
+    def test_every_exemption_states_a_reason(self) -> None:
+        for name, reason in self.vt.MANUAL_BY_DESIGN.items():
+            self.assertTrue(reason.strip(), f"{name} is exempt with no reason given")
+
 if __name__ == "__main__":
     unittest.main()

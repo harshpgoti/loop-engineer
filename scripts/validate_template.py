@@ -361,6 +361,64 @@ def check_banned_terms(errors: list[str]) -> None:
                 errors.append(f"product-specific term {pattern.pattern!r} found in {rel}")
 
 
+# A `loop` subcommand that no skill or command file mentions is unreachable in
+# practice: users type slash commands, and the agent works from the files listed here.
+# Four checks shipped in exactly that state - `loop evidence`, `loop fresh`,
+# `loop graph` and `loop archive` - reachable only by someone who already knew they
+# existed, which is the same way the approval queue reached 164 entries nobody drained.
+#
+# Anything genuinely manual belongs below with the reason it cannot be automatic.
+# Each of these needs an argument the harness cannot derive, or acts outside the
+# workspace, so firing it on its own would be wrong rather than merely unhelpful.
+MANUAL_BY_DESIGN = {
+    "setup": "creates the workspace; must be intentional",
+    "update": "updates the runtime the agent is running from",
+    "migrate": "needs a --source path only the user knows",
+    "team-init": "commits a bootstrap to the repo for teammates",
+    "skills": "writes routers outside the workspace; setup and update already call it",
+    "home": "diagnostic; prints the layout and changes nothing",
+    "bootstrap": "diagnostic; prints the session read order",
+    "session": "ad-hoc search over past sessions",
+    "pending": "the opt-in --stage memory path only",
+}
+
+
+def loop_subcommands() -> list[str]:
+    """Top-level `loop` subcommands, read from the parser that defines them."""
+    source = (ROOT / "scripts" / "loop_cli.py").read_text(encoding="utf-8", errors="ignore")
+    # `sub` is the top-level subparser; nested groups use their own variable names,
+    # so this deliberately matches only the outermost level.
+    return sorted(set(re.findall(r'\bsub\.add_parser\(\s*"([a-z][a-z-]*)"', source)))
+
+
+def check_command_reachability(errors: list[str]) -> None:
+    surface_files = list((ROOT / "skills").rglob("*.md")) + list((ROOT / "commands").rglob("*.md"))
+    surface = "\n".join(p.read_text(encoding="utf-8", errors="ignore") for p in surface_files)
+
+    for name in loop_subcommands():
+        if name in MANUAL_BY_DESIGN:
+            continue
+        # Reachable in any form the surface actually uses: the CLI form, a slash
+        # command, or a skill directory. `compact` is reached as `/compact-loop` and
+        # `sync` as `/sync-loop-state`, so matching only `loop <name>` reports
+        # capabilities that are wired perfectly well.
+        escaped = re.escape(name)
+        if re.search(
+            rf"\bloop {escaped}\b|/{escaped}\b|/{escaped}-|skills/{escaped}\b|skills/{escaped}-",
+            surface,
+        ):
+            continue
+        errors.append(
+            f"`loop {name}` is named in no skill or command file, so nothing will ever run it. "
+            f"Wire it into the skill that owns the capability, or add it to "
+            f"MANUAL_BY_DESIGN in {Path(__file__).name} with the reason it cannot be automatic."
+        )
+
+    stale = sorted(set(MANUAL_BY_DESIGN) - set(loop_subcommands()))
+    for name in stale:
+        errors.append(f"MANUAL_BY_DESIGN lists `loop {name}`, which is no longer a command - drop it.")
+
+
 def check_skill_frontmatter(errors: list[str]) -> None:
     for skill_path in (ROOT / "skills").glob("*/SKILL.md"):
         text = skill_path.read_text(encoding="utf-8", errors="ignore")
@@ -413,6 +471,7 @@ def main() -> int:
     check_skill_frontmatter(errors)
     check_feature_wiring(errors)
     check_main_loop_coverage(errors)
+    check_command_reachability(errors)
 
     if errors:
         print("Template validation failed:\n")
