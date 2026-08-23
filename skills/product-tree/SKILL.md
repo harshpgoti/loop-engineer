@@ -57,6 +57,12 @@ loop workspace refresh --no-stage   # report only
 loop workspace unlink billing
 ```
 
+```bash
+loop graph check                     # reference-graph rules: supersession, gates, citations
+loop graph orphans                  # records nothing references
+loop graph dangling                 # references to ids nothing defines
+```
+
 `loop session-start` already runs the refresh - run these only to re-check mid-session.
 
 ## Drift checks (deterministic, not model-generated)

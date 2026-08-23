@@ -54,6 +54,22 @@ lists it), `skills/docs/SKILL.md`, `skills/plan-loop/phases/spec-clarify.md` (wh
 requirements are blocked), `skills/session-lifecycle/SKILL.md`, and the product repo's
 own instructions.
 
+## Needs a decision
+
+`plan/SESSION_MANIFEST.md` carries a **`## Needs a decision`** block when something in
+this workspace has gone out of date. It is absent when there is nothing to do, so if it
+is there, work it before planning or building on top of it:
+
+| Condition | Response |
+|-----------|----------|
+| Generated file no longer matches its sources | `loop fresh`, then re-run whatever generates it - the report names the changed input |
+| Evidence past its validity window | `loop evidence` - re-check the claim or record a fresh `Date checked`. Uncertain, not disproved: it still supports whatever cited it |
+| Reference to an id nothing defines | `loop graph dangling` - fix the id or add the record |
+| Reference-graph rule violation | `loop graph check` - each finding names its own fix |
+
+Never report these to the user as a list of commands to run. Run them, act on what they
+say, and report what changed (`docs/CONTINUATION.md`).
+
 ## Gate Classification
 
 - Planning docs: allowed.

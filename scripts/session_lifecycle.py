@@ -101,6 +101,93 @@ def _parent_findings(workspace: Path) -> dict:
         return {"parent": None, "ask": [], "report": [], "total": 0}
 
 
+def attention_block(workspace: Path) -> list[str]:
+    """Anything needing a decision, in the file every command reads first.
+
+    Nobody types `loop ...`. They type a slash command, and the agent works from
+    `plan/SESSION_MANIFEST.md`. A capability the manifest never mentions is a
+    capability that never runs - which is how the approval queue accumulated 164
+    entries nobody drained. Four checks were shipped in exactly that state
+    (`loop evidence`, `loop fresh`, `loop graph`, `loop archive`), reachable only by
+    someone who already knew they existed.
+
+    So this is the surface. Each line states the condition and the command that
+    answers it, and the block is absent entirely when there is nothing to do -
+    a standing checklist teaches people to skim past it.
+    """
+    items: list[tuple[str, str]] = []
+
+    try:
+        from freshness import stale_views
+
+        stale = stale_views(workspace)
+        if stale:
+            names = ", ".join(item["view"] for item in stale[:3])
+            items.append(
+                (f"{len(stale)} generated file(s) no longer match their sources ({names}"
+                 f"{', ...' if len(stale) > 3 else ''})",
+                 "`loop fresh` - then re-run whatever generates them"))
+    except Exception:
+        pass
+
+    try:
+        from evidence_review import review_due, undated
+
+        due = review_due(workspace)
+        if due:
+            items.append(
+                (f"{len(due)} evidence entr(ies) past their validity window - uncertain, not disproved",
+                 "`loop evidence` - re-check, or record a fresh `Date checked`"))
+        loose = undated(workspace)
+        if len(loose) > 10:
+            items.append(
+                (f"{len(loose)} evidence entr(ies) carry no `Date checked`, so nothing can age them",
+                 "`loop evidence --verbose` - add dates as you touch them"))
+    except Exception:
+        pass
+
+    try:
+        import graph_index
+        import graph_schema
+
+        graph = graph_index.build(workspace)
+        if graph["nodes"]:
+            broken = graph.get("dangling") or []
+            if broken:
+                items.append(
+                    (f"{len(broken)} reference(s) point at an id nothing defines",
+                     "`loop graph dangling` - fix the id, or add the record"))
+            errors = [f for f in graph_schema.validate(workspace, graph) if f["level"] == graph_schema.ERROR]
+            if errors:
+                items.append(
+                    (f"{len(errors)} reference-graph rule violation(s) - e.g. {errors[0]['rule']}",
+                     "`loop graph check` - each finding names its fix"))
+    except Exception:
+        pass
+
+    try:
+        from state_archive import recall_stats
+        from state_archive import DECISIONS_ARCHIVE, EVIDENCE_ARCHIVE, TASKS_ARCHIVE
+
+        archived = any((workspace / rel).is_file() for rel in (TASKS_ARCHIVE, EVIDENCE_ARCHIVE, DECISIONS_ARCHIVE))
+        if archived and not recall_stats(workspace).get("searches"):
+            items.append(
+                ("Detail has been archived but never read back, so compaction may be losing it in practice",
+                 "`loop archive --search \"<term>\"` when you need why a finished thing was done that way"))
+    except Exception:
+        pass
+
+    if not items:
+        return []
+
+    lines = ["", "## Needs a decision", "", "Resolve these before planning or building on top of them:", ""]
+    for condition, action in items:
+        lines.append(f"- {condition}")
+        lines.append(f"  - {action}")
+    lines.append("")
+    return lines
+
+
 def render_manifest(
     workspace: Path,
     *,
@@ -183,6 +270,11 @@ def render_manifest(
             lines.extend(findings_block(workspace, findings))
         except Exception:
             pass
+
+    try:
+        lines.extend(attention_block(workspace))
+    except Exception:
+        pass
 
     bootstrap = workspace / "plan" / "PLAN_BOOTSTRAP.md"
     if bootstrap.exists():
