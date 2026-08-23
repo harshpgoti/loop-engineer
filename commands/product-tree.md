@@ -49,7 +49,8 @@ loop workspace role main            # pin a role instead of auto-detecting
 ## Continuation
 
 **Read-only - deliberately does not cascade.** Reporting the tree and naming the next
-command *is* this command's product. When drift needs resolving, hand off to
+command *is* this command's product - it is read-only by design, so it reports rather
+than resolves. When drift needs resolving, hand off to
 `/resolve-doubts` (this workspace) or `/plan-loop` (to correct the master plan). See the
 read-only exemption in `docs/CONTINUATION.md`.
 

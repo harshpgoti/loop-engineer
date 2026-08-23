@@ -484,6 +484,49 @@ def check_readme_covers_commands(errors: list[str]) -> None:
             )
 
 
+# AGENTS.md #13: never end a turn by telling the user to run a command you could have
+# run. `/product-tree-sync` shipped saying "Writes reports, then stops... hand off to
+# `/resolve-doubts`", so a user who ran it got a list of chores instead of the questions
+# the sync had just computed - each of which already carried a recommended answer.
+#
+# Handing a command back is legitimate exactly twice: when the command is read-only by
+# design and the next step writes, and when a real Stop Condition is named. Both are
+# declared, not inferred.
+HANDS_BACK = re.compile(r"hand off to\s+`?/", re.I)
+READ_ONLY_BY_DESIGN = {
+    "commands/product-tree.md": "a read-only view; resolving is a different command",
+    "skills/ask-loop/SKILL.md": "answers questions without writing, by design",
+}
+
+
+def _continuation_of(text: str) -> str:
+    match = re.search(r"^##+\s*Contin\w*.*$", text, re.M)
+    return text[match.start():] if match else ""
+
+
+def check_continuation_handoffs(errors: list[str]) -> None:
+    for path in sorted(list((ROOT / "commands").glob("*.md")) + list((ROOT / "skills").rglob("*.md"))):
+        rel = path.relative_to(ROOT).as_posix()
+        if rel in READ_ONLY_BY_DESIGN:
+            continue
+        section = _continuation_of(path.read_text(encoding="utf-8", errors="ignore"))
+        if not section or not HANDS_BACK.search(section):
+            continue
+        if re.search(r"Stop Condition", section, re.I):
+            continue
+        errors.append(
+            f"{rel} ends by handing the user a slash command, with no Stop Condition named "
+            "(AGENTS.md #13). Run it, or name the Stop Condition - or add the file to "
+            "READ_ONLY_BY_DESIGN with the reason it cannot act."
+        )
+    stale = sorted(set(READ_ONLY_BY_DESIGN) - {
+        p.relative_to(ROOT).as_posix()
+        for p in list((ROOT / "commands").glob("*.md")) + list((ROOT / "skills").rglob("*.md"))
+    })
+    for rel in stale:
+        errors.append(f"READ_ONLY_BY_DESIGN lists {rel}, which no longer exists - drop it.")
+
+
 def check_skill_frontmatter(errors: list[str]) -> None:
     for skill_path in (ROOT / "skills").glob("*/SKILL.md"):
         text = skill_path.read_text(encoding="utf-8", errors="ignore")
@@ -539,6 +582,7 @@ def main() -> int:
     check_command_reachability(errors)
     check_skill_reachability(errors)
     check_readme_covers_commands(errors)
+    check_continuation_handoffs(errors)
 
     if errors:
         print("Template validation failed:\n")
