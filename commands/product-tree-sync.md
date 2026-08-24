@@ -9,9 +9,10 @@ If the user says `/product-tree-sync`, `sync my products`, `sync main and sub pr
 `sync the tree`, `my sub-product is out of date`, `the main plan changed`, or asks to
 refresh the link between a main product and a sub-product, execute this file directly.
 
-Use `/product-tree` instead when the user only wants to **see** the tree. This command
-writes: it regenerates the reports, advances the sub-product's parent watermark, and
-stages drift notes.
+Use `/product-tree` instead when the user only wants to **see** the tree. Normal command
+lifecycle already runs this sync automatically; this explicit command is for a requested
+mid-session recheck. It regenerates reports and advances a sub-product watermark only
+after its findings are answered.
 
 ## Required Reads
 
@@ -42,7 +43,7 @@ Run it from the folder the user is standing in. It works out the rest:
 
 | Run from | What it does |
 |----------|--------------|
-| Main product | Re-scans sub-products, rewrites `plan/SUBPRODUCTS.md`, stages drift notes into each affected sub-product |
+| Main product | Re-scans sub-products, rewrites `plan/SUBPRODUCTS.md`, and refreshes every linked child's generated `PARENT_CONTEXT.md` |
 | Sub-product | Rewrites its `plan/PARENT_CONTEXT.md`, advances its parent watermark, **and** refreshes the parent's roll-up so the main product is no longer stale |
 
 It also refreshes `plan/ULTRAPLAN_STATUS.md` and drops duplicate pending writes.
@@ -52,8 +53,8 @@ It also refreshes `plan/ULTRAPLAN_STATUS.md` and drops duplicate pending writes.
 - **Authored state never crosses a workspace.** Only generated reports
   (`SUBPRODUCTS.md`, `PARENT_CONTEXT.md`) are regenerated from either end. `DOUBTS.md`,
   `HANDOFF.md` and the rest of `plan/` are written only in their own workspace.
-- **Staging originates from the main product only.** Syncing from a sub-product stages
-  nothing, so a sub-product can never queue work into its siblings.
+- **Findings are derived, not staged.** Each sub-product resolves and assimilates its own
+  findings during the command running in that workspace.
 - A finding says the two plans disagree - **not which one is wrong**. Decide with the user.
 - Never "fix" a sub-product by editing its files from the main workspace.
 
@@ -87,5 +88,5 @@ Return:
 
 1. Which workspace was synced, its role, and whether the other end was refreshed too
 2. Drift findings by level, and what each means
-3. What was staged into which sub-product, and the command to apply it there
+3. Which child contexts or parent roll-ups were refreshed
 4. Each finding raised, and the answer recorded for it

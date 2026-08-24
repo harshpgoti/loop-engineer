@@ -31,16 +31,17 @@ Full plan context, always all of it - no progressive disclosure. See
 ## Loop
 
 ```text
-READ FULL PLAN CONTEXT -> PARSE STATEMENT INTO FACTS -> ROUTE EACH FACT TO ITS FILE
--> CHECK GATE/BUILD LOCK -> APPLY EDIT(S) -> LOG DECISIONS.md -> UPDATE TASKS.yml IF NEEDED
--> UPDATE HANDOFF/MEMORY
+READ FULL PLAN CONTEXT -> ASSIMILATE PARENT CONTEXT/FINDINGS
+-> PARSE STATEMENT INTO FACTS -> ROUTE EACH FACT TO ITS FILE -> CHECK GATE/BUILD LOCK -> APPLY EDIT(S)
+-> LOG DECISIONS.md -> UPDATE TASKS.yml IF NEEDED -> CONVERGE -> UPDATE HANDOFF/MEMORY
 ```
 
 ## Continuation
 
 Terminus: **plan consistent again.** The edit isn't done until everything it
 invalidated is reconciled in the same run - gates walked back to `blocked`, rework
-tasks written, doubts resolved, decisions logged. Never leave the workspace
+tasks written, doubts resolved, decisions logged, active feature converged, and the
+product tree re-synced by session closeout. Never leave the workspace
 describing the old requirement. See `docs/CONTINUATION.md`.
 
 ## Output

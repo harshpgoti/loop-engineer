@@ -82,6 +82,7 @@ SESSION-END
 | Step | Feature | When |
 |------|---------|------|
 | Start | Session lifecycle | `loop session-start --command /loop-engine` |
+| Hierarchy | Sync + assimilate | Automatic at lifecycle; accepted parent findings become local plan/spec/tasks before routing |
 | Bootstrap | Manifest + recall | `SESSION_MANIFEST.md`, `SESSION_RECALL.md` |
 | Bootstrap | Auto frontend skills | `AUTO_SKILLS.md` when motion/3D signals |
 | Route | Pick branch | See routing table below |
@@ -97,6 +98,9 @@ SESSION-END
 | Long session | Compact | `/compact-loop` |
 | End | Memory review | via `loop session-end` (staged) |
 | End | Session lifecycle | `loop session-end --command /loop-engine` |
+
+The lifecycle performs tree sync at both ends and feature convergence at closeout. These
+are internal stages of this command, not follow-up commands for the user.
 
 ## Always-on lifecycle (mandatory bookends)
 

@@ -65,6 +65,17 @@ class SyncFromEitherEnd(TreeSyncSandbox):
         self.assertTrue((self.main_ws / "plan" / "SUBPRODUCTS.md").exists())
         self.assertIsNone(result["parent_refreshed"], "the main product has no parent to refresh")
 
+    def test_sync_from_main_refreshes_each_child_parent_context(self) -> None:
+        """A main-product command must publish generated context without a child-side chore."""
+        context = self.sub_ws / "plan" / "PARENT_CONTEXT.md"
+        self.assertFalse(context.exists())
+
+        result = tree_sync.sync(self.main_ws)
+
+        self.assertTrue(context.exists())
+        self.assertIn("auth svc", context.read_text(encoding="utf-8"))
+        self.assertEqual([str(self.sub_ws)], result["children_refreshed"])
+
     def test_sync_from_sub_refreshes_both_ends(self) -> None:
         """The point of the command: the parent stops being stale without going there."""
         rollup = self.main_ws / "plan" / "SUBPRODUCTS.md"
@@ -143,6 +154,48 @@ class SyncFromEitherEnd(TreeSyncSandbox):
 
 class AutoMaintenance(TreeSyncSandbox):
     """Chores folded into session-start so they stop being separate commands."""
+
+    def test_every_main_session_publishes_generated_context_to_children(self) -> None:
+        from session_lifecycle import session_start
+
+        context = self.sub_ws / "plan" / "PARENT_CONTEXT.md"
+        context.unlink(missing_ok=True)
+
+        session_start(self.main_ws, command="/revise-plan", tool="codex", skip_recall=True)
+
+        self.assertTrue(context.exists())
+        manifest = (self.main_ws / "plan" / "SESSION_MANIFEST.md").read_text(encoding="utf-8")
+        self.assertIn("refreshed automatically for 1 linked sub-product", manifest)
+
+    def test_revise_plan_text_does_not_rebootstrap_the_product(self) -> None:
+        from session_lifecycle import session_start
+
+        product_map = self.main_ws / "plan" / "PRODUCT_MAP.md"
+        before = product_map.read_text(encoding="utf-8")
+
+        session_start(
+            self.main_ws,
+            command="/revise-plan",
+            tool="codex",
+            text="Use centralized IAM for every sub-product",
+            skip_recall=True,
+        )
+
+        self.assertEqual(before, product_map.read_text(encoding="utf-8"))
+        self.assertFalse((self.main_ws / "plan" / "PLAN_BOOTSTRAP.md").exists())
+
+    def test_plan_loop_text_still_bootstraps_the_product(self) -> None:
+        from session_lifecycle import session_start
+
+        session_start(
+            self.main_ws,
+            command="/plan-loop",
+            tool="codex",
+            text="A platform with centralized IAM and two workflow sub-products",
+            skip_recall=True,
+        )
+
+        self.assertTrue((self.main_ws / "plan" / "PLAN_BOOTSTRAP.md").exists())
 
     def test_session_start_refreshes_ultraplan_status(self) -> None:
         from session_lifecycle import session_start

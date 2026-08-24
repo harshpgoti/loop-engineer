@@ -73,6 +73,7 @@ SESSION-START â†’ RECALL â†’ PLAN â†’ GRILL â†’ EVIDENCE â�
 | Step | Feature | Command / script |
 |------|---------|------------------|
 | Start | Session lifecycle | `loop session-start --command /plan-loop --text "<idea>"` |
+| Hierarchy | Assimilate parent context | Automatic sync; accepted findings are folded into this workspace's plan/spec/tasks |
 | Bootstrap | **Auto plan from idea** | `plan/PLAN_BOOTSTRAP.md` (scale + map + ultraplan route) |
 | Bootstrap | Recall + manifest | `plan/SESSION_MANIFEST.md`, `SESSION_RECALL.md` |
 | Plan | Product grill + council | `product-grill`, `product-council` |
@@ -83,6 +84,9 @@ SESSION-START â†’ RECALL â†’ PLAN â†’ GRILL â†’ EVIDENCE â�
 | Plan | Validate | `validate_outputs.py` |
 | End | Memory + compact | `memory review`, `/compact-loop` if long |
 | End | Session lifecycle | `loop session-end --command /plan-loop` |
+
+Session start/end automatically sync the tree; closeout also converges an active feature.
+Never ask the user to run `loop workspace sync` or `/feature-converge` between planning steps.
 
 ## Always-on lifecycle (first and last step)
 

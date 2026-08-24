@@ -61,11 +61,16 @@ touches `plan/main_plan.md` AND may resolve a `DOUBTS.md` entry AND invalidate a
 
 1. `loop session-start --command /revise-plan --text "<user statement>"`.
 2. Read everything in **Required Reads**.
-3. Parse the user's statement into one or more discrete facts. Handle multi-fact statements
+3. If this is a sub-product, treat `plan/PARENT_CONTEXT.md` and `loop findings ask`
+   as inputs to this revision. Resolve every unambiguous finding and materialize accepted
+   constraints in the owning local plan/spec/task files before routing the user's facts.
+   Ask only when accepting or declining changes product direction. Never hand the user a
+   `loop workspace sync` chore; session lifecycle already synchronized the tree.
+4. Parse the user's statement into one or more discrete facts. Handle multi-fact statements
    as separate routed edits, not one blob.
-4. For each fact, find its current home (it may already be stated elsewhere and need
+5. For each fact, find its current home (it may already be stated elsewhere and need
    correcting, not just appending) using the routing table.
-5. Before writing, check whether the fact's target area is **locked**:
+6. Before writing, check whether the fact's target area is **locked**:
    - an unanswered finding from the parent product covering the same ground
      (`loop findings list`). The master plan already moved here - resolve that first
      with `loop findings ask`, or the revision is written against a stale constraint
@@ -75,8 +80,8 @@ touches `plan/main_plan.md` AND may resolve a `DOUBTS.md` entry AND invalidate a
    - **If locked:** tell the user which gate/decision this reopens and get a go-ahead before
      writing. This is a hard stop, not a note-and-continue.
    - **If not locked:** apply the edit directly.
-6. Apply the edit(s) - targeted patch to the specific section/line, not a rewrite of the file.
-7. **If the fact touches a locked/already-built area (user-approved in step 5):**
+7. Apply the edit(s) - targeted patch to the specific section/line, not a rewrite of the file.
+8. **If the fact touches a locked/already-built area (user-approved in step 6):**
    - Still make the plan/spec-level edit (never edit product code from this command).
    - Add or update `TASKS.yml` entries for the rework this creates: new `id`, `phase`,
      `gate`, `blocked_by` pointing at the now-stale build, and `acceptance` describing what
@@ -85,18 +90,19 @@ touches `plan/main_plan.md` AND may resolve a `DOUBTS.md` entry AND invalidate a
    - If the invalidated `GATES.yml` entry's `status` was not `blocked`, set it back to
      `blocked` and add a one-line `note:` explaining why - never leave a stale "passed" gate
      next to a plan that no longer matches it.
-8. Log every applied revision in `DECISIONS.md` under a `## Revision Log` entry: date, what
+9. Log every applied revision in `DECISIONS.md` under a `## Revision Log` entry: date, what
    changed, why (from the user's own words), files touched, and whether it reopened a gate
    or created new tasks.
-9. If the fact resolves an open `DOUBTS.md` question, close it with the command so the
+10. If the fact resolves an open `DOUBTS.md` question, close it with the command so the
    count every other command reads actually moves - never hand-edit the status:
 
    ```bash
    loop doubts resolve DQ-007 "<the answer this fact gives>" --decision D-014
    ```
-10. Update `memories/MEMORY.md` and `HANDOFF.md` with what changed and any new outstanding
+11. Update `memories/MEMORY.md` and `HANDOFF.md` with what changed and any new outstanding
     tasks.
-11. `loop session-end --command /revise-plan --summary "<what changed>"`.
+12. `loop session-end --command /revise-plan --summary "<what changed>"`. Closeout
+    automatically runs feature convergence when active and re-syncs the product tree.
 
 ## Not a question - if the user is asking, not changing
 

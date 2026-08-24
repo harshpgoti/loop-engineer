@@ -74,6 +74,7 @@ SESSION-START â†’ RECALL â†’ AUTO-SKILLS â†’ SELECT TASK â†’
 | Step | Feature | Command / script |
 |------|---------|------------------|
 | Start | Session lifecycle | `loop session-start --command /develop-product` |
+| Hierarchy | Assimilate parent context | Automatic sync; resolve findings and update local plan/tasks before selecting work |
 | Bootstrap | Manifest + recall + auto-skills | `SESSION_MANIFEST.md`, `AUTO_SKILLS.md` |
 | Pre-build | Active feature tasks | `tasks.md` + `TASKS.yml` |
 | Blocked? | Clarify spec | `/spec-clarify` |
@@ -99,6 +100,9 @@ At closeout:
 ```bash
 loop session-end --command /develop-product --summary "<progress>"
 ```
+
+Session closeout runs feature convergence and tree sync automatically. The agent may run
+them earlier to re-check after a risky edit, but never leaves either as a user chore.
 
 ## Development Scope
 

@@ -363,8 +363,8 @@ def unlink(workspace: Path, name: str) -> bool:
 def stamp_child(child_workspace: Path, parent_folder: Path, *, map_id: str | None = None) -> None:
     """Record the parent link in the sub-product's own metadata.
 
-    Metadata only - product state (DOUBTS.md, HANDOFF.md, plan/) is never written
-    across workspaces, it is staged for approval instead.
+    Metadata only. Authored product state never crosses workspaces; generated
+    hierarchy views are refreshed separately by tree_sync.
     """
     child_folder = product_folder(child_workspace)
     if child_folder is None:

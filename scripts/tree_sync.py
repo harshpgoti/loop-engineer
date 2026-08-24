@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """One command that makes main product and sub-product agree, run from either end.
 
-`loop workspace refresh` only ever refreshed the workspace it was run in. From a
-sub-product that left the parent's roll-up stale until the parent happened to have
-a session, so keeping a tree current meant remembering which command to run in
-which folder. This runs the sync from wherever the user is standing.
+`loop workspace refresh` only ever refreshed the workspace it was run in. This
+module is now the hierarchy seam used by every session lifecycle as well as the
+explicit command: main runs publish generated parent context to every child, and
+sub-product runs refresh the parent's roll-up.
 
 Write policy is unchanged where it matters:
 
@@ -12,9 +12,8 @@ Write policy is unchanged where it matters:
   from either end. They are generated views with no authored content to lose.
 - **Authored state** (`DOUBTS.md`, `HANDOFF.md`, the rest of `plan/`) still never
   crosses a workspace boundary.
-- **Drift staging** still only originates from the main product. Syncing from a
-  sub-product refreshes reports but stages nothing, so a sub-product can never queue
-  work into its siblings.
+- **Findings remain derived**, not queued. A sub-product answers and assimilates its
+  own parent findings during the planning/development command that opened the session.
 """
 
 from __future__ import annotations
@@ -52,13 +51,35 @@ def _dedupe(workspace: Path) -> int:
 
 def sync(workspace: Path, *, stage: bool = True) -> dict:
     """Sync this workspace and the other end of its link. Idempotent."""
+    tree = refresh(workspace)
     result: dict = {
         "workspace": str(workspace),
         "self": hierarchy_sync.run(workspace, stage=stage),
         "parent_refreshed": None,
+        "children_refreshed": [],
+        "children_errors": [],
         "ultraplan_status": _ultraplan_status(workspace),
         "deduped": _dedupe(workspace),
     }
+
+    # Standing in a main product, publish the parent's current generated context
+    # into every linked child now. The child still owns every authored plan/code
+    # decision; PARENT_CONTEXT.md is a derived view and is safe to regenerate across
+    # the workspace boundary. Do not advance the child's watermark here: that only
+    # happens when a command actually starts inside the child and reads the context.
+    if result["self"].get("role") == ROLE_MAIN:
+        for child in tree.get("children") or []:
+            if child.get("missing"):
+                continue
+            child_ws = Path(child["data_dir"])
+            try:
+                child_result = hierarchy_sync.run(child_ws, stage=False)
+                if child_result.get("parent_context_file"):
+                    result["children_refreshed"].append(str(child_ws))
+            except Exception as exc:  # noqa: BLE001 - report one child; continue the tree
+                result["children_errors"].append(
+                    {"workspace": str(child_ws), "error": f"{exc.__class__.__name__}: {exc}"}
+                )
 
     # Standing in a sub-product, refresh the parent's roll-up too - otherwise it keeps
     # reporting this sub-product as it was at the parent's last session. Never stage
@@ -105,6 +126,10 @@ def describe(result: dict) -> str:
         lines.append(f"  parent context: {self_result['parent_context_file']}")
     if result.get("parent_refreshed"):
         lines.append(f"  parent roll-up: {result['parent_refreshed']} (refreshed)")
+    if result.get("children_refreshed"):
+        lines.append(f"  child contexts: {len(result['children_refreshed'])} refreshed")
+    for item in result.get("children_errors") or []:
+        lines.append(f"  child error:    {item['workspace']} - {item['error']}")
     if result.get("ultraplan_status"):
         lines.append(f"  ultraplan:      {result['ultraplan_status']}")
     if result.get("deduped"):

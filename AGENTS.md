@@ -19,6 +19,7 @@ Run a reusable product loop that helps any user plan, validate, build, test, sec
 11. **Handoff required** - Update `memories/MEMORY.md`, `DOUBTS.md`, and `HANDOFF.md` before ending session.
 12. **Always-on lifecycle** - Before loop work: `loop session-start`. Before stopping: `loop session-end`. Read `plan/SESSION_MANIFEST.md` first. Works in any coding agent (Cursor, Claude, Codex, OpenCode, Grok, ...).
 13. **Run to terminus, not to chunk** - A command cascades automatically through its downstream phases until its **terminus** or a **Stop Condition**. Never end a turn by telling the user to run a command you could have run. Reconcile whatever your work invalidates (gates, tasks, specs, decisions) in the same run. When you must stop, name the Stop Condition and what you need. See `docs/CONTINUATION.md`.
+14. **Hierarchy is automatic** - Every command's session lifecycle syncs the product tree. Main-product runs publish refreshed generated `PARENT_CONTEXT.md` into linked sub-products; sub-product runs read it, resolve and assimilate parent findings inside the active planning or development command, refresh the parent roll-up, and converge the active feature at closeout for mutating commands. Never make the user run `loop workspace sync` or `/feature-converge` as routine glue.
 
 ## Always-on session lifecycle (any tool)
 
@@ -33,9 +34,9 @@ loop session-end --summary "<progress>"
 
 | Step | Action |
 |------|--------|
-| **Start** | Recall → manifest → auto-skills → read manifest |
+| **Start** | Recall → bidirectional tree sync → manifest → auto-skills → read manifest |
 | **Work** | Follow active command (`/plan-loop`, `/develop-product`, etc.) |
-| **End** | Update handoff/memory → memory review writes memory → log `state.db` |
+| **End** | Reconcile/converge → bidirectional tree sync → update handoff/memory → log `state.db` |
 
 Details: `docs/SESSION_LIFECYCLE.md` + `skills/session-lifecycle/SKILL.md`.
 

@@ -78,11 +78,16 @@ def run_recall(workspace: Path, query: str | None = None, limit: int = 5) -> int
 
 
 def _hierarchy(workspace: Path, *, stage: bool = True) -> dict:
-    """Refresh product-hierarchy links and reports. Never raises - like _auto_update."""
+    """Sync both hierarchy ends and return this workspace's view. Never raises."""
     try:
-        from hierarchy_sync import run
+        from tree_sync import sync
 
-        return run(workspace, stage=stage)
+        result = sync(workspace, stage=stage)
+        current = result.get("self") or {}
+        current["parent_refreshed"] = result.get("parent_refreshed")
+        current["children_refreshed"] = result.get("children_refreshed") or []
+        current["children_errors"] = result.get("children_errors") or []
+        return current
     except Exception as exc:  # noqa: BLE001 - a hierarchy problem must not block a session
         return {"enabled": False, "role": None, "error": f"{exc.__class__.__name__}: {exc}"}
 
@@ -473,6 +478,23 @@ def _auto_update() -> dict:
         return {"skip": f"error: {exc.__class__.__name__}"}
 
 
+PLAN_BOOTSTRAP_COMMANDS = {
+    "/plan-loop",
+    "plan-loop",
+    "/startup-discovery-loop",
+    "startup-discovery-loop",
+    "/loop-engine",
+    "loop-engine",
+    "/all-in-one",
+    "all-in-one",
+}
+
+
+def _command_bootstraps_plan(command: str | None) -> bool:
+    """Only idea-entry commands may decompose or rewrite the product map."""
+    return (command or "").strip().lower() in PLAN_BOOTSTRAP_COMMANDS
+
+
 def session_start(
     workspace: Path,
     *,
@@ -498,7 +520,7 @@ def session_start(
     maintenance = _auto_maintenance(workspace)
 
     plan_bootstrap = None
-    if text.strip() and command and any(c in (command or "") for c in ("/plan-loop", "/loop-engine", "plan", "loop-engine")):
+    if text.strip() and _command_bootstraps_plan(command):
         try:
             from plan_idea import bootstrap_plan
 
@@ -630,7 +652,7 @@ def session_end(
     actions = apply_report(workspace, report, stage_only=stage)
 
     converge_note = ""
-    if command and "develop-product" in (command or ""):
+    if _command_reconciles_feature(command):
         try:
             from feature_converge import converge
 
@@ -725,6 +747,28 @@ def session_end(
     }
 
 
+FEATURE_RECONCILING_COMMANDS = (
+    "/plan-loop",
+    "/startup-discovery-loop",
+    "/revise-plan",
+    "/develop-product",
+    "/startup-build-loop",
+    "/loop-engine",
+    "/all-in-one",
+    "/feature-new",
+    "/spec-clarify",
+    "/spec-checklist",
+    "/resolve-doubts",
+    "/ultraplan-loop",
+)
+
+
+def _command_reconciles_feature(command: str | None) -> bool:
+    """Whether closeout must check active-feature drift for this mutating command."""
+    normalized = (command or "").strip().lower()
+    return any(name in normalized for name in FEATURE_RECONCILING_COMMANDS)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Always-on session lifecycle (start/end).")
     parser.add_argument("phase", choices=("start", "end"))
@@ -764,8 +808,13 @@ def main() -> int:
                 f"  hierarchy: main with {hier['children']} sub-product(s); "
                 f"{counts.get('error', 0)} error finding(s) - read plan/SUBPRODUCTS.md"
             )
+            if hier.get("children_refreshed"):
+                print(f"  child contexts: {len(hier['children_refreshed'])} refreshed automatically")
         elif hier.get("parent"):
-            print(f"  hierarchy: sub-product of `{hier['parent']}` - read plan/PARENT_CONTEXT.md")
+            print(
+                f"  hierarchy: sub-product of `{hier['parent']}` - read and assimilate "
+                "plan/PARENT_CONTEXT.md in this command"
+            )
         found = result.get("findings") or {}
         if found.get("total"):
             print(

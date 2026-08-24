@@ -85,6 +85,11 @@ say, and report what changed (`docs/CONTINUATION.md`).
 SESSION-START -> READ PHASE -> [grill -> (parent-findings) -> (hierarchy) -> council] -> (platform: ultraplan/step) -> spec-clarify -> spec-checklist -> resolve-doubts -> task-compiler -> SESSION-END
 ```
 
+`SESSION-START` and `SESSION-END` perform the product-tree sync automatically. In a
+sub-product, parent findings are not merely acknowledged: accepted constraints are folded
+into this workspace's plan/spec/tasks before the phase pipeline continues. Closeout converges
+the active feature. Never return `loop workspace sync` or `/feature-converge` as user chores.
+
 ## Instructions
 
 0. Run `loop session-start --command /plan-loop --text "<user idea>"` (or `loop plan-loop "<idea>"`) and read `plan/PLAN_BOOTSTRAP.md` + `plan/SESSION_MANIFEST.md`. Note the `PHASE:` line.

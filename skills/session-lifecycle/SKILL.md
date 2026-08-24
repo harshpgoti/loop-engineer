@@ -29,20 +29,38 @@ loop session-end --summary "Built hero section; next: API wiring"
 2. Recalls past sessions → `plan/SESSION_RECALL.md`
 3. Auto-selects frontend skills → `plan/AUTO_SKILLS.md` (if signals match)
 4. Auto-detects AI-agent-development signals → `plan/AUTO_AGENT_SKILLS.md` (if signals match) - same mechanism as frontend skills, see `skills/agent-builder/SKILL.md`
-5. Writes **`plan/SESSION_MANIFEST.md`** - ordered file list every agent must read (includes active feature when set)
-6. Logs to `state.db`
+5. Runs a bidirectional product-tree sync:
+   - main product: refreshes `SUBPRODUCTS.md` and publishes generated `PARENT_CONTEXT.md` to every linked child
+   - sub-product: refreshes `PARENT_CONTEXT.md` and the parent's `SUBPRODUCTS.md`
+6. Writes **`plan/SESSION_MANIFEST.md`** - ordered file list every agent must read (includes active feature when set)
+7. Logs to `state.db`
 
 ## What session-end does
 
 1. Curates memory (dedupe, trim, closeout proposals)
 2. Writes `plan/MEMORY_REVIEW.md`
 3. **Writes** `memories/MEMORY.md` for this workspace - no approval step
-4. Writes `plan/SESSION_CLOSEOUT.md`
-5. Logs closeout to `state.db`
+4. Runs `feature converge` for mutating planning/development commands when an active feature exists
+5. Re-syncs the product tree so parent and child generated views include this command's results
+6. Writes `plan/SESSION_CLOSEOUT.md`
+7. Logs closeout to `state.db`
 
 Nothing is left for the user to run. `.loop/pending/` collects only writes that
 need a human decision - a parent workspace proposing into a sub-product, and
 agent-authored skill files - and a single-product loop never fills it.
+
+## Parent-context assimilation
+
+For a sub-product, `PARENT_CONTEXT.md` is an input to the command, not a report for
+the user to process later. Before doing its own planning or development, every
+mutating command must resolve the derived parent findings and fold accepted constraints
+into the sub-product's own plan/spec/tasks in the same run. Apply an unambiguous
+recommendation automatically; ask only when accepting or declining changes product
+direction. The workspace boundary still holds: the parent publishes generated context,
+while the sub-product alone authors its plan and code.
+
+The user does not run `loop workspace sync` or `/feature-converge` between commands.
+Those remain explicit diagnostic commands for a requested mid-session recheck only.
 
 ## Agent rules (all tools)
 

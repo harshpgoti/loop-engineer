@@ -84,6 +84,11 @@ say, and report what changed (`docs/CONTINUATION.md`).
 SESSION-START -> ANSWER PARENT FINDINGS + BLOCKING DOUBTS -> SELECT TASK (from active feature tasks.md + TASKS.yml) -> READ MANIFEST/AUTO-SKILLS -> PLAN DIFF -> BUILD -> TEST -> FEATURE-CONVERGE -> SESSION-END
 ```
 
+The lifecycle syncs the full product tree at both bookends. For a sub-product, answering a
+parent finding includes updating the owning local plan/spec/tasks before selecting build
+work; for a main product, generated parent context is published to linked children. Session
+closeout runs feature convergence. None of these are manual user steps.
+
 Run `loop session-start --command /develop-product` first and `loop session-end` last. Frontend motion/3D skills and agent-development skills are both auto-detected at session-start and included in the manifest when signals match (`plan/AUTO_SKILLS.md`, `plan/AUTO_AGENT_SKILLS.md`) - re-run `loop auto-agent-skills --write` only if the task description changed after session-start.
 
 ## Development Domains

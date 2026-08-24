@@ -33,6 +33,11 @@ loop session-start --command /loop-engine --tool "<tool>"
 loop session-end --command /loop-engine --summary "<progress>"
 ```
 
+Both lifecycle bookends automatically sync the product tree. A sub-product assimilates
+accepted `PARENT_CONTEXT.md` findings into its own plan/spec/tasks before routing; a main
+product publishes refreshed generated context to its children. Mutating closeout converges
+the active feature, so the user never chains `loop workspace sync` or `/feature-converge`.
+
 ## Routing (enter here, then **keep going** - do not stop at the branch boundary)
 
 Pick the entry branch from state, then cascade through it and into the next until

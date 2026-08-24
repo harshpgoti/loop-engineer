@@ -8,7 +8,10 @@ Always-on memory bootstrap - run **before** any loop work in any tool.
 loop session-start --command "<active-command>" --tool "<tool-name>"
 ```
 
-Then read **`plan/SESSION_MANIFEST.md`** and every file listed there.
+This automatically syncs both ends of the product hierarchy. Then read
+**`plan/SESSION_MANIFEST.md`** and every file listed there. In a sub-product,
+`plan/PARENT_CONTEXT.md` and its derived findings are work to assimilate during the
+active command, not a manual follow-up.
 
 ## Tool names
 
