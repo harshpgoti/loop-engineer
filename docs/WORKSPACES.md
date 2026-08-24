@@ -4,7 +4,7 @@ See [`docs/DATA_LAYOUT.md`](DATA_LAYOUT.md) for the full layout.
 
 ## Auto-detection (default behavior)
 
-When you run `/plan-loop`, `/loop-engine`, or any loop script:
+When you run `/plan-loop`, `/loop-engine`, or another Loop skill:
 
 1. **Local `.loop-engineer/` folder detected** in cwd or a parent → use `<that-folder>/.loop-engineer/`
 2. **No local data** → use global `~/.loop-engineer/data/`
@@ -13,8 +13,8 @@ When you run `/plan-loop`, `/loop-engine`, or any loop script:
 
 ```text
 ~/.loop-engineer/
-├── app/              # updatable tool (loop update)
-├── bin/loop
+├── app/              # updatable tool runtime
+├── bin/loop          # internal bridge used by skills
 └── data/             # ALL global memory/data
     ├── memories/
     ├── state.db
@@ -33,14 +33,9 @@ H:/POC/QEAutoAI/               # example local product folder
 
 ## Setup
 
-```bash
-# Global (default)
-loop setup
-
-# Local product folder
-cd H:/POC/QEAutoAI
-loop setup --use-cwd --name qeautoai
-```
+Use `/setup-loop-engine` in the coding agent. Run it from the product folder for a
+local `.loop-engineer/` workspace; the installer-created global workspace remains the
+fallback when no local workspace is found.
 
 ## Main product with sub-products
 
@@ -53,13 +48,9 @@ main-product/
 └── portal/.loop-engineer/     role: sub
 ```
 
-Sub-products under the main folder are auto-detected; ones elsewhere are linked:
-
-```bash
-loop workspace tree
-loop workspace link ../billing --map-id 03
-loop workspace role standalone     # opt a folder out
-```
+Sub-products under the main folder are auto-detected. Use `/product-tree` to inspect the
+tree, or tell the agent “link ../billing as map row 03” / “make this workspace standalone”
+for exceptional layouts. The agent performs the internal deterministic operation.
 
 No file means `standalone` - single-product workspaces are unaffected. Full behavior:
 [`docs/PRODUCT_HIERARCHY.md`](PRODUCT_HIERARCHY.md).

@@ -8,14 +8,15 @@ If the user says `/plan-loop`, `/plan-loop <idea>`, `/startup-discovery-loop`, `
 
 **User types only the idea.** Loop Engineer auto-detects scale, decomposes modules, and routes ultraplan - no manual scale/decompose commands.
 
-## One command (required first step)
+## Public invocation
 
-```bash
-loop session-start --command /plan-loop --tool "<tool>" --text "<user's full product idea>"
-loop plan-loop "<user's full product idea>"
+```text
+/plan-loop <user's full product idea>
 ```
 
-Both run the same auto-bootstrap â†’ read **`plan/PLAN_BOOTSTRAP.md`** before other plan reads.
+The coding agent invokes the internal session runtime, then reads
+**`plan/PLAN_BOOTSTRAP.md`** before other plan reads. Users do not run the runtime
+command separately.
 
 Advanced (agent-only, not for users): `loop plan-loop scale`, `loop plan-loop decompose`, `loop plan-loop ultraplan next`.
 
@@ -112,7 +113,6 @@ RECALL â†’ DETECT INIT â†’ ASK/INFER (PRODUCT + DEPLOYMENT) â†’ G
    ```bash
    loop session-start --command /plan-loop --tool "<tool>" --text "<user product idea>"
    ```
-   Or: `loop plan-loop "<user product idea>"`
    Read `plan/PLAN_BOOTSTRAP.md` then `plan/SESSION_MANIFEST.md`. Do **not** ask the user to run scale/decompose/ultraplan manually.
 1. **Detect initialization.** If `plan/main_plan.md` says `Status: **UNINITIALIZED**`, initialize the user's product plan.
 2. **Ask for required product inputs:** product name, target user, problem, first product step, constraints, sensitive data, preferred stack.

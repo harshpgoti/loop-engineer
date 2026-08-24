@@ -4,8 +4,8 @@ When a user's idea is a **full platform** (multiple sub-products, AI agents, or 
 
 ## User command (all you need)
 
-```bash
-loop plan-loop "A platform with support triage agent, admin portal, and billing API"
+```text
+/plan-loop A platform with support triage agent, admin portal, and billing API
 ```
 
 Or in chat:
@@ -18,8 +18,7 @@ Or in chat:
 The agent runs:
 
 ```bash
-loop session-start --command /plan-loop --text "<idea>"
-# equivalent: loop plan-loop "<idea>"
+loop session-start --command /plan-loop --text "<idea>"  # internal agent runtime
 ```
 
 ## What runs automatically
@@ -30,7 +29,7 @@ loop session-start --command /plan-loop --text "<idea>"
 4. **If platform:** extract modules from idea text → `PRODUCT_MAP.md` → step stubs → `plan/steps/NN-slug/` ultraplan folders
 5. **Ultraplan next step** named in bootstrap - agent fills deep docs **one step per session**
 
-No manual `loop plan-loop scale`, `modules`, or `decompose` for users.
+No manual scale, module, or decomposition commands for users.
 
 ## Per-step ultraplan pack
 
@@ -76,6 +75,7 @@ See [`docs/PRODUCT_HIERARCHY.md`](PRODUCT_HIERARCHY.md).
 Not for users - debugging or recovery only:
 
 ```bash
+# Internal runtime reference for skill authors and maintainers:
 loop plan-loop scale --write --text "..."
 loop plan-loop decompose
 loop plan-loop ultraplan next

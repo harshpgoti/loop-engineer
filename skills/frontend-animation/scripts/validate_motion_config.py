@@ -22,7 +22,7 @@ def load_schema() -> Dict:
     schema_path = Path(__file__).parent.parent / "schema" / "motion-config.schema.json"
 
     if not schema_path.exists():
-        print(f"❌ Schema not found: {schema_path}")
+        print(f"ERROR: Schema not found: {schema_path}")
         sys.exit(1)
 
     with open(schema_path) as f:
@@ -64,29 +64,29 @@ def validate_config(config_path: Path, schema: Dict) -> Tuple[bool, List[str]]:
         perf = config["performance"]
 
         if perf.get("fps", 60) < 60:
-            warnings.append(f"⚠️  FPS ({perf['fps']}) below 60 (recommended minimum)")
+            warnings.append(f"WARNING: FPS ({perf['fps']}) below 60 (recommended minimum)")
 
         if perf.get("bundleSize", 0) > 51200:
-            warnings.append(f"⚠️  Bundle size ({perf['bundleSize']} bytes) exceeds 50KB")
+            warnings.append(f"WARNING: Bundle size ({perf['bundleSize']} bytes) exceeds 50KB")
 
     # Accessibility checks
     if "accessibility" in config:
         acc = config["accessibility"]
 
         if not acc.get("reducedMotion"):
-            warnings.append("⚠️  No reduced motion support (accessibility concern)")
+            warnings.append("WARNING: No reduced motion support (accessibility concern)")
 
         if not acc.get("keyboardNav"):
-            warnings.append("⚠️  Not keyboard navigable (accessibility concern)")
+            warnings.append("WARNING: Not keyboard navigable (accessibility concern)")
 
         if not acc.get("focusVisible"):
-            warnings.append("⚠️  No visible focus indicator (accessibility concern)")
+            warnings.append("WARNING: No visible focus indicator (accessibility concern)")
     else:
-        warnings.append("⚠️  Missing accessibility configuration")
+        warnings.append("WARNING: Missing accessibility configuration")
 
     # GPU acceleration check
     if config.get("performance", {}).get("gpuAccelerated") is False:
-        warnings.append("⚠️  Not GPU-accelerated (may cause performance issues)")
+        warnings.append("WARNING: Not GPU-accelerated (may cause performance issues)")
 
     return True, warnings
 
@@ -103,21 +103,21 @@ def main():
     # Handle --all flag
     if sys.argv[1] == "--all":
         if len(sys.argv) < 3:
-            print("❌ Please specify directory for --all")
+            print("ERROR: Please specify directory for --all")
             sys.exit(1)
 
         directory = Path(sys.argv[2])
         if not directory.is_dir():
-            print(f"❌ Not a directory: {directory}")
+            print(f"ERROR: Not a directory: {directory}")
             sys.exit(1)
 
         config_files = list(directory.glob("**/*.json"))
 
         if not config_files:
-            print(f"❌ No JSON files found in {directory}")
+            print(f"ERROR: No JSON files found in {directory}")
             sys.exit(1)
 
-        print(f"📁 Validating {len(config_files)} config files...\n")
+        print(f"Validating {len(config_files)} config files...\n")
 
         total_valid = 0
         total_invalid = 0
@@ -127,33 +127,33 @@ def main():
 
             if is_valid:
                 total_valid += 1
-                status = "✅"
+                status = "OK"
             else:
                 total_invalid += 1
-                status = "❌"
+                status = "INVALID"
 
             print(f"{status} {config_path.name}")
 
             for warning in warnings:
                 print(f"   {warning}")
 
-        print(f"\n📊 Summary: {total_valid} valid, {total_invalid} invalid")
+        print(f"\nSummary: {total_valid} valid, {total_invalid} invalid")
         sys.exit(0 if total_invalid == 0 else 1)
 
     # Single file validation
     config_path = Path(sys.argv[1])
 
     if not config_path.exists():
-        print(f"❌ File not found: {config_path}")
+        print(f"ERROR: File not found: {config_path}")
         sys.exit(1)
 
     is_valid, warnings = validate_config(config_path, schema)
 
     if is_valid:
-        print(f"✅ Configuration valid: {config_path}")
+        print(f"OK: Configuration valid: {config_path}")
 
         if warnings:
-            print("\n⚠️  Warnings:")
+            print("\nWarnings:")
             for warning in warnings:
                 print(f"   {warning}")
         else:
@@ -161,7 +161,7 @@ def main():
 
         sys.exit(0)
     else:
-        print(f"❌ Configuration invalid: {config_path}")
+        print(f"INVALID: Configuration invalid: {config_path}")
         for error in warnings:
             print(f"   {error}")
         sys.exit(1)

@@ -1,5 +1,9 @@
 # Product Hierarchy - Main Product and Sub-Products
 
+User-facing operations happen through `/product-tree`, `/product-tree-sync`,
+`/subproduct-new`, or natural language. Shell examples below are internal runtime references
+for agents and maintainers, not steps users must chain manually.
+
 A product large enough to split gets split on disk: a main folder holding the master
 plan, sub-product folders that are planned and built on their own. Each folder has its
 own `.loop-engineer/` workspace.
@@ -229,7 +233,7 @@ now contradicts platform policy - a real case in this repo, where `DQ-007` still
   cannot change what a sub-product decided.
 - **Derived, so reversible.** Delete the `Supersedes:` line and the doubt reopens.
 
-## Commands
+## Internal runtime reference
 
 ```bash
 loop workspace sync                  # explicit mid-session diagnostic; lifecycle runs it automatically

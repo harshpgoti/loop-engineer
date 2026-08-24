@@ -2,6 +2,12 @@
 
 **Loop engineering, not prompt engineering.** A durable, open-source operating system for planning and building products across Codex, Claude Code, Cursor, Grok Build, OpenCode, and any other coding agent.
 
+The public interface is the skill layer: type `/plan-loop`, `/develop-product`,
+`/loop-engine`, or describe what you want in your coding agent. The installed `loop`
+executable is an internal deterministic runtime bridge used by those skills; normal users
+do not operate the product through a terminal CLI. See
+[`docs/INTERNAL_RUNTIME.md`](docs/INTERNAL_RUNTIME.md).
+
 ## Three master loops
 
 | Loop | Skill / command | Purpose |
@@ -87,7 +93,7 @@ These live in the **workspace data root** (`~/.loop-engineer/data/` or `<product
 
 ## Always-on session lifecycle
 
-Every agent session that touches the product runs this, in any tool:
+Every agent session that touches the product runs the internal lifecycle, in any tool:
 
 ```bash
 loop session-start --command "<slash-command>" --tool "<tool>"
@@ -96,7 +102,8 @@ loop session-start --command "<slash-command>" --tool "<tool>"
 loop session-end --summary "<progress>"
 ```
 
-This is what makes memory durable across chat sessions and tool switches - see
+These are internal runtime calls shown for maintainers; the user does not run them. This is
+what makes memory durable across chat sessions and tool switches - see
 [`docs/SESSION_LIFECYCLE.md`](docs/SESSION_LIFECYCLE.md). The agent runs it, not the user.
 
 ## Questions get asked, not queued
@@ -139,13 +146,8 @@ A plan has three kinds of unknown, and each has somewhere to live:
 
 The test for the middle one is whether you can **state** it precisely now, not whether you can
 answer it. Fog is meant to clear, so it is timed from when the patch first appeared: after 28
-days the session manifest says so, and it is now either a question you can state
-(`loop fog promote <n>`) or work you quietly decided against.
-
-```bash
-loop fog                 # every patch, and how long each has sat
-loop fog promote 2       # state one as a doubt, in your own wording, and clear it from the plan
-```
+days the session manifest says so, and the active planning command either promotes it to a
+real question or records it as work deliberately ruled out.
 
 ## The product's own words
 
@@ -158,23 +160,20 @@ A claim the payer adjudicated and refused to pay.
 _Avoid_: rejection, decline
 ```
 
-`loop glossary` counts where a displaced synonym is still used across the plan, most-entrenched
+The internal glossary validator counts where a displaced synonym is still used across the plan, most-entrenched
 first, and surfaces it in the session manifest. It **reports and never rewrites** - when two
 words turn out to name different things the answer is two definitions, not a rename, and that
 call is yours.
 
-## Command Usage
+## Use in your coding agent
 
 In order of a real product journey - every command works the same in Cursor, Claude Code, Codex, OpenCode, Grok Build, or any other coding agent with filesystem access.
 
 ### 0. Set up once
 
-```bash
-/setup-loop-engine            # in your agent - registers the workspace, seeds starter files
-loop setup                    # same thing from the terminal (global data: ~/.loop-engineer/data/)
-loop setup --use-cwd --name my-app                  # local data: ./my-app/.loop-engineer/
-loop setup --use-cwd --source /path/to/other-tool          # import MEMORY/USER/skills from another AI tool
-loop setup --use-cwd --source /path/to/other-tool --scan   # different structure? classify every file by content
+```text
+/setup-loop-engine            # registers this workspace and seeds starter files
+/migrate-import               # imports memory/skills from another tool when needed
 ```
 
 ### 1. Plan - `/plan-loop`
@@ -231,8 +230,8 @@ change to agent behaviour - a prompt, a model, a tool definition - which unit te
 
 ```text
 /agent-builder        # design/scaffold an AI agent as the product - auto-activates in /plan-loop + /develop-product
-/research-search      # search arXiv / Research Square / SSRN, e.g. loop research "multi-agent evaluation"
-/feature-new          # new feature spec folder, e.g. loop feature new "auth login" --step plan/step_01.md
+/research-search      # search arXiv / Research Square / SSRN
+/feature-new          # create and activate a numbered feature spec
 /spec-clarify         # structured clarification on the active feature spec
 /spec-checklist       # spec quality gate before feature-plan
 /feature-converge     # post-build drift check vs spec/tasks
@@ -252,8 +251,8 @@ main-product/
 └── portal/.loop-engineer/   role: sub
 ```
 
-Sub-products under the main folder are found automatically; ones in another repo are
-linked with `loop workspace link ../billing`. Working inside a sub-product still uses that
+Sub-products under the main folder are found automatically. For one in another repo, tell
+the agent “link ../billing as a sub-product” while using `/product-tree`. Working inside a sub-product still uses that
 sub-product's workspace - the difference is that the main plan can now see them, and says
 when a sub-product's plan contradicts it (conflicting cloud, datastore, or decision;
 unmapped sub-product; missing contract). Corrections are **staged** into the sub-product
@@ -271,11 +270,6 @@ from the row title (which is what `map_id` binds on), seeds the workspace, hands
 row's step plan so it does not re-plan from nothing, and links both ends. It reports the
 main-product tasks carrying the gate the row declares - and does not move them, because
 the new workspace compiles its own.
-
-```bash
-loop workspace tree      # role, parent, sub-products
-loop workspace refresh   # rewrite the roll-up and stage drift notes
-```
 
 Details: [`docs/PRODUCT_HIERARCHY.md`](docs/PRODUCT_HIERARCHY.md)
 
@@ -296,8 +290,8 @@ Details: [`docs/PRODUCT_HIERARCHY.md`](docs/PRODUCT_HIERARCHY.md)
 ### Session lifecycle (agents run these, not you)
 
 ```text
-/session-start        # loop session-start - recall, manifest, auto-skills
-/session-end          # loop session-end - memory review, staged writes, state.db log
+/session-start        # recall, manifest, auto-skills; normally automatic
+/session-end          # memory review and state history; normally automatic
 /session-recall       # recall only (normally inside session-start)
 /memory-review        # memory curation only (normally inside session-end)
 ```

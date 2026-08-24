@@ -68,7 +68,7 @@ def describe_layout() -> str:
     return (
         f"Loop home: {home}\n"
         f"  app/                     # updatable tool runtime\n"
-        f"  bin/loop                 # CLI entry point\n"
+        f"  bin/loop                 # internal coding-agent runtime bridge\n"
         f"  data/                    # ALL global memory/data (nothing else lives loose here)\n"
         f"    registry/              #   registered local product folders\n"
         f"    memories/              #   global MEMORY.md, USER.md, SOUL.md\n"

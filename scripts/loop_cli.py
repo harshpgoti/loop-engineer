@@ -523,13 +523,21 @@ def cmd_plan(args: argparse.Namespace) -> int:
     tokens: list[str] = getattr(args, "tokens", None) or []
 
     if not tokens:
-        print('Usage: loop plan-loop "<product idea>"', file=sys.stderr)
-        print("   or: loop plan-loop scale|modules|decompose|ultraplan ...", file=sys.stderr)
+        print("Use `/plan-loop <product idea>` in your coding agent.", file=sys.stderr)
+        print(
+            "Internal compatibility: loop plan-loop scale|modules|decompose|ultraplan ...",
+            file=sys.stderr,
+        )
         return 2
 
     head = tokens[0]
     if head not in PLAN_SUBCMDS:
         idea = " ".join(tokens).strip()
+        print(
+            "Deprecated compatibility-only entry point: use `/plan-loop <idea>` in your coding agent. "
+            "The deterministic runtime remains available internally.",
+            file=sys.stderr,
+        )
         return run_script("plan_idea.py", ["--text", idea, *extra])
 
     if head == "scale":
@@ -615,7 +623,14 @@ def _workspace_args(args: argparse.Namespace) -> list[str]:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="loop",
-        description="Unified CLI for Loop Engineering OS.",
+        description=(
+            "Internal deterministic runtime for Loop Engineering skills. "
+            "End users invoke `/plan-loop`, `/develop-product`, and other skills in a coding agent."
+        ),
+        epilog=(
+            "This shell surface is retained for coding-agent execution, installers, diagnostics, "
+            "and backward compatibility; it is not the product's public user interface."
+        ),
     )
     parser.add_argument("--workspace", default=None, help="Product workspace path.")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -972,7 +987,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     plan = sub.add_parser(
         "plan-loop",
-        help='Auto-plan from idea: loop plan-loop "your product idea" (scale + ultraplan automatic).',
+        help="Compatibility-only plan bootstrap and internal deterministic planning operations.",
     )
     plan.add_argument(
         "tokens",

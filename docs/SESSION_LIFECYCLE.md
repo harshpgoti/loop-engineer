@@ -2,6 +2,11 @@
 
 Cross-tool persistent memory that works in **any agent tool**, not only Cursor.
 
+Users invoke Loop through slash commands or natural language. The `loop` shell calls
+shown below are internal runtime operations performed by the coding agent; they are
+documented here for maintainers and harness integrations, not as user steps. See
+`docs/INTERNAL_RUNTIME.md`.
+
 ## Principle
 
 Memory lives in the **product workspace** (`~/.loop-engineer/data/` or `<product-folder>/.loop-engineer/`), not in chat history. Every tool reads and writes the same files.

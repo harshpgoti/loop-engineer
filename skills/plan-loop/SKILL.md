@@ -19,7 +19,11 @@ to the planning terminus - see `docs/CONTINUATION.md`).
 
 Progressive disclosure controls *when files are read*, not *how far the loop runs*. Reading one phase at a time is correct; **stopping** after one phase is not.
 
-The harness picks the phase for you: `loop session-start` / `loop plan-loop "<idea>"` writes a **`PHASE:` line** into `plan/PLAN_BOOTSTRAP.md` and `plan/SESSION_MANIFEST.md`, computed from deterministic state (init status, `plan/PLAN_SCALE.md`, ultraplan progress, active feature, checklist verdict). Read that line, then open the matching phase file.
+The harness picks the phase for you: the internal session-start runtime writes a
+**`PHASE:` line** into `plan/PLAN_BOOTSTRAP.md` and `plan/SESSION_MANIFEST.md`,
+computed from deterministic state (init status, `plan/PLAN_SCALE.md`, ultraplan
+progress, active feature, checklist verdict). Read that line, then open the matching
+phase file.
 
 ## Phase router
 
@@ -92,7 +96,9 @@ the active feature. Never return `loop workspace sync` or `/feature-converge` as
 
 ## Instructions
 
-0. Run `loop session-start --command /plan-loop --text "<user idea>"` (or `loop plan-loop "<idea>"`) and read `plan/PLAN_BOOTSTRAP.md` + `plan/SESSION_MANIFEST.md`. Note the `PHASE:` line.
+0. Internally run `loop session-start --command /plan-loop --text "<user idea>"` and
+   read `plan/PLAN_BOOTSTRAP.md` + `plan/SESSION_MANIFEST.md`. Note the `PHASE:` line.
+   This runtime call belongs to the coding agent; never ask the user to run it.
 1. `session-start` auto-detects agent-development signals - if `plan/AUTO_AGENT_SKILLS.md` was written, read it and `skills/agent-builder/SKILL.md` before drafting architecture.
 2. **If product is uninitialized**, ask for product name, target user, problem, first product step, constraints, sensitive data, preferred stack, and deployment targets. Capture deployment choices in `plan/main_plan.md` â†’ **Deployment & Infrastructure**:
    - cloud provider; single-cloud vs multi-cloud; primary region(s); compute model; database hosting; LLM provider and model(s); embedding provider/model; agent runtime; CI/CD platform; secrets management.

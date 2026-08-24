@@ -1,5 +1,9 @@
 # Install / Use Loop Engineer
 
+Users operate Loop Engineer through slash commands and natural language in their coding
+agent. The installed `bin/loop` program is an internal runtime bridge, not a user CLI. See
+[`docs/INTERNAL_RUNTIME.md`](docs/INTERNAL_RUNTIME.md).
+
 ## One-liner install (GitHub)
 
 **Windows:**
@@ -18,8 +22,8 @@ curl -fsSL https://raw.githubusercontent.com/harshpgoti/loop-engineer/main/insta
 
 ```text
 ~/.loop-engineer/
-├── app/           # updatable tool - loop update
-├── bin/loop
+├── app/           # updatable tool runtime
+├── bin/loop       # internal bridge used by coding-agent skills
 └── data/          # ALL global memory/data
     ├── memories/  # global memory (default)
     ├── state.db
@@ -55,25 +59,12 @@ cd ~/projects/my-app
 curl -fsSL https://raw.githubusercontent.com/harshpgoti/loop-engineer/main/install.sh | bash -s -- --use-cwd
 ```
 
-Or after install:
+Or after install, open your coding agent in the product folder and run
+`/setup-loop-engine`. For global mode, the installer has already created the workspace.
 
-```bash
-cd H:/POC/QEAutoAI
-loop setup --use-cwd --name qeautoai
-```
-
-Global setup (no extra flags):
-
-```bash
-loop setup
-```
-
-**Coming from another AI tool?** Import its memory/skills in the same setup step:
-
-```bash
-loop setup --use-cwd --name qeautoai --source /path/to/other-tool/export
-loop setup --use-cwd --name qeautoai --source /path/to/other-tool/export --dry-run
-```
+**Coming from another AI tool?** Run `/migrate-import` in your coding agent and provide
+the export path. The skill classifies and imports memory, user profile, and skills without
+requiring terminal syntax.
 
 Imports `MEMORY.md`, `USER.md`, `SOUL.md`, and `skills/` from `--source`. If the other tool's files use **different names/structure**, add `--scan` - every file is classified by content and routed to the right home (secrets are never copied). See `skills/migrate-import/SKILL.md`.
 
@@ -84,19 +75,19 @@ Gemini, OpenCode, ...) to this one app, so `/plan-loop` and the rest work in any
 of them — and keep working if you switch agents mid-task. Just open your agent and
 run `/plan-loop` (or describe the task).
 
-```bash
-loop doctor
-loop bootstrap
-loop skills install     # re-wire agents (also run automatically by setup/update)
-loop update             # updates app only; memory is preserved
+```text
+/doctor
+/plan-loop
+/upgrade-loop-engineer  # only when you explicitly want to update now
 ```
 
 **Auto-update:** every `session-start` silently fast-forwards the app once/hour
 (disable with `LOOP_AUTO_UPDATE=off`).
 
-### Team mode (shared repos)
+### Maintainer-only team mode (shared repos)
 
-From inside a repo, make Loop the standard for teammates — they get bootstrapped
+This is one of the few deliberate shell-administration surfaces. Product users do not need
+it. From inside a repo, make Loop the standard for teammates — they get bootstrapped
 automatically when they open any agent, no out-of-band instructions:
 
 ```bash
@@ -118,10 +109,8 @@ Main/
 └── product/         # local memory
 ```
 
-```bash
-cd loop-engineer
-loop setup --memory-mode local --workspace ../product --name product
-```
+Open the coding agent in `loop-engineer/`, run `/setup-loop-engine`, and identify
+`../product` as the product workspace when asked.
 
 ## Validate template
 

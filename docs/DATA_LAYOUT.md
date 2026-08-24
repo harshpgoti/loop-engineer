@@ -9,8 +9,8 @@ Works the same on Windows, macOS, and Linux.
 
 ```text
 ~/.loop-engineer/
-├── app/                     # updatable tool runtime (git clone; loop update)
-├── bin/loop                 # CLI entry point
+├── app/                     # updatable tool runtime (git clone)
+├── bin/loop                 # internal bridge used by coding-agent skills
 └── data/                    # ALL global memory/data - nothing else lives loose here
     ├── registry/
     │   └── workspaces.json  # registered local product folders
@@ -53,11 +53,11 @@ my-product/
 | Mode | Data root | When used |
 |------|-----------|-----------|
 | **Global** (default) | `~/.loop-engineer/data/` | Installer default; no local loop data in cwd |
-| **Local** | `<product-folder>/.loop-engineer/` | `loop setup --use-cwd` or `--memory-mode local` |
+| **Local** | `<product-folder>/.loop-engineer/` | `/setup-loop-engine` from that product folder |
 
 ### Auto-detection
 
-When you run `/plan-loop`, `/loop-engine`, or any loop command:
+When you run `/plan-loop`, `/loop-engine`, or another Loop skill:
 
 1. Loop checks the **current folder** (and parents) for a `.loop-engineer/` subfolder with local loop data (`memories/`, `.loop-workspace-version`, etc.)
 2. **If found** → uses `<that-folder>/.loop-engineer/` as the data root
@@ -95,10 +95,7 @@ behavior. See [`docs/PRODUCT_HIERARCHY.md`](PRODUCT_HIERARCHY.md).
 ~/.loop-engineer/app/        # shared tool runtime
 ```
 
-```bash
-cd ~/projects/QEAutoAI
-loop setup --use-cwd --name qeautoai
-```
+Open the coding agent in `~/projects/QEAutoAI` and run `/setup-loop-engine`.
 
 ## Environment variables
 
@@ -109,25 +106,17 @@ loop setup --use-cwd --name qeautoai
 
 ## Updates
 
-```bash
-loop update    # updates ~/.loop-engineer/app only
-loop doctor    # checks app + active workspace
-```
+Use `/upgrade-loop-engineer` to update deliberately and `/doctor` to check the runtime
+and active workspace. The coding agent invokes the internal runtime operations.
 
-Data (global `data/` or local `.loop-engineer/`) is never touched by `loop update`.
+Data (global `data/` or local `.loop-engineer/`) is never touched by a runtime update.
 
 ## Migrating from the old flat layout
 
 If you have an existing install predating the `app/data` and `.loop-engineer/`
 split (files sitting loose directly in `~/.loop-engineer/` or your product
-folder root), run:
-
-```bash
-loop migrate legacy-layout                        # global, dry-run
-loop migrate legacy-layout --apply                 # global, apply
-loop migrate legacy-layout --workspace <product>    # local, dry-run
-loop migrate legacy-layout --workspace <product> --apply   # local, apply
-```
+folder root), run `/migrate-import` and ask it to migrate the legacy layout. It previews
+the move before applying it.
 
 Dry-run by default. Only moves an explicit allowlist of Loop-Engineer-owned
 paths - never touches your actual product code. For local mode, `docs/` and
@@ -152,4 +141,4 @@ Feature specs: `plan/features/` - see `docs/FEATURE_WORKFLOW.md`
 
 Always-on lifecycle: `docs/SESSION_LIFECYCLE.md`
 
-Use `loop bootstrap` or `loop session-start` to refresh the manifest.
+The active skill refreshes the manifest automatically through session lifecycle.

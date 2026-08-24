@@ -1,8 +1,13 @@
 # Distributing Loop Engineer to coding agents
 
-**Design goal:** whether the user works globally or inside a project, any coding
-agent can run every Loop command **from the single installed app** — one runtime,
+**Design goal:** whether the user works globally or inside a project, every coding
+agent can invoke Loop's skills **from the single installed app** - one runtime,
 updated in one place, never copied.
+
+The public interface is the slash-command/natural-language skill pack. The installed
+`bin/loop` executable is an internal deterministic runtime bridge used by those skills,
+installers, diagnostics, and compatibility paths; it is not a second end-user product.
+See `docs/INTERNAL_RUNTIME.md`.
 
 Loop's canonical skills are not self-contained documents: they read `AGENTS.md`
 and `templates/`, and run `scripts/` from the app root. Copying them into a

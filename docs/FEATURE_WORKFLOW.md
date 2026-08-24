@@ -2,6 +2,9 @@
 
 Built-in spec-driven development for one feature at a time. This is Loop Engineer's own workflow - not a vendored external CLI.
 
+The slash commands are the public interface. Any `loop` shell operations below are
+internal implementation references for coding agents and maintainers.
+
 ## When to use
 
 - **`/plan-loop`:** After a step plan exists, create the active feature spec.
