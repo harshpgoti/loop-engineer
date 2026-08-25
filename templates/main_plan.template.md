@@ -14,6 +14,24 @@ Status: **INITIALIZED**
 - **Sensitive data / compliance:** {{SENSITIVE_DATA}}
 - **Preferred stack:** {{PREFERRED_STACK}}
 
+## Tech Stack
+
+Finalized during the grill phase of `/plan-loop`. No layer has a silent default; an
+undecided layer is an open doubt with a stated fallback, not a build-time guess.
+
+| Layer | Choice |
+|-------|--------|
+| Language + runtime | TBD |
+| Backend framework | TBD |
+| Frontend | TBD |
+| Datastore | TBD |
+| Data access / migrations | TBD |
+| Auth | TBD |
+| Background work | TBD |
+| File / object storage | TBD |
+| Package / build | TBD |
+| Test runners | TBD |
+
 ## Deployment & Infrastructure
 
 Captured during `/plan-loop`. Reused by `/deployment-plan` unless the user changes it.

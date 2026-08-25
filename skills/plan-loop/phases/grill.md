@@ -68,13 +68,56 @@ name the next session re-litigates.
 `loop glossary` reports where the plan still uses a displaced synonym. It reports and never
 rewrites: two words that turn out to name different things get two definitions, not a rename.
 
+## Tech stack finalization
+
+The stack is a grill output, not a build-time discovery. Every layer below is named
+explicitly, with the version line the build will pin, before planning leaves this phase.
+
+| Layer | What must be named |
+|-------|--------------------|
+| Language + runtime | Language and major version (Node 22, Python 3.12, Go 1.23) |
+| Backend framework | Framework and API style (REST / GraphQL / RPC) |
+| Frontend | Framework, rendering model (SSR/SPA/static), styling system |
+| **Datastore** | The actual engine and where it is hosted - see below |
+| Data access | ORM/query layer and the migration tool that owns schema history |
+| Auth | Identity provider or in-house, session vs token, tenancy model |
+| Background work | Queue/scheduler, or an explicit "none, synchronous only" |
+| File/object storage | Provider, or an explicit "none" |
+| Package/build | Package manager, monorepo tool, bundler |
+| Test runner | Unit and end-to-end runners the QA phase will call |
+
+Two rules make this stick:
+
+**There is no default datastore.** No skill in this loop picks one for you, and no build may
+pick one for itself. Name the engine (Postgres, MySQL, DynamoDB, …) *and* its hosting, and
+write it into **Deployment & Infrastructure -> Database hosting** as the same string. A
+scaffold that reaches for a local file database because the plan never said otherwise is the
+exact failure `phases/resolve-doubts.md` describes: a build sitting on SQLite while the plan
+had decided Postgres with row-level security. A local dev stand-in (PGLite, an in-memory
+adapter) is a *test* decision that belongs to `skills/codebase-design/SKILL.md`, never a
+substitute for naming production.
+
+**Inherited beats invented.** In a sub-product, the parent's stack rows are constraints, not
+suggestions. Reuse them, say you are reusing them, and raise a doubt if this scope needs to
+diverge - `loop scope check` reports a divergence as a `deployment-conflict`, and it is far
+cheaper as a question here than as a migration later.
+
+Constrain the choice against what is already settled: the cloud provider limits managed
+datastores, the compute model limits long-running processes, the compliance posture limits
+regions and vendors. A layer that hangs on an unsettled prerequisite is downstream frontier -
+ask it next round, not this one.
+
+Every unresolved layer leaves this phase as a doubt with a recorded
+`Default if unavailable`, so the build inherits a stated fallback instead of a silent one.
+
 ## Grill areas
 
 Coverage, not a checklist - reach for whichever the current plan leaves soft:
 
 target user and buyer · urgency and budget · workflow frequency · data access ·
-differentiation · risk and compliance posture · cloud provider and deployment · LLM provider,
-model, and cost posture · distribution path · pilot or validation path · what to kill or delay
+differentiation · risk and compliance posture · cloud provider and deployment · tech stack
+finalization (see above) · LLM provider, model, and cost posture · distribution path · pilot or
+validation path · what to kill or delay
 
 ## After each round
 
@@ -83,6 +126,7 @@ model, and cost posture · distribution path · pilot or validation path · what
 | Settles a recorded question | `loop doubts resolve <id> "<answer>"` |
 | Not now, go with the default | `loop doubts defer <id> "<why>"` |
 | Changes strategy or architecture | `DECISIONS.md`, plus `Supersedes:` for questions it retires |
+| Settles a stack layer | `## Tech Stack` in `plan/main_plan.md`; datastore also mirrors into **Deployment & Infrastructure** |
 | Needs proof | `EVIDENCE_LOG.md` - cite the source, never the search |
 | Raises a new question | `loop doubts add`, with `Depends on:` / `Ask:` where they apply |
 | Belongs to someone who is not here | `Ask: <who>`, then `loop doubts questionnaire` |
@@ -110,6 +154,9 @@ patch from the section so it lives only as its question.
 The frontier is empty: every branch visited, nothing left silently assumed. Blocking
 questions that remain are either out with someone else (`loop doubts questionnaire`) or
 deferred with a recorded default - not forgotten.
+
+Every row of the tech-stack table is named or deferred with a stated default, and the
+datastore row reads the same in `## Tech Stack` and in **Deployment & Infrastructure**.
 
 Do not act on the plan until the user confirms you have reached a shared understanding.
 

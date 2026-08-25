@@ -156,6 +156,7 @@ RECALL â†’ DETECT INIT â†’ ASK/INFER (PRODUCT + DEPLOYMENT) â†’ G
    - wedge sharpness
    - evidence quality
    - cloud/deployment fit
+   - tech stack finalization (runtime, frameworks, datastore, migrations, auth, background work, test runners) - no layer left to a build-time default
    - LLM vendor lock-in and cost
 9. **Run `skills/plan-loop/phases/council.md`** before major product or architecture decisions.
 10. **Fact-check claims** before decisions. Add sources to `EVIDENCE_LOG.md`.

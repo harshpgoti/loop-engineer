@@ -102,6 +102,7 @@ the active feature. Never return `loop scope check` or `/feature-converge` as us
 1. `session-start` auto-detects agent-development signals - if `plan/AUTO_AGENT_SKILLS.md` was written, read it and `skills/agent-builder/SKILL.md` before drafting architecture.
 2. **If product is uninitialized**, ask for product name, target user, problem, first product step, constraints, sensitive data, preferred stack, and deployment targets. Capture deployment choices in `plan/main_plan.md` â†’ **Deployment & Infrastructure**:
    - cloud provider; single-cloud vs multi-cloud; primary region(s); compute model; database hosting; LLM provider and model(s); embedding provider/model; agent runtime; CI/CD platform; secrets management.
+   The stack itself is finalized in the grill phase and captured in `plan/main_plan.md` → **Tech Stack**; the datastore row must match **Database hosting**.
 3. **Reuse rule:** if a deployment answer already exists in `DECISIONS.md`, resolved `DOUBTS.md`, or `plan/main_plan.md`, reuse it, inform the user, and do not ask again unless they want to change it.
 4. If the user is unavailable, record missing inputs in `DOUBTS.md` and do not invent product-specific facts.
 5. Restate the product state from `memories/MEMORY.md` and `plan/main_plan.md`.
