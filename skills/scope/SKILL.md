@@ -176,9 +176,12 @@ see `docs/PRODUCT_HIERARCHY.md`. Absorb is for sub-products inside the main prod
 
 ## Rules
 
+- **The `loop` lines in this file are yours to run, never to print.** Report findings,
+  not commands. If you catch yourself writing "run `loop scope check`", run it instead
+  and report the result. Users only ever see slash commands.
 - Resolve the scope, announce it, then act. Exit `2` means ask.
 - Write inside the active scope. Crossing into another one requires the user's yes.
 - Platform-level work (CI, schema, design system, shared infra) is a **listed choice**,
   never the fallback.
-- `loop scope check` before handing off - an unprovided contract or a dangling blocker is
-  a build that will fail later.
+- Run the cross-scope check before handing off, and report what it found - an
+  unprovided contract or a dangling blocker is a build that will fail later.

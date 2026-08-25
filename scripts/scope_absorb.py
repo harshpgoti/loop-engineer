@@ -79,6 +79,7 @@ class Plan:
     doubt_ids: dict[str, str] = field(default_factory=dict)
     decisions_merged: int = 0
     decision_conflicts: list[str] = field(default_factory=list)
+    decision_keys: list[str] = field(default_factory=list)
     contracts: list[str] = field(default_factory=list)
     dangling: list[str] = field(default_factory=list)
     dropped: list[str] = field(default_factory=list)
@@ -256,6 +257,7 @@ def plan_absorb(
 
     # decisions -------------------------------------------------------------
     plan.decision_conflicts, plan.decisions_merged = _decision_plan(main_ws, child)
+    plan.decision_keys = _child_decision_keys(child)
 
     # contracts from declared integrations ----------------------------------
     plan.contracts = _integration_ids(child)
@@ -307,7 +309,13 @@ def _decision_plan(main_ws: Path, child: Path) -> tuple[list[str], int]:
     try:
         import hierarchy_drift as drift
 
-        parent = drift.decision_entries(_read(Path(main_ws) / "DECISIONS.md"), skip_sections=("pending",))
+        # Only the *platform's* own decisions can conflict with an incoming sub-product.
+        # Blocks a previous absorb merged in belong to another sub-product: comparing
+        # against them would stop the second absorb over two sub-products having decided
+        # their own separate business differently, which is not a conflict at all.
+        parent = drift.decision_entries(
+            drift.strip_absorbed(_read(Path(main_ws) / "DECISIONS.md")), skip_sections=("pending",)
+        )
         mine = drift.decision_entries(_read(child / "DECISIONS.md"), skip_sections=("pending",))
     except Exception:
         return [], 0
@@ -481,6 +489,7 @@ def apply_absorb(main_ws: Path, plan: Plan, *, allow_conflicts: bool = False) ->
         code_layout="own-dir",
         type="sub-product",
         status="building",
+        decision_keys=plan.decision_keys,
         absorbed_from=str(child),
     )
     sp.write_scope(main_ws, scope)
@@ -521,6 +530,22 @@ def _unlink_child(main_ws: Path, plan: Plan) -> bool:
         return bool(unlink(main_ws, plan.folder.name))
     except Exception:  # noqa: BLE001 - never fail an absorb over bookkeeping
         return False
+
+
+
+def _child_decision_keys(child: Path) -> list[str]:
+    """Decision topics the sub-product is bringing with it.
+
+    Stored on the scope so the platform surface can exclude them for good. The marker
+    written into `DECISIONS.md` is not enough on its own: `loop archive` compacts that
+    file by rebuilding entries, and drops a bare HTML comment while doing it.
+    """
+    try:
+        import hierarchy_drift as drift
+
+        return sorted(drift.decision_entries(_read(child / "DECISIONS.md"), skip_sections=("pending",)))
+    except Exception:  # noqa: BLE001
+        return []
 
 
 def _merge_decisions(main_ws: Path, child: Path, plan: Plan) -> int:
@@ -802,6 +827,29 @@ def eject(main_ws: Path, slug: str, *, dry_run: bool = False) -> dict:
     return result
 
 
+
+def _block_start(text: str, marker: str, slug: str) -> int | None:
+    """Where this scope's merged block begins - by marker, else by its heading.
+
+    The marker is not durable: `loop archive` compacts these files by rebuilding each
+    entry and drops a bare HTML comment while doing it. On a real workspace the marker
+    was gone within a session and the heading survived, so an eject that only looked for
+    the marker would leave the merged decisions behind - and leaving them behind is what
+    makes every shared topic look like a conflict afterwards.
+    """
+    if marker in text:
+        return text.index(marker)
+    heading = re.search(
+        rf"^##+\s+Decisions from sub-product\s+`?{re.escape(slug)}`?", text, re.M
+    )
+    if heading:
+        return heading.start()
+    heading = re.search(
+        rf"^##+\s+Evidence from\s+`?{re.escape(slug)}`?", text, re.M
+    )
+    return heading.start() if heading else None
+
+
 def _unmerge_shared(main_ws: Path, slug: str) -> dict:
     """Undo what absorb merged into the *shared* files. Without this, eject is not a reversal.
 
@@ -821,9 +869,9 @@ def _unmerge_shared(main_ws: Path, slug: str) -> dict:
     for key, name in (("decisions_removed", "DECISIONS.md"), ("evidence_removed", "EVIDENCE_LOG.md")):
         path = Path(main_ws) / name
         text = _read(path)
-        if marker not in text:
+        start = _block_start(text, marker, slug)
+        if start is None:
             continue
-        start = text.index(marker)
         # A block runs to the next absorbed marker, or to end of file - they are
         # appended in order, so this cannot swallow authored content above it.
         nxt = text.find("<!-- absorbed:", start + len(marker))

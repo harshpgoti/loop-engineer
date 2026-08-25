@@ -61,6 +61,10 @@ loop scope eject auth                 # reverse an absorb
 
 ## Rules
 
+- **Never show the user a `loop` command.** The shell bridge is yours (`docs/INTERNAL_RUNTIME.md`).
+  Run it, then report *what it found*. "Run `loop scope check`" is never an acceptable
+  answer - run it and say what it said. The only commands a user should ever see are
+  slash commands like `/scope` and `/develop-product`.
 - **Never guess which sub-product.** `loop scope resolve` exits `2` when it cannot answer;
   that is an instruction to ask the user, not a soft failure. A forgotten word must never
   become edits to shared CI, database schema, or design-system code.
@@ -92,4 +96,4 @@ Return:
 2. What changed (scope created, absorbed, renamed, ejected), file by file
 3. Cross-scope findings: unprovided contracts, dangling blockers, duplicate gates, cycles
 4. For an absorb: every rewritten id, every dropped generated file, and where the archive is
-5. Next recommended command
+5. Next recommended **slash** command - never a `loop ...` line

@@ -75,6 +75,9 @@ class Scope:
     provides: list[str] = field(default_factory=list)
     consumes: list[str] = field(default_factory=list)
     depends_on: list[str] = field(default_factory=list)
+    #: Decision topics this scope brought in when it was absorbed. Recorded here rather
+    #: than only as a marker in DECISIONS.md, because `loop archive` rewrites that file.
+    decision_keys: list[str] = field(default_factory=list)
     absorbed_from: str | None = None
 
     @property
@@ -108,6 +111,7 @@ class Scope:
             "provides": self.provides,
             "consumes": self.consumes,
             "depends_on": self.depends_on,
+            "decision_keys": self.decision_keys,
         }
         if self.absorbed_from:
             data["absorbed_from"] = self.absorbed_from
@@ -199,6 +203,7 @@ def read_scope(folder: Path) -> Scope | None:
         provides=_as_list(data.get("provides")),
         consumes=_as_list(data.get("consumes")),
         depends_on=_as_list(data.get("depends_on")),
+        decision_keys=_as_list(data.get("decision_keys")),
         absorbed_from=(str(data["absorbed_from"]) if data.get("absorbed_from") else None),
     )
 

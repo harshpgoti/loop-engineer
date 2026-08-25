@@ -10,7 +10,7 @@ behind each decision.
 | P1 absorb / eject / discover | done - `scripts/scope_absorb.py` |
 | P2 contracts and the deterministic checks | done - `scripts/contracts.py` |
 | P3 command surface, manifest, doctor | done - `commands/scope.md`, `skills/scope/SKILL.md`, `loop scope`, `## Scope` in the manifest |
-| P4 narrow the federated bridge to external scopes only | done - gated on a real three-sub-product platform absorbed and ejected cleanly first. The bridge now runs only where a second workspace exists; `scripts/scope_paths.bridge_state` is the seam |
+| P4 narrow the federated bridge to external scopes only | done - gated on a real three-sub-product platform absorbed and ejected cleanly first. The bridge now runs only where a second workspace exists; `bridge_state()` in `scripts/scope_paths.py` is the seam |
 **Would supersede if accepted:** the delegating half of `docs/PRODUCT_HIERARCHY.md`.
 
 **Decisions taken (2026-08-24):** scope folders are named `plan/products/<slug>/` with no

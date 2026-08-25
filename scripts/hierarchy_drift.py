@@ -243,8 +243,82 @@ def decisions_table(workspace: Path) -> dict[str, str]:
     return {key: value for key, (_label, value) in decisions_labels(workspace).items()}
 
 
+ABSORBED_MARKER = "<!-- absorbed:"
+
+
+def strip_absorbed(text: str) -> str:
+    """Drop blocks that absorb merged in from a sub-product.
+
+    A decision that belongs to one sub-product is **not** a platform decision, and this
+    file is the surface every federated sub-product inherits from. Absorbing one
+    sub-product used to publish its decisions to all the others: measured on a real
+    platform, absorbing a single sub-product took hierarchy drift from 10 findings to
+    31, thirty of them `parent-added` - fifteen per remaining sub-product, announcing
+    another product's form-drafting and repo-layout decisions as newly-arrived platform
+    policy they must now honour.
+
+    Absorb always appends these blocks, so the scope-owned region runs from the first one
+    to end of file.
+
+    Two ways in, because one of them is not durable: `loop archive` compacts
+    `DECISIONS.md` by rebuilding each entry from its fields, which drops a bare HTML
+    comment. Measured on a real workspace, the `<!-- absorbed:... -->` marker was gone
+    within a session while the section heading survived. So the heading counts too, and
+    `platform_decisions()` adds a third check that survives both.
+    """
+    starts = [text.index(ABSORBED_MARKER)] if ABSORBED_MARKER in text else []
+    heading = ABSORBED_HEADING.search(text)
+    if heading:
+        starts.append(heading.start())
+    return text[: min(starts)] if starts else text
+
+
+ABSORBED_HEADING = re.compile(r"^##+\s+Decisions from sub-product\b", re.M)
+
+
+def platform_decisions(workspace: Path) -> str:
+    """`DECISIONS.md` with scope-owned blocks removed - what a sub-product inherits."""
+    return strip_absorbed(read_text(workspace / "DECISIONS.md", FULL_FILE))
+
+
+def scope_owned_keys(workspace: Path) -> set[str]:
+    """Decision topics each scope brought with it, as `scope.json` recorded them.
+
+    The durable half of the rule. Region-stripping depends on a marker or a heading
+    surviving in the file, and this workspace's own archive step rewrites that file. The
+    keys are stored outside it, so a compaction cannot turn one sub-product's decisions
+    back into platform policy for the others.
+    """
+    try:
+        import scope_paths
+
+        keys: set[str] = set()
+        for scope in scope_paths.list_scopes(workspace):
+            keys |= {normalize_key(k) for k in scope.decision_keys if k}
+        return keys
+    except Exception:  # noqa: BLE001 - a workspace without scopes has none
+        return set()
+
+
 def decisions_labels(workspace: Path) -> dict[str, tuple[str, str]]:
-    return decision_entries(read_text(workspace / "DECISIONS.md", FULL_FILE), skip_sections=("pending",))
+    raw = read_text(workspace / "DECISIONS.md", FULL_FILE)
+    stripped = strip_absorbed(raw)
+    entries = decision_entries(stripped, skip_sections=("pending",))
+
+    if stripped != raw:
+        # The scope region was found and removed. Anything still here is platform-level
+        # by position, which is stronger evidence than a recorded key - a topic decided
+        # at both levels legitimately appears above the region, and excluding it by key
+        # would drop a real platform decision and report `parent-removed` to every child.
+        return entries
+
+    owned = scope_owned_keys(workspace)
+    if not owned:
+        return entries
+    # Fallback: no marker and no heading survived in the file, so position tells us
+    # nothing. The keys absorb recorded are the only thing left that knows which
+    # decisions belong to a sub-product rather than to the platform.
+    return {key: value for key, value in entries.items() if normalize_key(key) not in owned}
 
 
 def is_uninitialized(workspace: Path) -> bool:

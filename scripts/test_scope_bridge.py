@@ -217,3 +217,92 @@ class EjectIsAReversal(Platform):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ScopeDecisionsAreNotPlatformPolicy(Platform):
+    """Absorbing one sub-product must not publish its decisions to the others.
+
+    Measured on a real platform: absorbing one sub-product took drift from 10 findings
+    to 31 - thirty `parent-added`, fifteen per remaining sub-product, announcing another
+    product's form-drafting and repo-layout decisions as new platform policy.
+    """
+
+    def _second_child(self) -> Path:
+        folder = self.product / "portal"
+        ws = folder / ".loop-engineer"
+        (ws / "plan").mkdir(parents=True)
+        (ws / "plan" / "main_plan.md").write_text("# Portal\n", encoding="utf-8")
+        (ws / "memories").mkdir()
+        (ws / "memories" / "MEMORY.md").write_text("# Memory\n", encoding="utf-8")
+        (ws / "DECISIONS.md").write_text("# Decisions\n\n| Topic | Decision |\n|---|---|\n| Router | Next.js |\n", encoding="utf-8")
+        return folder
+
+    def test_absorbed_decisions_stay_out_of_the_platform_surface(self) -> None:
+        self._second_child()
+        self.absorb()
+        surface = drift.decisions_labels(self.main)
+        self.assertIn("datastore", {k.lower() for k in surface}, "the platform's own must stay")
+        self.assertNotIn("token format", {k.lower() for k in surface}, "the scope's must not")
+
+    def test_no_parent_added_is_raised_at_the_other_sub_product(self) -> None:
+        self._second_child()
+        self.absorb()
+        findings = drift.check_children(self.main, resolve_children(self.main))
+        self.assertEqual([f for f in findings if f.get("kind") == "parent-added"], [])
+
+    def test_the_heading_alone_is_enough_when_the_marker_is_compacted_away(self) -> None:
+        """`loop archive` rebuilds DECISIONS.md entries and drops bare HTML comments."""
+        self._second_child()
+        self.absorb()
+        path = self.main / "DECISIONS.md"
+        path.write_text(path.read_text(encoding="utf-8").replace("<!-- absorbed:auth-service -->", ""), encoding="utf-8")
+        surface = drift.decisions_labels(self.main)
+        self.assertNotIn("token format", {k.lower() for k in surface})
+
+    def test_recorded_keys_cover_the_case_where_both_are_gone(self) -> None:
+        self._second_child()
+        self.absorb()
+        scope = sp.find_scope(self.main, "auth-service")
+        self.assertIn("token-format", scope.decision_keys)
+        path = self.main / "DECISIONS.md"
+        text = path.read_text(encoding="utf-8")
+        text = text.replace("<!-- absorbed:auth-service -->", "")
+        text = text.replace("## Decisions from sub-product `auth-service` (absorbed", "## Notes (")
+        path.write_text(text, encoding="utf-8")
+        surface = drift.decisions_labels(self.main)
+        self.assertNotIn("token format", {k.lower() for k in surface})
+        self.assertIn("datastore", {k.lower() for k in surface})
+
+    def test_a_platform_topic_repeated_by_a_scope_is_not_dropped(self) -> None:
+        """Excluding by key alone would delete a real platform decision."""
+        (self.child / "DECISIONS.md").write_text(
+            "# Decisions\n\n| Topic | Decision |\n|---|---|\n| Datastore | Postgres |\n", encoding="utf-8"
+        )
+        self.absorb()
+        self.assertIn("datastore", {k.lower() for k in drift.decisions_labels(self.main)})
+
+    def test_absorbing_a_second_sub_product_does_not_conflict_with_the_first(self) -> None:
+        """Two sub-products deciding their own separate business is not a conflict."""
+        portal = self._second_child()
+        self.absorb()
+        (portal / ".loop-engineer" / "DECISIONS.md").write_text(
+            "# Decisions\n\n| Topic | Decision |\n|---|---|\n| Token format | Opaque tokens |\n", encoding="utf-8"
+        )
+        plan = ab.plan_absorb(self.main, portal, map_id="02")
+        self.assertEqual(plan.decision_conflicts, [], "the first scope's decisions are not the platform's")
+
+
+class EjectSurvivesCompaction(Platform):
+    def test_eject_still_removes_the_block_when_the_marker_was_compacted_away(self) -> None:
+        """`loop archive` drops the HTML comment; the heading is what is left to find."""
+        self.absorb()
+        path = self.main / "DECISIONS.md"
+        path.write_text(
+            path.read_text(encoding="utf-8").replace("<!-- absorbed:auth-service -->", ""),
+            encoding="utf-8",
+        )
+        result = ab.eject(self.main, "auth-service")
+        self.assertTrue(result["decisions_removed"])
+        text = path.read_text(encoding="utf-8")
+        self.assertNotIn("Token format", text)
+        self.assertIn("Datastore", text)
