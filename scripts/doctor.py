@@ -235,7 +235,7 @@ def check_hierarchy_health(workspace: Path, errors: list[str], warnings: list[st
         if child.get("missing"):
             errors.append(
                 f"Sub-product `{child['name']}` is linked but missing at `{child['path']}` - "
-                f"run `loop workspace unlink {child['name']}` or restore the folder."
+                f"restore the folder, or absorb it with `loop scope absorb`."
             )
             continue
         if not child.get("map_id"):
@@ -247,7 +247,7 @@ def check_hierarchy_health(workspace: Path, errors: list[str], warnings: list[st
         if tree["folder"].resolve() not in siblings:
             warnings.append(
                 f"Parent `{parent['name']}` does not list this workspace - the link is one-way. "
-                f"Run `loop workspace link {tree['folder']}` in the parent."
+                f"Fold it in with `loop scope absorb {tree['folder']}`."
             )
         elif read_meta(workspace).get("parent"):
             passes.append(f"Hierarchy link healthy: sub-product of `{parent['name']}`.")

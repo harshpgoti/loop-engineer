@@ -11,6 +11,7 @@ Run: python scripts/test_workspace_hierarchy.py
 
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import tempfile
@@ -327,20 +328,6 @@ class TestDoctorHierarchyHealth(TreeSandbox):
 
 
 class TestPlanPhase(TreeSandbox):
-    def test_hierarchy_phase_selected_when_errors_exist(self) -> None:
-        from plan_phase import compute_plan_phase
-
-        (self.main_ws / "plan").mkdir(parents=True, exist_ok=True)
-        (self.main_ws / "plan" / "main_plan.md").write_text(MAIN_PLAN, encoding="utf-8")
-        (self.main_ws / "plan" / "SUBPRODUCTS.md").write_text(
-            "| Level | Sub-product | Kind | Detail |\n|---|---|---|---|\n"
-            "| error | `auth-svc` | decision-conflict | datastore differs |\n",
-            encoding="utf-8",
-        )
-        result = compute_plan_phase(self.main_ws)
-        self.assertEqual(result["phase"], "hierarchy")
-        self.assertIn("hierarchy", result["pipeline"])
-
     def test_no_hierarchy_phase_without_errors(self) -> None:
         from plan_phase import compute_plan_phase
 
@@ -477,3 +464,84 @@ class QualifiedDecisionBullets(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PlatformPlanningLoop(unittest.TestCase):
+    """ultraplan one step -> spec -> clarify -> checklist -> doubts -> tasks -> next step.
+
+    Packing used to outrank an active feature, so on a multi-row platform the router
+    pulled every session back to `ultraplan` until every pack existed: the spec just
+    written sat untouched and `spec-clarify`, `resolve-doubts` and `task-compiler` were
+    unreachable.
+    """
+
+    BODY = (
+        "Substantive content describing the design, its constraints and the decisions "
+        "taken, long enough to count as real work rather than a template heading.\n"
+    )
+
+    def setUp(self) -> None:
+        import tempfile as _t
+        self.root = Path(_t.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.root, True)
+        self.ws = self.root / "P" / ".loop-engineer"
+        (self.ws / "plan" / "steps").mkdir(parents=True)
+        (self.ws / "memories").mkdir()
+        (self.ws / ".loop").mkdir()
+        (self.ws / "memories" / "MEMORY.md").write_text("# Memory\n", encoding="utf-8")
+        (self.ws / "plan" / "main_plan.md").write_text("# Product\n\nreal plan\n", encoding="utf-8")
+        (self.ws / "plan" / "PLAN_SCALE.md").write_text("scale: platform\n", encoding="utf-8")
+        (self.ws / "plan" / "PRODUCT_MAP.md").write_text(
+            "| ID | Type | Title | Depends on |\n|---|---|---|---|\n"
+            "| 01 | module | Core |  |\n| 02 | module | Reports | 01 |\n", encoding="utf-8")
+        self.feature = self.ws / "plan" / "features" / "001-core"
+
+    def pack(self, step_id: str, title: str) -> None:
+        from plan_paths import ULTRAPLAN_ARTIFACTS, step_ultraplan_dir
+        folder = step_ultraplan_dir(self.ws, step_id, title)
+        folder.mkdir(parents=True, exist_ok=True)
+        for artifact in ULTRAPLAN_ARTIFACTS:
+            (folder / f"{artifact}.md").write_text(f"# {artifact}\n\n{self.BODY}", encoding="utf-8")
+
+    def activate_feature(self) -> None:
+        self.feature.mkdir(parents=True, exist_ok=True)
+        (self.feature / "spec.md").write_text("# Core\n\n## Open questions\n\n- what SLA?\n", encoding="utf-8")
+        (self.ws / ".loop" / "active-feature.json").write_text(
+            json.dumps({"id": "001", "title": "Core", "path": "plan/features/001-core"}), encoding="utf-8")
+
+    def phase(self) -> str:
+        import plan_phase
+        return plan_phase.compute_plan_phase(self.ws)["phase"]
+
+    def ready_checklist(self) -> None:
+        (self.feature / "spec-checklist.md").write_text(
+            "# Checklist\n\nVerdict: **Ready for feature-plan**\n", encoding="utf-8")
+
+    def test_a_packed_step_with_an_open_spec_goes_to_spec_clarify(self) -> None:
+        self.pack("01", "Core")
+        self.activate_feature()
+        self.assertEqual(self.phase(), "spec-clarify")
+
+    def test_an_open_blocking_doubt_outranks_packing_the_next_row(self) -> None:
+        self.pack("01", "Core")
+        self.activate_feature()
+        self.ready_checklist()
+        (self.ws / "DOUBTS.md").write_text(
+            "# Doubts\n\n## DQ-001: blocking\n- **Blocking:** yes\n", encoding="utf-8")
+        self.assertEqual(self.phase(), "resolve-doubts")
+
+    def test_a_finished_feature_returns_the_loop_to_the_next_pack(self) -> None:
+        self.pack("01", "Core")
+        self.activate_feature()
+        self.ready_checklist()
+        self.assertEqual(self.phase(), "ultraplan", "row 02 still needs its pack")
+
+    def test_tasks_compile_once_every_row_is_packed(self) -> None:
+        self.pack("01", "Core")
+        self.pack("02", "Reports")
+        self.activate_feature()
+        self.ready_checklist()
+        self.assertEqual(self.phase(), "task-compiler")
+
+    def test_a_platform_with_no_feature_still_packs_first(self) -> None:
+        self.assertEqual(self.phase(), "ultraplan")

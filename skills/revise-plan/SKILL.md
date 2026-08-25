@@ -69,8 +69,6 @@ touches `plan/main_plan.md` AND may resolve a `DOUBTS.md` entry AND invalidate a
    correcting, not just appending) using the routing table.
 6. Before writing, check whether the fact's target area is **locked**:
    - an unanswered finding from the parent product covering the same ground
-     (`loop findings list`). The master plan already moved here - resolve that first
-     with `loop findings ask`, or the revision is written against a stale constraint
      and will simply be re-raised next session, or
    - a feature already implemented (its tasks in `TASKS.yml` / `tasks.md` are `done`, or
      `/feature-converge` has run against it).

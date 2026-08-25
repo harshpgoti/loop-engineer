@@ -76,14 +76,12 @@ Before building, classify the work:
 - **Planning-only build instruction:** allowed anytime.
 - **Synthetic prototype / reversible scaffold:** allowed if `DOUBTS.md` blockers are documented.
 - **Production feature / sensitive data / external integration:** blocked until relevant gates pass.
-- **Unanswered finding from the parent product:** blocked until answered. Run `loop findings ask` first - each comes with a recommended answer. A platform change landing mid-build is reported as an `error` precisely because work is already in flight against the old constraint.
 
 Do not process real sensitive or regulated data until the relevant gate passes.
 
 Check both before selecting a task:
 
 ```bash
-loop findings ask     # parent-product findings, with recommended answers
 loop doubts ask       # blocking doubts, with their recorded defaults
 ```
 

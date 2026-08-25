@@ -90,7 +90,7 @@ SESSION-START -> READ PHASE -> [grill -> (parent-findings) -> (hierarchy) -> cou
 `SESSION-START` and `SESSION-END` perform the product-tree sync automatically. In a
 sub-product, parent findings are not merely acknowledged: accepted constraints are folded
 into this workspace's plan/spec/tasks before the phase pipeline continues. Closeout converges
-the active feature. Never return `loop workspace sync` or `/feature-converge` as user chores.
+the active feature. Never return `loop scope check` or `/feature-converge` as user chores.
 
 ## Instructions
 

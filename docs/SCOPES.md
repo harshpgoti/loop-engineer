@@ -227,7 +227,7 @@ lines existed only to keep two workspaces agreeing. All of it is gone:
 | `hierarchy_sync.py`, `tree_sync.py`, `/product-tree-sync` | No boundary to sync |
 | `subproduct_new.py`, `/subproduct-new` | Carving a workspace out re-creates the boundary; `/scope new` creates the plan folder instead |
 | `hierarchy_drift.check_children` and 8 drift kinds | `parent-added/changed/removed`, `decision-conflict`, `deployment-conflict`, `unmapped-sub`, `missing-link`, `stale-sub` are all impossible when there is one plan |
-| `loop scope eject` | There is no second layout to go back to |
+| `loop scope eject` (removed) | There is no second layout to go back to |
 
 What replaced them is smaller and answers the same questions from files this workspace
 already holds: `plan/contracts/` with four deterministic checks, cross-scope `blocked_by`

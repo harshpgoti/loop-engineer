@@ -26,7 +26,6 @@ ignoring the other produces a green go/no-go that is simply wrong:
 | Channel | What it holds | Command |
 |---------|---------------|---------|
 | `DOUBTS.md` | Questions this workspace raised | `loop doubts ask` |
-| Parent findings | Where the master plan disagrees with this plan | `loop findings ask` |
 
 Findings go **first**. A parent finding can create a doubt, retire one, or change the
 answer to one - resolving doubts before findings means answering questions the platform
@@ -52,10 +51,6 @@ doubts channel.
 0. **Clear the parent's findings first**, if this workspace has a parent:
 
    ```bash
-   loop findings ask                                   # each finding as a question
-   loop findings resolve <id> accepted --note "<what changed>"
-   loop findings resolve <id> declined --note "<why the master plan is wrong>"
-   loop findings resolve <id> deferred --note "<when this gets decided>"
    ```
 
    `skills/scope/SKILL.md` holds the full treatment. Accepting one
@@ -127,7 +122,6 @@ doubts channel.
 8. **Verify before claiming GO.** Both channels, both from the harness:
    `loop doubts counts` is the number the go/no-go must quote, `loop doubts lint` must
    be clean - an entry marked resolved with no recorded answer, or filed under Resolved
-   while still `open`, is not resolved - and `loop findings list` must report nothing
    open. An unanswered finding is a blocker even when every doubt is closed.
 
 ## Go / No-Go output (always end with this)
@@ -141,7 +135,6 @@ doubts channel.
 5. **Verdict** - the counts come from the harness, never from your own tally:
    - **GO** - "No blocking doubts remain, no findings open. Clear to run
      `/develop-product`." (only when `loop doubts counts` reports `blocking` 0,
-     `loop findings list` reports nothing open, and the pre-dev gates pass)
    - **NO-GO** - "N blocker(s) remain: <list>. Resolve these before development."
 6. Next command (`/develop-product` on GO; otherwise what to do about each blocker)
 

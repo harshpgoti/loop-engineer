@@ -105,6 +105,34 @@ def attention_block(workspace: Path) -> list[str]:
     """
     items: list[tuple[str, str]] = []
 
+    # Doubts come first: an unanswered blocking question invalidates whatever would be
+    # planned or built on top of it. This block is the surface every command reads, and
+    # doubts were the one thing it never mentioned - so a workspace could carry open
+    # blocking questions through planning and into a build without ever being asked.
+    try:
+        import doubts as _doubts
+
+        askable = _doubts.frontier(workspace)
+        if askable:
+            head = ", ".join(d.id for d in askable[:3])
+            items.append(
+                (f"{len(askable)} blocking doubt(s) can be answered now ({head}"
+                 f"{', ...' if len(askable) > 3 else ''})",
+                 "`loop doubts ask` - one round, each with its recorded default as the "
+                 "recommendation; `loop doubts resolve <id> \"<answer>\"` or `loop doubts defer <id> \"<reason>\"`"))
+        waiting = _doubts.blocked_behind(workspace)
+        if waiting:
+            items.append(
+                (f"{len(waiting)} doubt(s) wait on an earlier answer, so they are not asked yet",
+                 "answer the frontier first - they become askable on their own"))
+        delegated = _doubts.delegated_doubts(workspace)
+        if delegated:
+            items.append(
+                (f"{len(delegated)} doubt(s) are addressed to someone who is not here",
+                 "`loop doubts questionnaire` - send them out; do not guess the answer"))
+    except Exception:
+        pass
+
     try:
         from freshness import stale_views
 
@@ -849,26 +877,9 @@ def main() -> int:
             print(f"  auto agent skills: {', '.join(result['auto_agent_skills'])}")
         for action in result.get("maintenance", []):
             print(f"  auto: {action}")
-        hier = result.get("hierarchy") or {}
-        if hier.get("children"):
-            counts = hier.get("counts", {})
-            print(
-                f"  hierarchy: main with {hier['children']} sub-product(s); "
-                f"{counts.get('error', 0)} error finding(s) - read plan/SUBPRODUCTS.md"
-            )
-            if hier.get("children_refreshed"):
-                print(f"  child contexts: {len(hier['children_refreshed'])} refreshed automatically")
-        elif hier.get("parent"):
-            print(
-                f"  hierarchy: sub-product of `{hier['parent']}` - read and assimilate "
-                "plan/PARENT_CONTEXT.md in this command"
-            )
-        found = result.get("findings") or {}
-        if found.get("total"):
-            print(
-                f"  parent findings: {found['total']} open "
-                f"({len(found.get('ask') or [])} need a decision) - run `loop findings ask`"
-            )
+        # Sub-products are scopes in this workspace, so there is no hierarchy to report
+        # and no parent findings to drain. Which scope this session is about is stated
+        # in the manifest's `## Scope` block instead.
         print("  read plan/SESSION_MANIFEST.md first")
         return 0
 

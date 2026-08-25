@@ -7,8 +7,8 @@ planning phase comes next, from cheap state signals. The orchestrator skill
 matching `phases/<name>.md` file (progressive disclosure).
 
 Phases, in loop order:
-    grill -> council -> [ultraplan if platform]
-    -> spec-clarify -> spec-checklist -> resolve-doubts (when open doubts remain)
+    grill -> [resolve-doubts whenever a blocking doubt is answerable]
+    -> council -> [ultraplan if platform] -> spec-clarify -> spec-checklist
     -> task-compiler
 """
 from __future__ import annotations
@@ -104,11 +104,15 @@ def _has_open_doubts(workspace: Path) -> bool:
     block the build" pinned a workspace before `task-compiler` indefinitely. Both of
     this repo's real workspaces were stuck that way. `doubts.has_blocking` reads the
     same file with one parser every command shares.
+
+    Uses the *frontier* - the blocking doubts answerable this round - rather than every
+    blocking doubt. A deferred one, or one waiting on an earlier answer, must not pin the
+    phase: deferring is the documented way to proceed without an answer.
     """
     try:
-        from doubts import has_blocking
+        from doubts import frontier
 
-        return has_blocking(workspace)
+        return bool(frontier(workspace))
     except Exception:
         return False
 
@@ -136,16 +140,31 @@ def compute_plan_phase(workspace: Path) -> dict:
 
     if not initialized:
         phase, reason = "grill", "product plan is UNINITIALIZED - grill product inputs first"
+    elif _has_open_doubts(workspace):
+        # Ahead of the feature spec and of packing the next row. A blocking doubt is a
+        # question the plan already knows it cannot answer for itself, and each carries
+        # a recorded default as its recommendation - so this is one round of questions,
+        # not a stall. Gating it behind "a feature is active" meant a platform could
+        # plan every step with the blockers never asked.
+        phase, reason = (
+            "resolve-doubts",
+            "blocking doubts can be answered now - clear them before planning further",
+        )
+    elif feature and not _checklist_ready(feature):
+        # An active feature outranks packing the next map row. The documented loop is
+        # "ultraplan one step -> feature spec -> clarify -> checklist -> doubts ->
+        # tasks", and packing first stranded the spec: on a four-row platform the
+        # router pulled every session back to `ultraplan` until all four packs existed,
+        # so `spec-clarify`, `spec-checklist`, `resolve-doubts` and `task-compiler`
+        # were unreachable and the spec just written sat untouched.
+        phase, reason = "spec-clarify", "active feature spec still has open questions"
     elif platform and _ultraplan_incomplete(workspace):
+        # The active feature is finished through its checklist and doubts, so the next
+        # row's pack is the next real work. This is what returns the loop to ultraplan
+        # after a step has been planned all the way to tasks.
         phase, reason = "ultraplan", "platform scale with an incomplete ultraplan step"
     elif feature:
-        if _checklist_ready(feature):
-            if _has_open_doubts(workspace):
-                phase, reason = "resolve-doubts", "planning complete but DOUBTS.md still has open items - clear blockers before task compile / development"
-            else:
-                phase, reason = "task-compiler", "active feature spec checklist is Ready - compile tasks"
-        else:
-            phase, reason = "spec-clarify", "active feature spec still has open questions"
+        phase, reason = "task-compiler", "active feature spec checklist is Ready - compile tasks"
     else:
         phase, reason = "council", "plan initialized, no active feature - council-review before the feature spec"
 

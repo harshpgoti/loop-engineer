@@ -77,8 +77,12 @@ class Sandbox(unittest.TestCase):
         (self.ws / "memories" / "MEMORY.md").write_text("# mem", encoding="utf-8")
         (self.ws / "TASKS.yml").write_text(TASKS, encoding="utf-8")
         (self.ws / "GATES.yml").write_text(GATES, encoding="utf-8")
+        # Marked non-blocking on purpose: these tests are about *task* routing, and an
+        # open doubt with nothing said either way is blocking by default, which now
+        # routes the build to `clarify` before it picks a task.
         (self.ws / "DOUBTS.md").write_text(
             "# Doubts\n\n### DQ-001: Token lifetime\n- **Status:** open\n"
+            "- **Blocking:** no - does not block the build\n"
             "- **Question:** How long should a token live?\n",
             encoding="utf-8",
         )
@@ -124,7 +128,14 @@ class Slicing(Sandbox):
         self.assertNotIn("later gates", block)
 
     def test_blocking_doubts_are_carried_in(self) -> None:
-        self.assertIn("DQ-001", tc.render(self.ws))
+        # Its own blocking doubt: the shared fixture's DQ-001 is deliberately
+        # non-blocking so the router tests can reach a task instead of `clarify`.
+        (self.ws / "DOUBTS.md").write_text(
+            "# Doubts\n\n### DQ-009: Token lifetime\n- **Status:** open\n"
+            "- **Blocking:** yes\n- **Question:** How long should a token live?\n",
+            encoding="utf-8",
+        )
+        self.assertIn("DQ-009", tc.render(self.ws))
 
     def test_no_tasks_file_is_not_an_error(self) -> None:
         (self.ws / "TASKS.yml").unlink()

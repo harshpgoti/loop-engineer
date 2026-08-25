@@ -42,6 +42,7 @@ judgement (`AGENTS.md` non-negotiable #4).
 
 | Phase | Selected when | File | Skills it loads |
 |-------|---------------|------|-----------------|
+| **clarify** | a blocking doubt can be answered now | `plan-loop/phases/resolve-doubts.md` | research-search |
 | **scaffold** | no product source tree yet | `phases/scaffold.md` | implementation-planner, tool-orchestrator |
 | **implement** | a task is active | `phases/implement.md` | implementation-planner, feature-workflow |
 | **test** | the active task is QA-phase | `phases/test.md` | qa-validation |

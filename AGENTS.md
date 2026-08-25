@@ -51,7 +51,6 @@ questions with a recommended answer, by `/plan-loop`, `/develop-product`,
 
 | | Command | What it raises |
 |---|---------|----------------|
-| Parent product disagrees with this plan | `loop findings ask` → `loop findings resolve <id> <accepted\|declined\|deferred>` | Derived every session from both plans - never queued |
 | Blocking questions in `DOUBTS.md` | `loop doubts ask` → `loop doubts resolve <id> "<answer>"` / `loop doubts defer` | One parser owns the file; the `Default if unavailable` field is the recommendation |
 
 Never tell the user to go run these - run them, ask the question, act on the answer

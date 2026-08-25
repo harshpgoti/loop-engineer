@@ -554,7 +554,7 @@ def check_children(main_ws: Path, children: list[dict]) -> list[dict]:
                     name,
                     "path",
                     f"Linked sub-product `{name}` is no longer at `{child['path']}`. "
-                    f"Run `loop workspace unlink {name}` or restore the folder.",
+                    f"Restore the folder, or fold it in with `loop scope absorb`.",
                     "",
                 )
             )

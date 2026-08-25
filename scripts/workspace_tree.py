@@ -126,7 +126,8 @@ def get_role(workspace: Path) -> str:
 
 
 def role_is_pinned(workspace: Path) -> bool:
-    """True when the user set the role explicitly (`loop workspace role ...`)."""
+    """True when a role was pinned explicitly. Legacy: roles came from the federated
+    layout and nothing sets them now."""
     return read_meta(workspace).get("role_source") == "user"
 
 
@@ -199,7 +200,7 @@ def map_id_for(workspace: Path, child_name: str) -> str | None:
     here and would bind a folder named `api` to whichever of `api-gateway` or
     `public-api` appeared first in the map. A silent mis-binding is worse than none:
     every downstream check then reads a row that belongs to a different sub-product.
-    When neither matches, bind it explicitly - `loop workspace link <path> --map-id NN`.
+    Legacy binder, kept for absorb's discovery; scopes bind by `scope.json.map_id`.
     """
     from plan_paths import slugify
 

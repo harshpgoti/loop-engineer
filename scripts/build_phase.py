@@ -12,6 +12,7 @@ Same contract as the planning router: cheap state signals, rules first (`AGENTS.
 non-negotiable #4), one phase file loaded.
 
 Phases, in loop order:
+    [clarify if a blocking doubt is answerable]
     scaffold -> implement -> test -> converge -> release -> deploy
 """
 
@@ -27,6 +28,7 @@ PHASE_FILES = {
     "test": "skills/develop-product/phases/test.md",
     "converge": "skills/develop-product/phases/converge.md",
     "evaluate": "skills/eval-loop/SKILL.md",
+    "clarify": "skills/plan-loop/phases/resolve-doubts.md",
     "release": "skills/develop-product/phases/release.md",
     "deploy": "skills/develop-product/phases/deploy.md",
 }
@@ -38,6 +40,7 @@ PHASE_SKILLS = {
     "test": ["skills/qa-validation/SKILL.md"],
     "converge": ["skills/feature-converge/SKILL.md", "skills/code-reviewer/SKILL.md"],
     "evaluate": ["skills/eval-loop/SKILL.md"],
+    "clarify": ["skills/research-search/SKILL.md"],
     "release": [
         "skills/security-compliance/SKILL.md",
         "skills/prod-gap/SKILL.md",
@@ -252,11 +255,47 @@ def cloud_inventory_environments(plan_text: str) -> set[str]:
     return found or {"dev"}
 
 
+
+def _blocking_doubts(workspace: Path) -> list[str]:
+    """Blocking doubts that can be answered *this round*, by id.
+
+    `frontier` excludes resolved, deferred and dependency-blocked ones, so a doubt the
+    user parked stays parked and the build continues - deferring is the documented way
+    to proceed without an answer.
+    """
+    try:
+        import doubts
+
+        return [d.id for d in doubts.frontier(workspace)]
+    except Exception:  # noqa: BLE001 - a malformed DOUBTS.md must not stop a build
+        return []
+
+
 def compute_build_phase(workspace: Path) -> dict:
     """Return {phase, file, skills, pipeline, reason} for the active workspace."""
     tasks = _tasks(workspace)
     task = _active(workspace, tasks)
     remaining = [t for t in tasks if str(t.get("status", "")).lower() not in DONE]
+
+    askable = _blocking_doubts(workspace)
+    if askable:
+        # Ahead of everything, including evals. Building on an unanswered blocking
+        # question means finding out after the code exists, and every one of these
+        # already carries a recorded default as its recommended answer - so asking is
+        # one round, not an interrogation. Deferred and dependency-blocked doubts are
+        # excluded by `frontier`, so this can never stall the loop.
+        head = ", ".join(askable[:3])
+        return {
+            "phase": "clarify",
+            "file": PHASE_FILES["clarify"],
+            "skills": PHASE_SKILLS["clarify"],
+            "pipeline": list(PHASE_FILES),
+            "reason": (
+                f"{len(askable)} blocking doubt(s) can be answered now ({head}"
+                f"{', ...' if len(askable) > 3 else ''}) - ask before building on them"
+            ),
+            "task": (task or {}).get("id"),
+        }
 
     evals = _evals_needed(workspace)
     if evals and _has_source_tree(workspace):

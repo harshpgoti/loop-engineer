@@ -36,7 +36,7 @@ loop session-end --command /loop-engine --summary "<progress>"
 Both lifecycle bookends automatically sync the product tree. A sub-product assimilates
 cross-scope contract findings into the plan before routing; a platform
 product publishes refreshed generated context to its children. Mutating closeout converges
-the active feature, so the user never chains `loop workspace sync` or `/feature-converge`.
+the active feature, so the user never chains `loop scope check` or `/feature-converge`.
 
 ## Routing (enter here, then **keep going** - do not stop at the branch boundary)
 

@@ -24,7 +24,6 @@ in the `release` phase.
 ## Process
 
 1. **Check the blockers first.** `plan/BUILD_CONTEXT.md` lists blocking doubts and
-   unmet dependencies. Run `loop doubts ask` and `loop findings ask` if either is
    non-empty - each comes with a recommended answer. Do not build past an unanswered
    blocking question.
 2. **Plan the diff** with `skills/implementation-planner/SKILL.md` before editing.

@@ -17,7 +17,7 @@ def run_script(script: str, args: list[str]) -> int:
 
     Windows consoles default to cp1252, so any product text containing a character
     outside it - a `>=`, an em dash, an accented name - raised UnicodeEncodeError and
-    took the whole command down mid-output. `loop findings ask` died on a single
+    took the whole command down mid-output. A findings listing died on a single
     U+2265 in a real workspace. This is the one chokepoint every script goes through.
     """
     import os
@@ -666,19 +666,33 @@ def build_parser() -> argparse.ArgumentParser:
     update.add_argument("--skip-validate", action="store_true", help="Skip template validation after pull.")
     update.add_argument("--skip-native-commands", action="store_true", help="Do not refresh the skills pack in .agents/skills.")
     update.set_defaults(func=cmd_update)
-    sub.add_parser("doctor", help="Health-check runtime and product workspace.").set_defaults(func=cmd_doctor)
-    sub.add_parser("status", help="Quick workspace snapshot.").set_defaults(func=cmd_status)
-    sub.add_parser("sync", help="Reconcile memory/handoff/task drift.").set_defaults(func=cmd_sync)
+    doctor_p = sub.add_parser("doctor", help="Health-check runtime and product workspace.")
+    doctor_p.add_argument("--workspace", default=argparse.SUPPRESS)
+    doctor_p.set_defaults(func=cmd_doctor)
+    status_p = sub.add_parser("status", help="Quick workspace snapshot.")
+    status_p.add_argument("--workspace", default=argparse.SUPPRESS)
+    status_p.set_defaults(func=cmd_status)
+    sync_p = sub.add_parser("sync", help="Reconcile memory/handoff/task drift.")
+    sync_p.add_argument("--workspace", default=argparse.SUPPRESS)
+    sync_p.set_defaults(func=cmd_sync)
     sub.add_parser("home", help="Show ~/.loop-engineer layout.").set_defaults(func=cmd_home)
-    sub.add_parser("bootstrap", help="Show session bootstrap paths and skill resolution.").set_defaults(func=cmd_bootstrap)
+    bootstrap_p = sub.add_parser("bootstrap", help="Show session bootstrap paths and skill resolution.")
+    bootstrap_p.add_argument("--workspace", default=argparse.SUPPRESS)
+    bootstrap_p.set_defaults(func=cmd_bootstrap)
 
     auto_skills = sub.add_parser("auto-skills", help="Auto-select frontend motion/3D skills from plan context.")
     auto_skills.add_argument("--text", default="", help="Extra context (e.g. user message).")
     auto_skills.add_argument("--write", action="store_true", help="Write plan/AUTO_SKILLS.md.")
     auto_skills.set_defaults(func=cmd_auto_skills)
 
-    sub.add_parser("compact", help="Write COMPACT.md summary.").set_defaults(func=cmd_compact)
-    sub.add_parser("prod-gap", help="Analyze production readiness gaps.").set_defaults(func=cmd_prod_gap)
+    compact_p = sub.add_parser("compact", help="Write COMPACT.md summary.")
+
+    compact_p.add_argument("--workspace", default=argparse.SUPPRESS)
+
+    compact_p.set_defaults(func=cmd_compact)
+    prod_gap_p = sub.add_parser("prod-gap", help="Analyze production readiness gaps.")
+    prod_gap_p.add_argument("--workspace", default=argparse.SUPPRESS)
+    prod_gap_p.set_defaults(func=cmd_prod_gap)
 
     team = sub.add_parser("team-init", help="Commit a bootstrap so teammates auto-get Loop when they open any agent.")
     team.add_argument("mode", nargs="?", choices=("required", "optional"), default="required")
@@ -1039,8 +1053,12 @@ def build_parser() -> argparse.ArgumentParser:
     feat_new.add_argument("--step", default=None)
     feat_new.add_argument("--force", action="store_true")
     feat_new.set_defaults(func=cmd_feature)
-    feature_sub.add_parser("list", help="List feature folders.").set_defaults(func=cmd_feature)
-    feature_sub.add_parser("converge", help="Drift check for active feature.").set_defaults(func=cmd_feature)
+    feat_list_p = feature_sub.add_parser("list", help="List feature folders.")
+    feat_list_p.add_argument("--workspace", default=argparse.SUPPRESS)
+    feat_list_p.set_defaults(func=cmd_feature)
+    feat_converge_p = feature_sub.add_parser("converge", help="Drift check for active feature.")
+    feat_converge_p.add_argument("--workspace", default=argparse.SUPPRESS)
+    feat_converge_p.set_defaults(func=cmd_feature)
 
     plan = sub.add_parser(
         "plan-loop",

@@ -59,7 +59,7 @@ recommendation automatically; ask only when accepting or declining changes produ
 direction. The workspace boundary still holds: the parent publishes generated context,
 while the sub-product alone authors its plan and code.
 
-The user does not run `loop workspace sync` or `/feature-converge` between commands.
+The user does not run `loop scope check` or `/feature-converge` between commands.
 Those remain explicit diagnostic commands for a requested mid-session recheck only.
 
 ## Agent rules (all tools)
