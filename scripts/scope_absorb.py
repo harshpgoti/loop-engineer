@@ -15,7 +15,8 @@ Three rules the design turns on:
   no longer matches `workspace_resolver`'s markers, so nearest-wins resolution stops
   finding it - which is the point. Leaving it in place would silently route every future
   session in that folder back to the dead workspace, the worst failure this migration
-  has. Keeping the copy is also what makes `eject` a real reversal.
+  has. The copy is kept as a plain backup of what was absorbed - nothing reads it, and it
+  can be deleted once the absorb has been verified.
 - **A conflicting decision stops and asks.** Everything else can be merged mechanically;
   two plans that resolved the same topic differently cannot, and guessing which one wins
   would quietly discard a real decision.
@@ -766,144 +767,6 @@ def _archive(child: Path) -> Path:
 
 
 # ---------------------------------------------------------------------------
-# eject - the reversal
-# ---------------------------------------------------------------------------
-
-
-def eject(main_ws: Path, slug: str, *, dry_run: bool = False) -> dict:
-    """Move a scope back out into a workspace of its own.
-
-    Reversibility is what makes absorb safe to adopt incrementally, so this is a real
-    operation rather than a note in the docs. It restores the archived copy when one is
-    still there - that copy holds the state absorb rewrote - and otherwise rebuilds a
-    workspace from the scope folder.
-    """
-    main_ws = Path(main_ws)
-    scope = sp.find_scope(main_ws, slug)
-    if scope is None:
-        raise SystemExit(f"no scope named `{slug}`")
-
-    folder = scope.code_path(main_ws) or (sp.product_folder(main_ws) / scope.slug)
-    archived = sorted(Path(folder).glob(".loop-engineer.absorbed-*")) if folder.is_dir() else []
-    result = {
-        "scope": scope.slug,
-        "folder": str(folder),
-        "restored": None,
-        "rebuilt": False,
-        "removed_scope": False,
-    }
-    if dry_run:
-        result["restored"] = str(archived[-1]) if archived else None
-        result["rebuilt"] = not archived
-        return result
-
-    folder.mkdir(parents=True, exist_ok=True)
-    child = folder / ".loop-engineer"
-    if archived:
-        archived[-1].rename(child)
-        result["restored"] = str(archived[-1])
-    else:
-        (child / "plan").mkdir(parents=True, exist_ok=True)
-        for item in scope.path.rglob("*"):
-            if item.is_file():
-                rel = item.relative_to(scope.path)
-                dst = child / ("plan" / rel if rel.parts[0] in PLAN_TREES else rel)
-                dst.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(item, dst)
-        prd = child / "prd.md"
-        if prd.exists() and not (child / "plan" / "main_plan.md").exists():
-            (child / "plan").mkdir(parents=True, exist_ok=True)
-            shutil.copy2(prd, child / "plan" / "main_plan.md")
-        result["rebuilt"] = True
-
-    shutil.rmtree(scope.path, ignore_errors=True)
-    result["removed_scope"] = True
-    result.update(_unmerge_shared(main_ws, scope.slug))
-    pointer = folder / sp.POINTER_FILE
-    if pointer.exists():
-        pointer.unlink()
-    if sp.read_active(main_ws) and sp.read_active(main_ws).get("slug") == scope.slug:
-        sp.clear_active(main_ws)
-    return result
-
-
-
-def _block_start(text: str, marker: str, slug: str) -> int | None:
-    """Where this scope's merged block begins - by marker, else by its heading.
-
-    The marker is not durable: `loop archive` compacts these files by rebuilding each
-    entry and drops a bare HTML comment while doing it. On a real workspace the marker
-    was gone within a session and the heading survived, so an eject that only looked for
-    the marker would leave the merged decisions behind - and leaving them behind is what
-    makes every shared topic look like a conflict afterwards.
-    """
-    if marker in text:
-        return text.index(marker)
-    heading = re.search(
-        rf"^##+\s+Decisions from sub-product\s+`?{re.escape(slug)}`?", text, re.M
-    )
-    if heading:
-        return heading.start()
-    heading = re.search(
-        rf"^##+\s+Evidence from\s+`?{re.escape(slug)}`?", text, re.M
-    )
-    return heading.start() if heading else None
-
-
-def _unmerge_shared(main_ws: Path, slug: str) -> dict:
-    """Undo what absorb merged into the *shared* files. Without this, eject is not a reversal.
-
-    Absorb copies the sub-product's decisions, evidence, memory and sessions into the
-    main workspace. Restoring the child workspace leaves those copies behind, so both
-    sides then hold the same decisions - and the federated drift check, correctly doing
-    its job, reports every shared topic as a `decision-conflict`. Measured on a real
-    three-sub-product platform: ten shared topics, three of them raised as errors on the
-    first sync after an eject, none of them a real disagreement.
-
-    The child's own copies were never touched, so removing the main workspace's is
-    exactly right.
-    """
-    removed = {"decisions_removed": False, "evidence_removed": False, "memory_removed": False, "sessions_removed": 0}
-    marker = f"<!-- absorbed:{slug} -->"
-
-    for key, name in (("decisions_removed", "DECISIONS.md"), ("evidence_removed", "EVIDENCE_LOG.md")):
-        path = Path(main_ws) / name
-        text = _read(path)
-        start = _block_start(text, marker, slug)
-        if start is None:
-            continue
-        # A block runs to the next absorbed marker, or to end of file - they are
-        # appended in order, so this cannot swallow authored content above it.
-        nxt = text.find("<!-- absorbed:", start + len(marker))
-        end = nxt if nxt != -1 else len(text)
-        path.write_text((text[:start].rstrip() + "\n" + text[end:].lstrip("\n")).rstrip() + "\n", encoding="utf-8")
-        removed[key] = True
-
-    memory = Path(main_ws) / "memories" / "scopes" / f"{slug}.md"
-    if memory.exists():
-        try:
-            memory.unlink()
-            removed["memory_removed"] = True
-        except OSError:
-            pass
-
-    db = Path(main_ws) / "state.db"
-    if db.exists():
-        try:
-            conn = sqlite3.connect(db)
-            try:
-                cur = conn.execute("DELETE FROM sessions WHERE scope = ?", (slug,))
-                conn.commit()
-                removed["sessions_removed"] = cur.rowcount if cur.rowcount and cur.rowcount > 0 else 0
-            finally:
-                conn.close()
-        except sqlite3.Error:
-            pass
-
-    return removed
-
-
-# ---------------------------------------------------------------------------
 # bulk
 # ---------------------------------------------------------------------------
 
@@ -992,8 +855,8 @@ def main() -> int:
 
     console_utf8()
     parser = argparse.ArgumentParser(description="Absorb a sub-product workspace into the main product.")
-    parser.add_argument("command", choices=["absorb", "eject", "discover"])
-    parser.add_argument("target", nargs="?", help="Folder to absorb, or scope slug to eject.")
+    parser.add_argument("command", choices=["absorb", "discover"])
+    parser.add_argument("target", nargs="?", help="Folder to absorb.")
     parser.add_argument("--workspace", default=None)
     parser.add_argument("--map-id", default=None)
     parser.add_argument("--slug", default=None)
@@ -1015,12 +878,6 @@ def main() -> int:
             print(f"  {folder.name}  ({folder})")
         return 0
 
-    if args.command == "eject":
-        if not args.target:
-            raise SystemExit("eject needs a scope slug")
-        result = eject(main_ws, args.target, dry_run=args.dry_run)
-        print(json.dumps(result, indent=2))
-        return 0
 
     folders = order_folders(main_ws, discover(main_ws)) if args.all else [Path(args.target or ".")]
     if not folders:

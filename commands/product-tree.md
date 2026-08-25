@@ -1,6 +1,6 @@
 # /product-tree
 
-Show how this product workspace relates to the others: its role (main product, sub-product, or standalone), every linked sub-product's plan state, and where the master plan and a sub-product's plan disagree.
+Show the sub-products this workspace holds as scopes: their plan state, how they depend on each other, and where a contract or task reference is unsatisfied.
 
 ## How To Interpret
 
@@ -13,7 +13,7 @@ Read command/skill files from the tool app (`~/.loop-engineer/app/` or your clon
 1. `AGENTS.md`
 2. `skills/product-tree/SKILL.md`
 3. `plan/SESSION_MANIFEST.md`
-4. `plan/SUBPRODUCTS.md` (main product) or `plan/PARENT_CONTEXT.md` (sub-product)
+4. `plan/products/*/scope.json`
 5. `plan/PRODUCT_MAP.md`
 6. `plan/main_plan.md`
 7. `DECISIONS.md`
@@ -28,21 +28,15 @@ SESSION-START -> REFRESH TREE -> READ ROLL-UP -> EXPLAIN DRIFT -> RECOMMEND NEXT
 ## Scripts
 
 ```bash
-loop workspace tree                 # role, parent, sub-products
-loop workspace refresh              # rewrite the roll-up / parent context and stage drift notes
-loop workspace refresh --no-stage   # report only, stage nothing
-loop workspace link ../billing      # sub-product outside the main folder
-loop workspace unlink billing
-loop workspace role main            # pin a role instead of auto-detecting
+loop scope list                     # sub-products, in dependency order
+loop scope check                    # contracts, dangling refs, cycles
+loop workspace tree                 # this workspace and the scopes it holds
 ```
 
 ## Rules
 
-- **Read-only across workspaces.** Never edit a sub-product's plan files from the main
-  workspace. Corrections are staged into that sub-product's `.loop/pending/` and applied
-  there with `loop pending approve --all`.
+- **Read-only.** Reporting is this command's product; changes belong to `/scope` or `/revise-plan`.
 - Sub-products are discovered by scanning folders under the main product folder. Use
-  `loop workspace link` only for sub-products that live somewhere else.
 - Every sub-product should bind to a `plan/PRODUCT_MAP.md` row. An unmapped sub-product
   is work the master plan cannot account for - fix the map, not the report.
 
@@ -51,7 +45,7 @@ loop workspace role main            # pin a role instead of auto-detecting
 **Read-only - deliberately does not cascade.** Reporting the tree and naming the next
 command *is* this command's product - it is read-only by design, so it reports rather
 than resolves. When drift needs resolving, hand off to
-`/resolve-doubts` (this workspace) or `/plan-loop` (to correct the master plan). See the
+`/scope` (to fix a contract or binding) or `/plan-loop` (to correct the master plan). See the
 read-only exemption in `docs/CONTINUATION.md`.
 
 ## Output

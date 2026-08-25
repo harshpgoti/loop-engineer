@@ -1,7 +1,9 @@
-"""P4: the federated bridge runs only where a second workspace is still involved.
+"""Absorbing a sub-product, and what must not follow it into the platform.
 
-Every case here was found by absorbing a real three-sub-product platform, not by
-reading the code - which is why each test names the symptom it prevents.
+Every case here was found by absorbing a real three-sub-product platform, not by reading
+the code - which is why each test names the symptom it prevents. The federated bridge
+these once guarded is gone (`docs/SCOPES.md`); what remains is what absorb still has to
+get right.
 """
 
 from __future__ import annotations
@@ -17,11 +19,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import hierarchy_drift as drift  # noqa: E402
-import hierarchy_sync  # noqa: E402
 import scope_absorb as ab  # noqa: E402
 import scope_paths as sp  # noqa: E402
 import session_store  # noqa: E402
-import tree_sync  # noqa: E402
 from workspace_tree import describe_tree, read_meta, resolve_children  # noqa: E402
 
 
@@ -79,64 +79,6 @@ class Platform(unittest.TestCase):
         return ab.apply_absorb(self.main, plan)
 
 
-class BridgeState(Platform):
-    def test_a_child_workspace_is_a_boundary(self) -> None:
-        state = sp.bridge_state(self.main)
-        self.assertTrue(state["needed"])
-        self.assertEqual(state["boundaries"], ["auth-service"])
-
-    def test_absorbing_the_last_child_removes_the_boundary(self) -> None:
-        self.absorb()
-        state = sp.bridge_state(self.main)
-        self.assertFalse(state["needed"])
-        self.assertEqual(state["mode"], "unified")
-        self.assertIn("no boundary to sync", state["reason"])
-
-    def test_an_external_scope_keeps_the_bridge_alive(self) -> None:
-        """A sub-product in another repo is exactly what the bridge is retained for."""
-        self.absorb()
-        scope = sp.find_scope(self.main, "auth-service")
-        meta = json.loads((scope.path / "scope.json").read_text(encoding="utf-8"))
-        meta["external"] = {"workspace": "../billing"}
-        (scope.path / "scope.json").write_text(json.dumps(meta), encoding="utf-8")
-        state = sp.bridge_state(self.main)
-        self.assertTrue(state["needed"])
-        self.assertEqual(state["external"], ["auth-service"])
-
-    def test_a_federated_workspace_is_unchanged(self) -> None:
-        state = sp.bridge_state(self.main)
-        self.assertEqual(state["mode"], "federated")
-        self.assertTrue(state["needed"])
-
-
-class BridgeSkips(Platform):
-    def test_sync_is_skipped_when_nothing_is_on_the_other_side(self) -> None:
-        self.absorb()
-        result = tree_sync.sync(self.main)
-        self.assertTrue(result.get("skipped"))
-        self.assertEqual(result.get("mode"), "unified")
-
-    def test_the_skip_message_does_not_tell_a_unified_workspace_to_rebuild_the_boundary(self) -> None:
-        self.absorb()
-        text = tree_sync.describe(tree_sync.sync(self.main))
-        self.assertIn("every sub-product here is a scope", text)
-        self.assertNotIn("Run `loop setup --use-cwd`", text)
-
-    def test_a_stale_roll_up_is_removed_rather_than_left_describing_dead_workspaces(self) -> None:
-        hierarchy_sync.run(self.main)
-        rollup = self.main / "plan" / "SUBPRODUCTS.md"
-        self.assertTrue(rollup.is_file())
-        self.absorb()
-        hierarchy_sync.run(self.main)
-        self.assertFalse(rollup.exists())
-
-    def test_the_bridge_comes_back_when_a_scope_is_ejected(self) -> None:
-        self.absorb()
-        ab.eject(self.main, "auth-service")
-        self.assertTrue(sp.bridge_state(self.main)["needed"])
-        self.assertFalse(tree_sync.sync(self.main).get("skipped"))
-
-
 class MapRows(Platform):
     def _unbuilt(self) -> list[str]:
         findings = drift.check_children(self.main, resolve_children(self.main))
@@ -178,47 +120,6 @@ class TreeOutput(Platform):
         self.assertNotIn("scopes:", text)
 
 
-class EjectIsAReversal(Platform):
-    def test_ejecting_removes_what_absorb_merged_into_the_shared_files(self) -> None:
-        """Otherwise both sides hold the same decisions and every shared topic conflicts."""
-        self.absorb()
-        self.assertIn("absorbed:auth-service", (self.main / "DECISIONS.md").read_text(encoding="utf-8"))
-        result = ab.eject(self.main, "auth-service")
-        decisions = (self.main / "DECISIONS.md").read_text(encoding="utf-8")
-        self.assertNotIn("absorbed:auth-service", decisions)
-        self.assertNotIn("Token format", decisions)
-        self.assertIn("Datastore", decisions, "the main product's own decisions must survive")
-        self.assertTrue(result["decisions_removed"])
-
-    def test_ejecting_removes_the_scope_memory_and_its_sessions(self) -> None:
-        self.absorb()
-        self.assertTrue((self.main / "memories" / "scopes" / "auth-service.md").is_file())
-        result = ab.eject(self.main, "auth-service")
-        self.assertFalse((self.main / "memories" / "scopes" / "auth-service.md").exists())
-        self.assertEqual(result["sessions_removed"], 1)
-        conn = sqlite3.connect(self.main / "state.db")
-        rows = conn.execute("SELECT COUNT(*) FROM sessions WHERE scope = 'auth-service'").fetchone()[0]
-        conn.close()
-        self.assertEqual(rows, 0)
-
-    def test_the_child_keeps_its_own_copies(self) -> None:
-        self.absorb()
-        ab.eject(self.main, "auth-service")
-        self.assertIn("Token format", (self.child / "DECISIONS.md").read_text(encoding="utf-8"))
-        self.assertTrue((self.child / "state.db").exists())
-
-    def test_an_absorb_eject_round_trip_raises_no_decision_conflicts(self) -> None:
-        """The end-to-end symptom: three phantom errors on the first sync after eject."""
-        self.absorb()
-        ab.eject(self.main, "auth-service")
-        findings = drift.check_children(self.main, resolve_children(self.main))
-        self.assertEqual([f for f in findings if f.get("kind") == "decision-conflict"], [])
-
-
-if __name__ == "__main__":
-    unittest.main()
-
-
 class ScopeDecisionsAreNotPlatformPolicy(Platform):
     """Absorbing one sub-product must not publish its decisions to the others.
 
@@ -243,12 +144,6 @@ class ScopeDecisionsAreNotPlatformPolicy(Platform):
         surface = drift.decisions_labels(self.main)
         self.assertIn("datastore", {k.lower() for k in surface}, "the platform's own must stay")
         self.assertNotIn("token format", {k.lower() for k in surface}, "the scope's must not")
-
-    def test_no_parent_added_is_raised_at_the_other_sub_product(self) -> None:
-        self._second_child()
-        self.absorb()
-        findings = drift.check_children(self.main, resolve_children(self.main))
-        self.assertEqual([f for f in findings if f.get("kind") == "parent-added"], [])
 
     def test_the_heading_alone_is_enough_when_the_marker_is_compacted_away(self) -> None:
         """`loop archive` rebuilds DECISIONS.md entries and drops bare HTML comments."""
@@ -290,19 +185,3 @@ class ScopeDecisionsAreNotPlatformPolicy(Platform):
         )
         plan = ab.plan_absorb(self.main, portal, map_id="02")
         self.assertEqual(plan.decision_conflicts, [], "the first scope's decisions are not the platform's")
-
-
-class EjectSurvivesCompaction(Platform):
-    def test_eject_still_removes_the_block_when_the_marker_was_compacted_away(self) -> None:
-        """`loop archive` drops the HTML comment; the heading is what is left to find."""
-        self.absorb()
-        path = self.main / "DECISIONS.md"
-        path.write_text(
-            path.read_text(encoding="utf-8").replace("<!-- absorbed:auth-service -->", ""),
-            encoding="utf-8",
-        )
-        result = ab.eject(self.main, "auth-service")
-        self.assertTrue(result["decisions_removed"])
-        text = path.read_text(encoding="utf-8")
-        self.assertNotIn("Token format", text)
-        self.assertIn("Datastore", text)

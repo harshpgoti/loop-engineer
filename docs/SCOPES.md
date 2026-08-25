@@ -4,15 +4,14 @@ User-facing operations happen through `/scope`, `/plan-loop`, `/develop-product`
 language. Shell examples below are internal runtime references for agents and maintainers,
 not steps users must chain manually.
 
-A platform is one product with several sub-products. There are two ways to hold that:
+A platform is one product with several sub-products. **There is one workspace**, at the
+main product folder, and it holds every sub-product's plan.
 
-| Mode | Sub-product is | Kept in agreement by |
-|------|----------------|----------------------|
-| **unified** (this document) | A **scope**: `plan/products/<slug>/` in the main workspace, with its code wherever the user decided | Nothing - it is one workspace |
-| **federated** ([`PRODUCT_HIERARCHY.md`](PRODUCT_HIERARCHY.md)) | A folder with its own `.loop-engineer/` | A bridge: `PARENT_CONTEXT.md`, watermarks, findings |
-
-Unified is the default for new sub-products. Federated remains supported and is the right
-answer for a sub-product in **another repo** - see [External](#external-sub-products).
+A sub-product's *code* can live anywhere - a folder in the product tree, or a repository
+of its own. Being big enough to deserve its own repo is a reason to split the **code**,
+never a reason to split the plan: the moment the plan splits, one sub-product can no
+longer depend on another without a synchronisation mechanism between two workspaces, and
+that mechanism is what this design removed.
 
 ## Layout
 
@@ -184,7 +183,6 @@ loop scope discover                        # candidates, in dependency order
 loop scope absorb ./auth-service --dry-run
 loop scope absorb ./auth-service
 loop scope absorb --all                    # stops at the first refusal
-loop scope eject auth-service              # the reversal
 ```
 
 | Child state | Becomes |
@@ -211,60 +209,64 @@ Id renaming is idempotent: `AUTH-TASK-001` never becomes `AUTH-AUTH-TASK-001`.
 Afterwards the child workspace is **renamed** to `.loop-engineer.absorbed-<date>/`.
 The rename is load-bearing - `workspace_resolver` looks for markers at
 `<folder>/.loop-engineer`, and leaving that path intact would silently route every future
-session in the folder back to the dead workspace. It is also what `eject` restores from,
-so it is not litter.
+session in the folder back to the dead workspace. The renamed copy is kept as a plain
+backup of what was absorbed; nothing reads it, so it can be deleted once the absorb has
+been verified.
 
-## The federated bridge, and when it runs
+## What the single workspace removed
 
-`PARENT_CONTEXT.md`, the parent watermark, derived findings and `plan/SUBPRODUCTS.md`
-exist to keep two *workspaces* agreeing. They run exactly when a second workspace is
-still involved:
+The federated layout gave each sub-product a workspace of its own, and roughly 2,000
+lines existed only to keep two workspaces agreeing. All of it is gone:
 
-| Situation | Bridge |
+| Removed | Why it cannot apply |
 |---|---|
-| This workspace is a sub-product with a parent | runs |
-| A child folder still holds its own `.loop-engineer/` - external, or not yet absorbed | runs, for that child |
-| Every sub-product is a scope here | **skipped**, and a stale `SUBPRODUCTS.md` is removed |
+| `parent_context.py`, `plan/PARENT_CONTEXT.md` | A scope reads the same files as the platform - nothing to copy across |
+| `parent_watermark.py`, `.loop/parent-sync.json` | Nothing to have "last seen" |
+| `parent_inbox.py`, `finding_log.py`, `loop findings` | A scope has no parent to disagree with |
+| `subproducts_report.py`, `plan/SUBPRODUCTS.md` | The plans are already in one tree - `loop scope list` reads them directly |
+| `hierarchy_sync.py`, `tree_sync.py`, `/product-tree-sync` | No boundary to sync |
+| `subproduct_new.py`, `/subproduct-new` | Carving a workspace out re-creates the boundary; `/scope new` creates the plan folder instead |
+| `hierarchy_drift.check_children` and 8 drift kinds | `parent-added/changed/removed`, `decision-conflict`, `deployment-conflict`, `unmapped-sub`, `missing-link`, `stale-sub` are all impossible when there is one plan |
+| `loop scope eject` | There is no second layout to go back to |
 
-`loop workspace sync` in a unified workspace says so rather than telling you to create
-sub-product workspaces - advice that would rebuild the boundary you removed. Ejecting a
-scope brings the bridge straight back for that folder.
+What replaced them is smaller and answers the same questions from files this workspace
+already holds: `plan/contracts/` with four deterministic checks, cross-scope `blocked_by`
+resolved by the task loader, and `scope_readiness.py` for `/status`, `/prod-gap` and
+`/release-check`.
 
-Two things this had to fix, both found by absorbing a real three-sub-product platform:
+`loop scope absorb` **stays**. It is the way a sub-product that still has its own
+`.loop-engineer/` gets folded in - the migration path, one direction only.
 
-- **The absorbed child is unlinked from the main workspace.** Otherwise the entry stays,
-  the folder is found without its data dir, and `missing-link` is reported as an error
-  every session, telling you to restore folders you deliberately absorbed.
-- **A map row bound to a scope counts as built.** `unbuilt-row` means "the plan says this
-  is a sub-product and nothing is building it". An absorbed row is being built here, so
-  reporting it unbuilt would never stop.
+## Sub-products in another repo
 
-## Eject is a real reversal
-
-Absorb copies the sub-product's decisions, evidence, memory and sessions into the shared
-files. Eject removes those copies again - the child's own were never touched.
-
-Skipping that step is not cosmetic: both sides then hold the same decisions, and the
-drift check correctly reports every shared topic as a `decision-conflict`. On the real
-platform that was ten shared topics and three error-level findings, none of them a real
-disagreement.
-
-## External sub-products
-
-A sub-product in another repo stays federated: it keeps its own workspace and the
-existing bridge (`PARENT_CONTEXT.md`, the parent watermark, `loop findings`). Nothing in
-[`PRODUCT_HIERARCHY.md`](PRODUCT_HIERARCHY.md) changes for it - that machinery now serves
-this one case instead of every case.
-
-## Backward compatibility
-
-A workspace with no `plan/products/` is `federated` and behaves exactly as before: no
-`## Scope` block in the manifest, no scope resolution, unchanged read order. Mode is
-inferred from the presence of scopes, or pinned in `.loop/workspace.json`:
+A sub-product large enough to warrant its own repository still has **no workspace of its
+own**. Its plan lives here like every other scope; only its code is elsewhere:
 
 ```json
-{"mode": "unified"}
+{
+  "slug": "billing",
+  "map_id": "03",
+  "code_layout": "external",
+  "code_dir": "D:/repos/billing"
+}
 ```
+
+| `code_layout` | Where the code is | Where the plan is |
+|---|---|---|
+| `own-dir` | a folder in the product tree (`services/auth`) | here |
+| `shared` | one app tree several scopes build into | here |
+| `external` | another repository entirely | here |
+
+`code_dir` may be an absolute path or a path outside the product folder; `/develop-product`
+and `/deploy` read it and work in that checkout. Nothing else changes: the same
+`plan/products/billing/` holds its PRD, tasks, gates and doubts, and a task in another
+scope can depend on one of its tasks directly.
+
+## A workspace with no scopes
+
+A product that never split has no `plan/products/`, and behaves exactly as a
+single-product workspace always did: no `## Scope` block in the manifest, no scope
+resolution, unchanged read order. Scopes appear the first time one is created or absorbed.
 
 ## Internal runtime reference
 
@@ -273,5 +275,5 @@ loop scope list | show <slug> | new <slug> | rename <old> <new>
 loop scope resolve --text "<user text>" --session <id> [--remember]   # 0 = go, 2 = ask
 loop scope use <slug> | clear
 loop scope check | impact <contract-id> | lock
-loop scope discover | absorb <folder> [--map-id NN] [--dry-run] [--all] | eject <slug>
+loop scope discover | absorb <folder> [--map-id NN] [--dry-run] [--all]
 ```

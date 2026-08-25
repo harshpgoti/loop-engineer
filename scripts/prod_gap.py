@@ -192,7 +192,7 @@ def analyze(workspace: Path) -> str:
     # Sub-product gaps are platform gaps: a mapped sub-product that is unplanned or
     # contradicts the master plan blocks the whole product, not just its own folder.
     try:
-        from hierarchy_sync import readiness
+        from scope_readiness import readiness
 
         hierarchy = readiness(workspace)
     except Exception:

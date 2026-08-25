@@ -67,10 +67,7 @@ Example: set up `H:/POC/QEAutoAI` once with local mode, close the terminal, come
 
 ## Nested products (main product + sub-products)
 
-Two layouts. A sub-product can be a **scope** inside the main workspace
-(`plan/products/<slug>/`, no second data dir - see [`SCOPES.md`](SCOPES.md)), or a
-folder with its own `.loop-engineer/`, described below. Scopes are preferred inside the
-main product tree; a separate workspace is for a sub-product in another repo.
+A sub-product is a **scope** inside this workspace (`plan/products/<slug>/`) - including one whose code lives in another repo. There is no second data dir. See [`SCOPES.md`](SCOPES.md).
 
 
 Local workspaces nest. A main product folder can contain sub-product folders that each
@@ -79,16 +76,15 @@ inside `auth-svc/` uses `auth-svc/.loop-engineer/`, never the parent's.
 
 ```text
 main-product/
-├── .loop-engineer/          role: main   (plan/SUBPRODUCTS.md rolls the children up)
-├── auth-svc/
-│   └── .loop-engineer/      role: sub    (plan/PARENT_CONTEXT.md holds what it inherits)
-└── portal/
-    └── .loop-engineer/      role: sub
+├── .loop-engineer/            THE workspace - master plan + every sub-product's plan
+│   └── plan/products/auth/    one sub-product: prd, steps, features, TASKS, GATES, DOUBTS
+├── services/auth/             its code (or another repo entirely - scope.json says where)
+└── apps/portal/
 ```
 
 The link between them lives in `<workspace>/.loop/workspace.json` and is refreshed at
 every `loop session-start`. No file means `standalone`, the unchanged single-product
-behavior. See [`docs/PRODUCT_HIERARCHY.md`](PRODUCT_HIERARCHY.md).
+behavior. See [`docs/SCOPES.md`](SCOPES.md).
 
 ## Central tool + local product (multiple products)
 
@@ -137,7 +133,7 @@ except the three known Loop-Engineer-generated files under `docs/`.
 4. `memories/MEMORY.md`
 5. `CONTEXT.md`
 6. `plan/main_plan.md`, `HANDOFF.md`, active feature `spec.md` / `tasks.md` (when set)
-7. `plan/SUBPRODUCTS.md` (main product) or `plan/PARENT_CONTEXT.md` (sub-product)
+7. `plan/products/<slug>/` for the active sub-product
 8. `plan/SESSION_RECALL.md`, `plan/AUTO_SKILLS.md`, `plan/AUTO_AGENT_SKILLS.md`
 
 All paths above are relative to the resolved data root (`~/.loop-engineer/data/`

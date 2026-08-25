@@ -111,7 +111,7 @@ SESSION-START â†’ RECALL â†’ PLAN â†’ GRILL â†’ EVIDENCE â�
 | End | Session lifecycle | `loop session-end --command /plan-loop` |
 
 Session start/end automatically sync the tree; closeout also converges an active feature.
-Never ask the user to run `loop workspace sync` or `/feature-converge` between planning steps.
+Never ask the user to run `/feature-converge` between planning steps.
 
 ## Always-on lifecycle (first and last step)
 
@@ -146,7 +146,7 @@ RECALL â†’ DETECT INIT â†’ ASK/INFER (PRODUCT + DEPLOYMENT) â†’ G
 4. **Reuse prior answers** from `DECISIONS.md`, resolved `DOUBTS.md`, or existing `plan/main_plan.md` â†’ **Deployment & Infrastructure**. Inform the user when reusing; do not ask again unless they want to change something.
 5. **If the user is unavailable**, record missing inputs in `DOUBTS.md` and do not invent product-specific facts.
 6. **Restate current product state** from `memories/MEMORY.md` and `plan/main_plan.md`, not from chat memory.
-6a. **Answer any findings from the parent product** (sub-products only). Run `loop findings ask` - each open finding comes back as a question with a recommended answer. Apply the recommendation when it is unambiguous and say so; ask the user when it is a real choice. Record each with `loop findings resolve <id> <accepted|declined|deferred>`. See `skills/plan-loop/phases/parent-findings.md`. Planning on top of a platform constraint that has already moved wastes the whole session.
+6a. **Settle cross-sub-product contracts.** Run the cross-scope check; an unprovided or still-draft contract another scope is building against is a planning question, not a build-time surprise. See `skills/scope/SKILL.md`.
 7. **Review open doubts** with `loop doubts ask` - blocking doubts only, each with its recorded `Default if unavailable` as the recommended answer. Record answers with `loop doubts resolve <id> "<answer>"` or `loop doubts defer <id> "<reason>"`; never hand-edit the status. If the user is unavailable, defer with a risk note and continue only safe planning work.
 8. **Grill the plan** using:
    - first customer ICP

@@ -319,18 +319,6 @@ def cmd_eval(args: argparse.Namespace) -> int:
     return run_script('eval_suite.py', extra + tail)
 
 
-def cmd_subproduct(args: argparse.Namespace) -> int:
-    cmd = getattr(args, "subproduct_cmd", None) or "list"
-    tail = [cmd]
-    if cmd == "new":
-        tail += list(args.rows)
-        if args.dry_run:
-            tail.append("--dry-run")
-        if getattr(args, "force", False):
-            tail.append("--force")
-    return run_script("subproduct_new.py", _workspace_args(args) + tail)
-
-
 def cmd_cloud(args: argparse.Namespace) -> int:
     """The record of what a deploy actually created - see `cloud_inventory.py`."""
     cmd = getattr(args, "cloud_cmd", None) or "list"
@@ -359,7 +347,7 @@ def cmd_scope(args: argparse.Namespace) -> int:
     cmd = getattr(args, "scope_cmd", None) or "list"
     ws = _workspace_args(args)
 
-    if cmd in {"absorb", "eject", "discover"}:
+    if cmd in {"absorb", "discover"}:
         tail = [cmd]
         if cmd != "discover" and getattr(args, "target", None):
             tail.append(args.target)
@@ -457,18 +445,6 @@ def cmd_archive(args: argparse.Namespace) -> int:
     return run_script("state_archive.py", extra)
 
 
-def cmd_findings(args: argparse.Namespace) -> int:
-    cmd = getattr(args, "findings_cmd", None) or "list"
-    extra = _workspace_args(args)
-    if cmd == "resolve":
-        extra = ["resolve", args.finding_id, args.decision] + (["--note", args.note] if args.note else []) + extra
-    elif cmd == "ask":
-        extra = ["ask"] + extra
-    else:
-        extra = ["list"] + (["--verbose"] if getattr(args, "verbose", False) else []) + extra
-    return run_script("parent_inbox.py", extra)
-
-
 def cmd_doubts(args: argparse.Namespace) -> int:
     cmd = getattr(args, "doubts_cmd", None) or "list"
     # `--workspace` is a top-level option on doubts.py, so it has to precede the
@@ -499,57 +475,13 @@ def cmd_doubts(args: argparse.Namespace) -> int:
 
 
 def cmd_workspace(args: argparse.Namespace) -> int:
+    """Workspace shape. Sub-products are scopes here - see `loop scope`."""
     sys.path.insert(0, str(SCRIPTS))
-    from workspace_tree import ROLES, describe_tree, link, refresh, set_role, unlink
+    from workspace_tree import describe_tree
     from workspace_utils import resolve_workspace
 
-    workspace = resolve_workspace(getattr(args, "workspace", None))
-
-    if args.workspace_cmd == "tree":
-        print(describe_tree(workspace))
-        return 0
-
-    if args.workspace_cmd == "refresh":
-        return run_script("hierarchy_sync.py", _workspace_args(args) + (["--no-stage"] if args.no_stage else []))
-
-    if args.workspace_cmd == "sync":
-        return run_script("tree_sync.py", _workspace_args(args) + (["--no-stage"] if args.no_stage else []))
-
-    if args.workspace_cmd == "link":
-        entry = link(workspace, args.path, name=args.name, map_id=args.map_id)
-        print(f"Linked sub-product '{entry['name']}' -> {entry['path']}")
-        if entry.get("map_id"):
-            print(f"Product map row: {entry['map_id']}")
-        else:
-            print("No PRODUCT_MAP.md row matched - add one so the master plan accounts for it.")
-        print(describe_tree(workspace))
-        return 0
-
-    if args.workspace_cmd == "unlink":
-        if not unlink(workspace, args.name):
-            print(f"No linked sub-product named '{args.name}'.", file=sys.stderr)
-            return 1
-        print(f"Unlinked '{args.name}'. Its own workspace is untouched.")
-        return 0
-
-    if args.workspace_cmd == "role":
-        if not args.role:
-            tree = refresh(workspace)
-            if not tree.get("enabled"):
-                print(f"hierarchy disabled: {tree.get('reason')}")
-                return 0
-            print(f"role={tree.get('role')} pinned={tree.get('pinned', False)}")
-            return 0
-        if args.role not in ROLES:
-            print(f"Unknown role: {args.role} (expected {', '.join(ROLES)})", file=sys.stderr)
-            return 2
-        set_role(workspace, args.role, pinned=True)
-        print(f"Role pinned to '{args.role}' for {workspace}")
-        print(describe_tree(workspace))
-        return 0
-
-    return 2
-
+    print(describe_tree(resolve_workspace(getattr(args, "workspace", None))))
+    return 0
 
 def cmd_feature(args: argparse.Namespace) -> int:
     extra: list[str] = []
@@ -803,7 +735,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     pending = sub.add_parser("pending", help="Manage staged memory/skill writes.")
     pending_sub = pending.add_subparsers(dest="pending_cmd", required=True)
-    pending_sub.add_parser("list", help="List pending writes.").set_defaults(func=cmd_pending)
+    pending_list = pending_sub.add_parser("list", help="List pending writes.")
+    pending_list.add_argument("--workspace", default=argparse.SUPPRESS)
+    pending_list.set_defaults(func=cmd_pending)
     approve = pending_sub.add_parser("approve", help="Approve a pending write.")
     approve.add_argument("id", nargs="?", default=None)
     approve.add_argument("--all", action="store_true")
@@ -851,55 +785,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     workspace_p = sub.add_parser(
         "workspace",
-        help="Product hierarchy: main product workspace and its sub-product workspaces.",
+        help="Workspace shape and the scopes it holds.",
     )
     workspace_sub = workspace_p.add_subparsers(dest="workspace_cmd", required=True)
-    ws_tree = workspace_sub.add_parser("tree", help="Show this workspace's role, parent, and sub-products.")
+    ws_tree = workspace_sub.add_parser("tree", help="Show this workspace and the sub-product scopes it holds.")
     ws_tree.add_argument("--workspace", default=argparse.SUPPRESS)
     ws_tree.set_defaults(func=cmd_workspace)
-    ws_refresh = workspace_sub.add_parser(
-        "refresh", help="Re-scan links and rewrite plan/SUBPRODUCTS.md or plan/PARENT_CONTEXT.md."
-    )
-    ws_refresh.add_argument("--workspace", default=argparse.SUPPRESS)
-    ws_refresh.add_argument("--no-stage", action="store_true", help="Report drift without staging notes into sub-products.")
-    ws_refresh.set_defaults(func=cmd_workspace)
-    ws_sync = workspace_sub.add_parser(
-        "sync", help="Sync main product and sub-products from either folder (backs /product-tree-sync)."
-    )
-    ws_sync.add_argument("--workspace", default=argparse.SUPPRESS)
-    ws_sync.add_argument("--no-stage", action="store_true", help="Report drift without staging notes into sub-products.")
-    ws_sync.set_defaults(func=cmd_workspace)
-    ws_link = workspace_sub.add_parser("link", help="Link a sub-product workspace (use for folders outside this one).")
-    ws_link.add_argument("path", help="Path to the sub-product folder.")
-    ws_link.add_argument("--name", default=None, help="Name in the roll-up (default: folder name).")
-    ws_link.add_argument("--map-id", default=None, help="PRODUCT_MAP.md row id, e.g. 02.")
-    ws_link.add_argument("--workspace", default=argparse.SUPPRESS)
-    ws_link.set_defaults(func=cmd_workspace)
-    ws_unlink = workspace_sub.add_parser("unlink", help="Forget a linked sub-product (its workspace is untouched).")
-    ws_unlink.add_argument("name")
-    ws_unlink.add_argument("--workspace", default=argparse.SUPPRESS)
-    ws_unlink.set_defaults(func=cmd_workspace)
-    ws_role = workspace_sub.add_parser("role", help="Show or pin this workspace's role (main, sub, standalone).")
-    ws_role.add_argument("role", nargs="?", default=None, choices=["main", "sub", "standalone"])
-    ws_role.add_argument("--workspace", default=argparse.SUPPRESS)
-    ws_role.set_defaults(func=cmd_workspace)
-
-    sp = sub.add_parser(
-        "subproduct", help="Carve a product-map row out of the main product into its own workspace."
-    )
-    sp.add_argument("--workspace", default=argparse.SUPPRESS)
-    sp_sub = sp.add_subparsers(dest="subproduct_cmd")
-    sp_list = sp_sub.add_parser("list", help="Rows typed `sub-product`, and which are ready to carve out.")
-    sp_list.add_argument("--workspace", default=argparse.SUPPRESS)
-    sp_list.set_defaults(func=cmd_subproduct)
-    sp_new = sp_sub.add_parser("new", help="Create a workspace for each map row given.")
-    sp_new.add_argument("rows", nargs="+")
-    sp_new.add_argument("--dry-run", action="store_true")
-    sp_new.add_argument("--force", action="store_true")
-    sp_new.add_argument("--workspace", default=argparse.SUPPRESS)
-    sp_new.set_defaults(func=cmd_subproduct)
-    sp.set_defaults(func=cmd_subproduct)
-
     cl = sub.add_parser(
         "cloud",
         help="Cloud resources this product created: what they serve, and what can be removed.",
@@ -1007,11 +898,6 @@ def build_parser() -> argparse.ArgumentParser:
     sc_absorb.add_argument("--accept-conflicts", action="store_true")
     sc_absorb.add_argument("--workspace", default=argparse.SUPPRESS)
     sc_absorb.set_defaults(func=cmd_scope)
-    sc_eject = sc_sub.add_parser("eject", help="Move a scope back out into its own workspace.")
-    sc_eject.add_argument("target")
-    sc_eject.add_argument("--dry-run", action="store_true")
-    sc_eject.add_argument("--workspace", default=argparse.SUPPRESS)
-    sc_eject.set_defaults(func=cmd_scope)
     sc.set_defaults(func=cmd_scope)
 
     fg = sub.add_parser("fog", help="Decisions the plan can see coming but cannot yet state.")
@@ -1102,24 +988,6 @@ def build_parser() -> argparse.ArgumentParser:
     archive.add_argument("--dry-run", action="store_true", help="Report what would compact.")
     archive.add_argument("--search", default=None, help="Find an archived answer without loading the file.")
     archive.set_defaults(func=cmd_archive)
-
-    findings = sub.add_parser(
-        "findings", help="Findings from the parent product this workspace has not answered."
-    )
-    findings_sub = findings.add_subparsers(dest="findings_cmd")
-    f_list = findings_sub.add_parser("list", help="Open findings from the parent product.")
-    f_list.add_argument("--verbose", action="store_true", help="Include the recommended answer.")
-    f_list.add_argument("--workspace", default=argparse.SUPPRESS)
-    f_list.set_defaults(func=cmd_findings)
-    f_ask = findings_sub.add_parser("ask", help="Open findings as questions with recommended answers.")
-    f_ask.add_argument("--workspace", default=argparse.SUPPRESS)
-    f_ask.set_defaults(func=cmd_findings)
-    f_resolve = findings_sub.add_parser("resolve", help="Record a decision about one finding.")
-    f_resolve.add_argument("finding_id")
-    f_resolve.add_argument("decision", choices=("accepted", "declined", "deferred"))
-    f_resolve.add_argument("--note", default="")
-    f_resolve.add_argument("--workspace", default=argparse.SUPPRESS)
-    f_resolve.set_defaults(func=cmd_findings)
 
     doubts_p = sub.add_parser("doubts", help="Read and update DOUBTS.md deterministically.")
     doubts_sub = doubts_p.add_subparsers(dest="doubts_cmd")

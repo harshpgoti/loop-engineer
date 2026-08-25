@@ -30,8 +30,6 @@ Use these directly in any agent that can access the repo:
 /feature-converge
 /eval-loop
 /product-tree
-/product-tree-sync
-/subproduct-new
 /scope
 /deploy
 /plan-loop <idea>
@@ -52,8 +50,7 @@ loop skills install            # wire every coding agent to this app
 loop skills install --project  # or project scope, committed with the repo
 loop team-init required        # make Loop the team standard (auto-bootstrap teammates)
 loop plan-loop "your full product idea here"
-loop workspace tree            # federated main product <-> sub-product workspaces
-loop workspace link ../billing # sub-product that lives outside the main folder
+loop workspace tree            # this workspace and the sub-product scopes it holds
 loop research "your topic"
 loop agent scaffold
 loop session-start --command /loop-engine --tool cursor --text "your idea"
@@ -100,12 +97,10 @@ The agent must route the command through `commands/*.md` and update `memories/ME
 | `/feature-converge` | `commands/feature-converge.md` | Drift check after implementation |
 | `/eval-loop` | `commands/eval-loop.md` | Score golden cases, record runs, catch regressions |
 | `/product-tree` | `commands/product-tree.md` | Show sub-product workspaces, their roll-up, and drift vs the master plan |
-| `/product-tree-sync` | `commands/product-tree-sync.md` | Sync main product ⇄ sub-products from either folder |
 | `/ultraplan-loop` | `commands/ultraplan-loop.md` | Deep planning per step when scale is platform |
 | `/agent-builder` | `commands/agent-builder.md` | Design/scaffold an AI agent (or agentic/dynamic workflow) as the product |
 | `/research-search` | `commands/research-search.md` | Search arXiv, Research Square, and SSRN to ground a claim |
 | `/diagnose-loop` | `commands/diagnose-loop.md` | Build a feedback loop that goes red on a bug, then hypothesise |
-| `/subproduct-new` | `commands/subproduct-new.md` | Carve a map row out of the main product into its own workspace |
 | `/deploy` | `commands/deploy.md` | Deploy to the chosen cloud, recording every resource and what it serves |
 | `/scope` | `commands/scope.md` | Sub-products inside one workspace: list, switch, check contracts, absorb a federated sub-product |
 | `/upgrade-loop-engineer` | `commands/upgrade-loop-engineer.md` | Safe tool update without overwriting product data |

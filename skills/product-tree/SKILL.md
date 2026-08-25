@@ -13,8 +13,7 @@ has its own `.loop-engineer/` workspace, so by default neither end can see the o
 
 This skill closes that gap in both directions:
 
-- **Main product** reads every sub-product's plan state into `plan/SUBPRODUCTS.md`.
-- **Sub-product** reads the constraints it inherits into `plan/PARENT_CONTEXT.md`.
+Every sub-product is a **scope** in this workspace, so there is nothing to roll up across a boundary - the plans are already in one tree.
 
 > **Two layouts.** This skill describes sub-products that own a **workspace** each. A
 > sub-product can instead be a **scope** inside this workspace (`plan/products/<slug>/`),
@@ -26,7 +25,7 @@ This skill closes that gap in both directions:
 
 - `commands/product-tree.md`
 - `plan/SESSION_MANIFEST.md` (the `## Hierarchy` block)
-- `plan/SUBPRODUCTS.md` (main) or `plan/PARENT_CONTEXT.md` (sub)
+- `plan/products/*/scope.json` and `plan/contracts/`
 - `plan/PRODUCT_MAP.md`
 - `plan/main_plan.md`, `DECISIONS.md`, `DOUBTS.md`
 
@@ -40,7 +39,6 @@ This skill closes that gap in both directions:
 
 Roles are auto-detected: a workspace with discovered children becomes `main`, one whose
 parent lists it becomes `sub`. A workspace can be both (a middle node keeps both links).
-Pin a role with `loop workspace role <role>` when auto-detection is wrong.
 
 ## Discovery
 
@@ -51,16 +49,12 @@ into - its own sub-products belong to it.
 For a sub-product in another repo or elsewhere on disk:
 
 ```bash
-loop workspace link ../billing --map-id 03
 ```
 
 ## Scripts
 
 ```bash
 loop workspace tree                 # role, parent, sub-products
-loop workspace refresh              # rewrite reports, stage drift notes
-loop workspace refresh --no-stage   # report only
-loop workspace unlink billing
 ```
 
 ```bash
@@ -94,7 +88,7 @@ contradicts nothing. Each sub-product keeps a watermark of the parent surface it
 last synced (`.loop/parent-sync.json`), the parent diffs against it, and the
 sub-product advances it at its own `loop session-start`. Level rises to `error`
 when the sub-product has an in-progress task in `TASKS.yml`. See
-`docs/PRODUCT_HIERARCHY.md`.
+`docs/SCOPES.md`.
 
 ## Write policy (do not violate)
 
@@ -103,7 +97,6 @@ when the sub-product has an in-progress task in `TASKS.yml`. See
   workspaces. `error` findings and every `parent-*` update are staged into the
   sub-product's `.loop/pending/`; the user decides there with `loop pending list`
   then `loop pending approve <id>`.
-- Anything staged is listed in `plan/SUBPRODUCTS.md` with its write id.
 
 ## Reading a finding
 
@@ -112,8 +105,7 @@ which one is wrong. Decide with the user:
 
 - The sub-product is wrong → the staged note in its `DOUBTS.md` is the correction.
 - The master plan is wrong → fix it here (`/revise-plan` or `/plan-loop`), then
-  `loop workspace refresh`; the finding disappears and the staged note can be rejected
-  with `loop pending reject --all` in the sub-product.
+  `loop scope check`; the finding disappears once the declaration and the plan agree.
 
 ## Closeout
 

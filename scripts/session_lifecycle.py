@@ -78,32 +78,15 @@ def run_recall(workspace: Path, query: str | None = None, limit: int = 5) -> int
 
 
 def _hierarchy(workspace: Path, *, stage: bool = True) -> dict:
-    """Sync both hierarchy ends and return this workspace's view. Never raises."""
-    try:
-        from tree_sync import sync
-
-        result = sync(workspace, stage=stage)
-        current = result.get("self") or {}
-        current["parent_refreshed"] = result.get("parent_refreshed")
-        current["children_refreshed"] = result.get("children_refreshed") or []
-        current["children_errors"] = result.get("children_errors") or []
-        return current
-    except Exception as exc:  # noqa: BLE001 - a hierarchy problem must not block a session
-        return {"enabled": False, "role": None, "error": f"{exc.__class__.__name__}: {exc}"}
+    """Retired. Sub-products are scopes in this workspace, so there is no second
+    workspace to sync with (`docs/SCOPES.md`). Kept as an empty result so callers and
+    the manifest shape do not have to special-case its absence."""
+    return {"enabled": False, "role": None}
 
 
 def _parent_findings(workspace: Path) -> dict:
-    """What this sub-product still owes its parent an answer about. Never raises.
-
-    Computed once here and its count persisted, so `plan_phase` stays a cheap
-    state signal rather than re-running the drift checks to route a phase.
-    """
-    try:
-        import parent_inbox
-
-        return parent_inbox.inbox(workspace)
-    except Exception:
-        return {"parent": None, "ask": [], "report": [], "total": 0}
+    """Retired with the federated layout - a scope has no parent to disagree with."""
+    return {"parent": None, "ask": [], "report": [], "total": 0}
 
 
 def attention_block(workspace: Path) -> list[str]:
@@ -337,25 +320,6 @@ def render_manifest(
         for name in auto_agent_skills:
             lines.append(f"- `{name}` - see `plan/AUTO_AGENT_SKILLS.md`")
 
-    if hierarchy:
-        try:
-            from hierarchy_sync import manifest_block
-
-            lines.extend(manifest_block(workspace, hierarchy))
-        except Exception:
-            pass
-
-    # Placed right after the hierarchy block: every command reads the manifest first,
-    # so this is the one channel that reaches /plan-loop, /develop-product,
-    # /loop-engine and /revise-plan without wiring each of them separately.
-    if findings:
-        try:
-            from parent_inbox import manifest_block as findings_block
-
-            lines.extend(findings_block(workspace, findings))
-        except Exception:
-            pass
-
     try:
         from eval_suite import manifest_block as evals_block
 
@@ -520,14 +484,6 @@ def _auto_maintenance(workspace: Path) -> list[str]:
     except Exception:
         pass
 
-    try:  # one-time cleanup of the retired drift-note queue
-        from parent_inbox import drop_legacy_queue
-
-        stale = drop_legacy_queue(workspace)
-        if stale:
-            actions.append(f"cleared {stale} staged drift note(s) - findings are derived now")
-    except Exception:
-        pass
 
     return actions
 

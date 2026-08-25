@@ -21,7 +21,7 @@ Run a reusable product loop that helps any user plan, validate, build, test, sec
 13. **Run to terminus, not to chunk** - A command cascades automatically through its downstream phases until its **terminus** or a **Stop Condition**. Never end a turn by telling the user to run a command you could have run. Reconcile whatever your work invalidates (gates, tasks, specs, decisions) in the same run. When you must stop, name the Stop Condition and what you need. See `docs/CONTINUATION.md`.
 14. **Skills are the public interface** - Users invoke slash commands or describe the work in natural language. The `loop` shell is an internal deterministic runtime bridge for agents, installers, diagnostics, and compatibility. Agents run required runtime operations themselves and never assign them to the user. See `docs/INTERNAL_RUNTIME.md`.
 15. **Scope before writing** - In a workspace with `plan/products/`, every command resolves *which sub-product* it is about before reading a plan or writing a file: `loop scope resolve --text "<what the user typed>"`. Exit `2` means **ask the user** - never treat an unnamed sub-product as shared platform work. Announce the resolved scope. A change needed in another sub-product is located, asked about, then applied there. See `docs/SCOPES.md`.
-16. **Hierarchy is automatic** - Every command's session lifecycle syncs the product tree. Main-product runs publish refreshed generated `PARENT_CONTEXT.md` into linked sub-products; sub-product runs read it, resolve and assimilate parent findings inside the active planning or development command, refresh the parent roll-up, and converge the active feature at closeout for mutating commands. Never make the user run `loop workspace sync` or `/feature-converge` as routine glue.
+16. **One workspace** - Sub-products are **scopes** in this workspace (`plan/products/<slug>/`), including sub-products whose code lives in another repo. There is no second workspace to sync, and no parent/child link to maintain. `/scope` lists, switches, checks contracts, and folds in a sub-product that still has its own `.loop-engineer/`. See `docs/SCOPES.md`.
 
 ## Always-on session lifecycle (any tool)
 
@@ -115,8 +115,6 @@ The user should be able to type these commands in Cursor, Codex, Claude Code, Gr
 | `/feature-converge` | Post-build drift check vs spec/tasks | `commands/feature-converge.md` + `skills/feature-converge/SKILL.md` |
 | `/eval-loop` | Score the product's golden cases, record the run, find regressions, and let the failure pattern decide what to build next | `commands/eval-loop.md` + `skills/eval-loop/SKILL.md` |
 | `/product-tree` | Show main product ⇄ sub-product workspaces, their roll-up, and where a sub-product's plan contradicts the master plan | `commands/product-tree.md` + `skills/product-tree/SKILL.md` |
-| `/product-tree-sync` | Make main product and sub-products agree, run from either folder - refreshes both ends and stages drift notes | `commands/product-tree-sync.md` + `skills/product-tree-sync/SKILL.md` |
-| `/subproduct-new` | Carve a product-map row out of the main product into its own workspace, seeded from that row's plan and ready for `/loop-engine` | `commands/subproduct-new.md` + `skills/subproduct-new/SKILL.md` |
 | `/deploy` | Deploy to the chosen cloud and record every resource created - what it serves, which environment, and how to remove it. Also answers "what can I delete?" | `commands/deploy.md` + `skills/deploy/SKILL.md` |
 | `/scope` | Sub-products planned and built inside **one** workspace (`plan/products/<slug>/`): list, switch, check cross-scope contracts, and absorb a sub-product that still has its own `.loop-engineer/` | `commands/scope.md` + `skills/scope/SKILL.md` |
 | `/ultraplan-loop` | Deep per-step planning for platform-scale products | `commands/ultraplan-loop.md` + `skills/plan-loop/phases/ultraplan.md` |
@@ -216,12 +214,12 @@ See `docs/DATA_LAYOUT.md`.
 Local workspaces nest. A main product folder holding sub-product folders links them into
 a tree (`<workspace>/.loop/workspace.json`, refreshed at every `loop session-start`):
 
-- **main** - reads every sub-product into `plan/SUBPRODUCTS.md`; may still plan and build its own code.
-- **sub** - reads inherited decisions and contracts from `plan/PARENT_CONTEXT.md`.
+- **Scopes** - each sub-product's plan lives at `plan/products/<slug>/`; its code lives wherever `scope.json` says, including another repo.
+- **Contracts** - what one sub-product provides another lives in `plan/contracts/`, checked deterministically.
 - **standalone** - the default; single-product behavior is unchanged.
 
 Sub-products under the main folder are auto-discovered; ones elsewhere use
-`loop workspace link <path>`. Deterministic drift checks compare the master plan against
+`/scope`. Deterministic contract checks compare what scopes declare against
 each sub-product's real plan state.
 
 **Write rule:** metadata (`.loop/workspace.json`) may be stamped into a sub-product;
@@ -229,7 +227,7 @@ product state (`DOUBTS.md`, `HANDOFF.md`, `plan/*`) is **never** written across
 workspaces - it is staged into that sub-product's `.loop/pending/` and applied there with
 `loop pending approve`.
 
-See `docs/PRODUCT_HIERARCHY.md`.
+See `docs/SCOPES.md`.
 
 Canonical skills live in `skills/`. User skills live in the product workspace `skills/` folder.
 

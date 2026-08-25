@@ -19,7 +19,7 @@ Create the repo structure the plan calls for, so implementation has somewhere to
 
 1. **Reuse the decisions already made.** Stack, cloud, LLM and repo strategy are in
    `DECISIONS.md` and `plan/main_plan.md`. A sub-product inherits them through
-   `plan/PARENT_CONTEXT.md` - do not re-decide, and do not re-ask.
+   the shared `DECISIONS.md` and the scope's own plan - do not re-decide, and do not re-ask.
 2. **Scaffold only what the first task needs.** A monorepo skeleton, a package
    manifest, a test directory, a CI stub. Not features.
 3. **Commit the lock file** - `prod-gap` treats a manifest without one as a P1.

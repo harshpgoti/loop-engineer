@@ -85,7 +85,7 @@ own `/plan-loop`, and recorded:
 |---|---|
 | `own-dir` | The scope owns a folder (`services/auth`). Strongest write isolation |
 | `shared` | Several scopes build into one app tree. Write-scoping is weaker - say so |
-| `external` | The code lives in another repo (see below) |
+| `external` | The code lives in another repo; the plan still lives here |
 
 ## When work in one scope needs a change in another
 
@@ -168,13 +168,15 @@ A dangling `blocked_by` is recorded as a doubt in the scope, never dropped.
 Afterwards the child workspace is **renamed** to `.loop-engineer.absorbed-<date>/`. That
 rename is load-bearing: leave the original path intact and every future session run in
 that folder silently resolves to the dead workspace instead of the main one. It is also
-what `loop scope eject <slug>` restores from, so do not delete it.
+the backup of what was absorbed - nothing reads it, so delete it once you have verified the absorb.
 
-## Sub-products in another repo stay federated
+## Sub-products in another repo
 
-A scope with `"external"` keeps its own workspace and the existing bridge
-(`plan/PARENT_CONTEXT.md`, the parent watermark, `loop findings`). That path is unchanged -
-see `docs/PRODUCT_HIERARCHY.md`. Absorb is for sub-products inside the main product tree.
+A sub-product big enough for its own repository still has no workspace of its own. Set
+`code_layout: "external"` and point `code_dir` at that checkout - the plan stays here, in
+`plan/products/<slug>/`, like every other scope. Splitting the code is a size decision;
+splitting the plan would cost cross-scope dependencies, which is the thing this design
+exists to keep.
 
 ## Rules
 

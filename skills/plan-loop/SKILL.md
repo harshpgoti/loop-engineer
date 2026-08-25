@@ -30,8 +30,6 @@ phase file.
 | Phase | Load when | File |
 |-------|-----------|------|
 | **grill** | product uninitialized, pivot, or `PHASE: grill` | `phases/grill.md` |
-| **parent-findings** | this sub-product has unanswered findings from its parent product, or `PHASE: parent-findings` | `phases/parent-findings.md` |
-| **hierarchy** | linked sub-products contradict the master plan (`plan/SUBPRODUCTS.md` has `error` findings), or `PHASE: hierarchy` | `phases/hierarchy.md` |
 | **council** | before PRD/architecture lock, or `PHASE: council` | `phases/council.md` |
 | **ultraplan** | `plan/PLAN_SCALE.md` = platform with an incomplete step, `/ultraplan-loop`, or `PHASE: ultraplan` | `phases/ultraplan.md` |
 | **spec-clarify** | active feature spec has open questions, `/spec-clarify`, or `PHASE: spec-clarify` | `phases/spec-clarify.md` |

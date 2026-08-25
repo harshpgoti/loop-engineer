@@ -26,7 +26,7 @@ other phases' read lists.
    tenant isolation, dependency audit. Nothing regulated moves before
    `G-SENSITIVE-DATA` passes.
 3. **Deployment plan** - `loop deployment-plan`. Reuse cloud/LLM answers already in
-   `DECISIONS.md`; a sub-product inherits them from `plan/PARENT_CONTEXT.md`.
+   `DECISIONS.md` - every scope reads the same file, so nothing is inherited across a boundary.
 4. **CI/CD** via `skills/cicd-release/SKILL.md`.
 5. **Release readiness**: `loop release-check`. `error` findings are launch blockers,
    including unresolved findings in any sub-product.

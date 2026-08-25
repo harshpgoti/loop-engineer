@@ -57,7 +57,6 @@ loop scope discover                   # sub-product workspaces that could be abs
 loop scope absorb ./auth-service --dry-run
 loop scope absorb ./auth-service
 loop scope absorb --all               # dependency order; stops at the first refusal
-loop scope eject auth                 # reverse an absorb
 ```
 
 ## Rules
@@ -77,8 +76,8 @@ loop scope eject auth                 # reverse an absorb
   ask, then apply it there in the same run. See `skills/scope/SKILL.md`.
 - **Absorb refuses rather than half-migrates.** Unbound folder, staged writes, an existing
   scope folder, or a decision conflict all stop the run before the first write.
-- **The archived workspace is not litter.** `.loop-engineer.absorbed-<date>/` is what
-  `loop scope eject` restores from. Do not delete it as cleanup.
+- **The archived workspace is a backup.** `.loop-engineer.absorbed-<date>/` is what the
+  absorb replaced. Nothing reads it; delete it once the absorb is verified.
 
 ## Continuation
 
@@ -96,7 +95,7 @@ resolving it requires knowing which plan is wrong (`docs/CONTINUATION.md`).
 Return:
 
 1. The active scope, its plan folder and its code folder - or the question, when none resolved
-2. What changed (scope created, absorbed, renamed, ejected), file by file
+2. What changed (scope created, absorbed, renamed), file by file
 3. Cross-scope findings: unprovided contracts, dangling blockers, duplicate gates, cycles
 4. For an absorb: every rewritten id, every dropped generated file, and where the archive is
 5. Next recommended **slash** command - never a `loop ...` line

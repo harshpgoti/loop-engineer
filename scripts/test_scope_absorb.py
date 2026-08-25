@@ -277,6 +277,8 @@ class Absorbing(Sandbox):
         self.assertIn("`plan/products/auth-service`", text)
 
     def test_the_child_workspace_is_archived_not_deleted(self) -> None:
+        """Kept as a backup of what was absorbed - nothing reads it, but losing it
+        would mean the absorb had no undo of any kind."""
         plan, report = self.absorb()
         self.assertFalse(self.child.exists(), "the live path must stop resolving")
         archived = list(self.child_folder.glob(".loop-engineer.absorbed-*"))
@@ -353,26 +355,6 @@ class Ordering(Sandbox):
         self._second_child()
         found = {f.name for f in ab.discover(self.main)}
         self.assertEqual(found, {"auth-service", "portal"})
-
-
-class Ejecting(Sandbox):
-    def test_eject_restores_the_archived_workspace(self) -> None:
-        self.absorb()
-        result = ab.eject(self.main, "auth-service")
-        self.assertTrue((self.child_folder / ".loop-engineer" / "TASKS.yml").is_file())
-        self.assertTrue(result["restored"])
-        self.assertFalse(sp.scope_dir(self.main, "auth-service").exists())
-
-    def test_ejecting_makes_the_folder_resolve_as_its_own_workspace_again(self) -> None:
-        self.absorb()
-        ab.eject(self.main, "auth-service")
-        import workspace_resolver as wr
-
-        self.assertTrue(wr.has_local_loop_data(self.child_folder))
-
-    def test_ejecting_an_unknown_scope_refuses(self) -> None:
-        with self.assertRaises(SystemExit):
-            ab.eject(self.main, "nope")
 
 
 class Idempotence(Sandbox):

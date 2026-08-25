@@ -38,6 +38,11 @@ POINTER_FILE = ".loop-scope"
 #: different session, the command re-confirms before continuing on it.
 STICKY_HOURS = 12
 
+#: Where a scope's code lives. The plan always lives here, in this workspace - a
+#: sub-product big enough for its own repo still does not get its own workspace.
+#:   own-dir   a folder inside the product tree (`services/auth`)
+#:   shared    several scopes build into one app tree
+#:   external  another repo entirely; `code_dir` is that checkout's path
 CODE_LAYOUTS = ("own-dir", "shared", "external")
 
 PLATFORM = "platform"
@@ -687,84 +692,6 @@ def _age(record: dict) -> str:
     if delta < timedelta(days=1):
         return f"{int(delta.total_seconds() // 3600)} hours ago"
     return f"{delta.days} days ago"
-
-
-# ---------------------------------------------------------------------------
-# the federated bridge: does this workspace still have a boundary to serve?
-# ---------------------------------------------------------------------------
-
-
-def external_scopes(workspace: Path) -> list[Scope]:
-    """Scopes whose code and plan live in another repo, and so keep their own workspace."""
-    out: list[Scope] = []
-    for folder in (scopes_dir(workspace).iterdir() if scopes_dir(workspace).is_dir() else []):
-        if not folder.is_dir():
-            continue
-        meta = folder / SCOPE_META
-        if not meta.exists():
-            continue
-        try:
-            data = json.loads(meta.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
-            continue
-        if isinstance(data, dict) and (data.get("external") or data.get("code_layout") == "external"):
-            scope = read_scope(folder)
-            if scope is not None:
-                out.append(scope)
-    return out
-
-
-def bridge_state(workspace: Path) -> dict:
-    """Whether the cross-workspace hierarchy bridge has anything to do here.
-
-    The bridge - `PARENT_CONTEXT.md`, the parent watermark, derived findings,
-    `SUBPRODUCTS.md` - exists to keep two *workspaces* agreeing. It is worth running
-    exactly when a second workspace is still involved:
-
-    - a **parent**, when this workspace is a sub-product
-    - a **child workspace** that still holds its own loop data: either a sub-product in
-      another repo (`external`), or one that has not been absorbed yet
-    - never for a scope, which lives in this workspace and has no boundary at all
-
-    Returned rather than asserted, so callers can say *why* they skipped it. A workspace
-    that has absorbed everything gets `needed: False` and stops paying for a sync that
-    can only ever find nothing.
-    """
-    mode = workspace_mode(workspace)
-    boundaries: list[str] = []
-    parent = None
-    try:
-        from workspace_tree import resolve_children, resolve_parent
-
-        for child in resolve_children(workspace):
-            if not child.get("missing"):
-                boundaries.append(str(child.get("name")))
-        found = resolve_parent(workspace)
-        parent = str(found["name"]) if found else None
-    except Exception:  # noqa: BLE001 - hierarchy is optional; never break a session
-        pass
-
-    external = [s.slug for s in external_scopes(workspace)]
-    needed = bool(boundaries or parent or external)
-
-    if needed:
-        reason = "a second workspace is still involved"
-    elif mode == "unified":
-        reason = (
-            "unified workspace - every sub-product is a scope in `plan/products/`,"
-            " so there is no boundary to sync"
-        )
-    else:
-        reason = "standalone workspace - no parent and no sub-product workspaces"
-
-    return {
-        "mode": mode,
-        "needed": needed,
-        "reason": reason,
-        "boundaries": boundaries,
-        "external": external,
-        "parent": parent,
-    }
 
 
 # ---------------------------------------------------------------------------

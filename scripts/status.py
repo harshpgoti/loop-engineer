@@ -111,7 +111,7 @@ def bullet(items: list[str]) -> str:
 def _hierarchy(workspace: Path) -> dict:
     """Sub-product roll-up for the snapshot. Failure-safe - never blocks /status."""
     try:
-        from hierarchy_sync import readiness
+        from scope_readiness import readiness
 
         return readiness(workspace)
     except Exception:

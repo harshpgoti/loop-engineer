@@ -34,7 +34,7 @@ loop session-end --command /loop-engine --summary "<progress>"
 ```
 
 Both lifecycle bookends automatically sync the product tree. A sub-product assimilates
-accepted `PARENT_CONTEXT.md` findings into its own plan/spec/tasks before routing; a main
+cross-scope contract findings into the plan before routing; a platform
 product publishes refreshed generated context to its children. Mutating closeout converges
 the active feature, so the user never chains `loop workspace sync` or `/feature-converge`.
 
@@ -47,7 +47,7 @@ that boundary is this command's job, not the user's.
 
 | State | Delegate to |
 |-------|-------------|
-| Unanswered findings from the parent product | `skills/plan-loop/phases/parent-findings.md` / `loop findings ask` |
+| A sub-product consumes a contract nobody provides | `skills/scope/SKILL.md` / the cross-scope check |
 | Blocking doubts open | `skills/plan-loop/phases/resolve-doubts.md` / `loop doubts ask` |
 | Uninitialized / init gates blocked | `commands/plan-loop.md` full flow |
 | Idea scope unknown | `loop plan-loop scale --write` |

@@ -5,7 +5,7 @@ The federated design expressed "portal needs something from auth" as a `contract
 version scanned ~120KB of the sub-product's prose for the counterparty's name and
 matched only on `PARENT_CONTEXT.md`, a file the harness had written into that folder
 containing the parent's dependency titles verbatim: the check was reading back its own
-output and could not fail (`docs/PRODUCT_HIERARCHY.md`).
+output and could not fail.
 
 Here the same information is a **registry** in the one workspace: `plan/contracts/<id>.yml`
 naming a provider scope and its consumers. Nothing is inferred from prose.

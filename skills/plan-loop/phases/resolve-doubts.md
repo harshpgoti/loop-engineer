@@ -40,7 +40,7 @@ doubts channel.
 ## Read First
 
 1. `DOUBTS.md` (the open-doubt tracker)
-2. `plan/PARENT_CONTEXT.md` and the parent findings inbox, when this is a sub-product
+2. `plan/contracts/` and `loop scope check`, when the doubt crosses sub-products
 2. `DECISIONS.md`, `EVIDENCE_LOG.md`
 3. `GATES.yml` (pre-development gates and their unmet criteria)
 4. `TASKS.yml`, `plan/main_plan.md`, active `plan/step_*.md`
@@ -58,7 +58,7 @@ doubts channel.
    loop findings resolve <id> deferred --note "<when this gets decided>"
    ```
 
-   `skills/plan-loop/phases/parent-findings.md` holds the full treatment. Accepting one
+   `skills/scope/SKILL.md` holds the full treatment. Accepting one
    usually means an edit here; make it now, not later.
 
 1. **Gather every open item** into one list. Do not re-read and re-interpret

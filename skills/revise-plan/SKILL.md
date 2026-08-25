@@ -61,11 +61,8 @@ touches `plan/main_plan.md` AND may resolve a `DOUBTS.md` entry AND invalidate a
 
 1. `loop session-start --command /revise-plan --text "<user statement>"`.
 2. Read everything in **Required Reads**.
-3. If this is a sub-product, treat `plan/PARENT_CONTEXT.md` and `loop findings ask`
-   as inputs to this revision. Resolve every unambiguous finding and materialize accepted
-   constraints in the owning local plan/spec/task files before routing the user's facts.
-   Ask only when accepting or declining changes product direction. Never hand the user a
-   `loop workspace sync` chore; session lifecycle already synchronized the tree.
+3. When the edit changes what one sub-product promises another, update `plan/contracts/`
+   and re-run the cross-scope check in the same run.
 4. Parse the user's statement into one or more discrete facts. Handle multi-fact statements
    as separate routed edits, not one blob.
 5. For each fact, find its current home (it may already be stated elsewhere and need

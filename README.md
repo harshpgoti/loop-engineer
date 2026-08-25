@@ -132,7 +132,7 @@ a decision. A prerequisite written only in prose gets caught by `loop doubts lin
 a document to send, with the assumption we proceed on if nobody replies.
 
 **A parent product's disagreements** are derived fresh every session from both plans and asked
-the same way, never queued. See [`docs/PRODUCT_HIERARCHY.md`](docs/PRODUCT_HIERARCHY.md).
+the same way, never queued. See [`docs/SCOPES.md`](docs/SCOPES.md).
 
 ## What the plan knows it does not know
 
@@ -246,9 +246,10 @@ folders that plan and build on their own - each with its own `.loop-engineer/`:
 
 ```text
 main-product/
-├── .loop-engineer/          role: main -> plan/SUBPRODUCTS.md rolls up every sub-product
-├── auth-svc/.loop-engineer/ role: sub  -> plan/PARENT_CONTEXT.md holds what it inherits
-└── portal/.loop-engineer/   role: sub
+├── .loop-engineer/            THE workspace - master plan + every sub-product's plan
+│   └── plan/products/auth/    one sub-product: prd, steps, features, TASKS, GATES, DOUBTS
+├── services/auth/             its code (or another repo entirely - scope.json says where)
+└── apps/portal/
 ```
 
 Sub-products under the main folder are found automatically. For one in another repo, tell
@@ -308,7 +309,7 @@ federated, exactly as above. `/scope absorb` migrates an existing one and
 
 Details: [`docs/SCOPES.md`](docs/SCOPES.md)
 
-Details of the federated model: [`docs/PRODUCT_HIERARCHY.md`](docs/PRODUCT_HIERARCHY.md)
+Details of the federated model: [`docs/SCOPES.md`](docs/SCOPES.md)
 
 ### Deploying, and knowing what you created
 

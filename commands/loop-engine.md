@@ -121,7 +121,7 @@ the user to run the next branch yourself.
 
 | Condition | Action |
 |-----------|--------|
-| Unanswered findings from the parent product | **Answer them first** - `loop findings ask`, one question per finding with a recommended answer, then `loop findings resolve`. See `skills/plan-loop/phases/parent-findings.md` |
+| A sub-product needs something another one does not yet provide | **Settle the contract first** - `loop scope check` names it; write or agree `plan/contracts/<id>.yml`. See `skills/scope/SKILL.md` |
 | Blocking doubts open | **`loop doubts ask`** - answer or defer each with its recorded default as the recommendation, then continue routing |
 | `plan/main_plan.md` UNINITIALIZED or `G-INIT-01` blocked | Execute **`/plan-loop` flow** (`commands/plan-loop.md` steps 1-23) |
 | Evidence / PRD / architecture gates blocked | **`/plan-loop` flow** + `product-council` |
@@ -149,7 +149,7 @@ the user to run the next branch yourself.
 When routing to plan, follow **`commands/plan-loop.md`** in full:
 
 ```text
-scale detect → grill → (parent-findings) → (hierarchy) → council
+scale detect → grill → council
 → [convenient: step + feature spec] | [platform: PRODUCT_MAP → ultraplan/step → feature spec per step]
 → spec-clarify → spec-checklist → resolve-doubts → task-compiler
 → deployment-plan draft → validate_outputs → memory + handoff

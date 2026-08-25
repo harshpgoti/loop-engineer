@@ -43,9 +43,10 @@ A product split into sub-products keeps one workspace per folder, linked into a 
 
 ```text
 main-product/
-├── .loop-engineer/        role: main  - master plan + plan/SUBPRODUCTS.md
-├── auth-svc/.loop-engineer/   role: sub  - own plan + plan/PARENT_CONTEXT.md
-└── portal/.loop-engineer/     role: sub
+├── .loop-engineer/            THE workspace - master plan + every sub-product's plan
+│   └── plan/products/auth/    one sub-product: prd, steps, features, TASKS, GATES, DOUBTS
+├── services/auth/             its code (or another repo entirely - scope.json says where)
+└── apps/portal/
 ```
 
 Sub-products under the main folder are auto-detected. Use `/product-tree` to inspect the
@@ -53,7 +54,7 @@ tree, or tell the agent “link ../billing as map row 03” / “make this works
 for exceptional layouts. The agent performs the internal deterministic operation.
 
 No file means `standalone` - single-product workspaces are unaffected. Full behavior:
-[`docs/PRODUCT_HIERARCHY.md`](PRODUCT_HIERARCHY.md).
+[`docs/SCOPES.md`](SCOPES.md).
 
 ## Switch registered local products
 

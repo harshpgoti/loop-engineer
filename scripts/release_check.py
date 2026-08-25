@@ -52,7 +52,7 @@ def render(template: str, values: dict[str, str]) -> str:
 def _hierarchy(workspace: Path) -> dict:
     """Sub-product readiness. Failure-safe - never blocks the release check."""
     try:
-        from hierarchy_sync import readiness
+        from scope_readiness import readiness
 
         return readiness(workspace)
     except Exception:
