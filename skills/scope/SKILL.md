@@ -50,7 +50,7 @@ loop scope resolve --text "<what the user typed>" --session "<session id>" --rem
 
 | Exit | Meaning | What to do |
 |---|---|---|
-| `0` | resolved | Print the `banner`, then work in `plan_dir` and `code_dir` |
+| `0` | resolved scope or explicitly selected shared platform | Print the `banner`, then work in `plan_dir` and `code_dir` |
 | `2` | not resolved, or needs confirming | **Ask the user.** Do not proceed |
 
 Order: explicit `--scope`, then the command text, then a `.loop-scope` pointer, then the
@@ -62,6 +62,8 @@ remembered scope. Three rules make it safe:
 - **Nothing resolved asks**, listing the sub-products *and* shared platform work. Never
   treat "no scope named" as "shared work": that turns a forgotten word into edits to CI,
   schema, or the design system.
+- **Shared platform phrases resolve.** `shared platform`, `platform work`, `root platform`,
+  `root plan`, and `root tasks` are affirmative root selections, not missing scope names.
 
 ## Announce it
 

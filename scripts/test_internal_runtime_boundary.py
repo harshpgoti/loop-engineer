@@ -47,6 +47,34 @@ class InternalRuntimeBoundary(unittest.TestCase):
             self.assertIn("/plan-loop", result.stderr)
             self.assertTrue((workspace / "plan" / "PLAN_BOOTSTRAP.md").exists())
 
+    def test_ultraplan_can_target_an_existing_step_explicitly(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="loop-ultraplan-target-") as tmp:
+            workspace = Path(tmp) / ".loop-engineer"
+            (workspace / "plan").mkdir(parents=True)
+            (workspace / "plan" / "PRODUCT_MAP.md").write_text(
+                """# Product Map
+
+| ID | Step file | Type | Title | Status |
+|----|---|---|---|---|
+| 02 | step_02 | program | Revenue Activation | Active |
+| 19 | step_19 | platform capability | Identity and Access Platform | Active |
+""",
+                encoding="utf-8",
+            )
+
+            result = self.run_cli(
+                "--workspace",
+                str(workspace),
+                "plan-loop",
+                "ultraplan",
+                "next",
+                "--step",
+                "19",
+            )
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertIn("Next: step 19 - Identity and Access Platform", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

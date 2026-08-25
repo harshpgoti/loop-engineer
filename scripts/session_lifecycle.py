@@ -560,6 +560,19 @@ def _command_bootstraps_plan(command: str | None) -> bool:
     return (command or "").strip().lower() in PLAN_BOOTSTRAP_COMMANDS
 
 
+def _plan_needs_bootstrap(workspace: Path) -> bool:
+    """Bootstrap is initialization, never a resume mechanism.
+
+    Passing planning text to an initialized workspace is routing context. Treating it
+    as a new idea rewrites IDEA/PRODUCT_MAP and can rename or recreate step folders.
+    """
+    main_plan = workspace / "plan" / "main_plan.md"
+    if not main_plan.exists():
+        return True
+    text = main_plan.read_text(encoding="utf-8", errors="ignore")
+    return not text.strip() or "UNINITIALIZED" in text.upper()
+
+
 def session_start(
     workspace: Path,
     *,
@@ -585,7 +598,7 @@ def session_start(
     maintenance = _auto_maintenance(workspace)
 
     plan_bootstrap = None
-    if text.strip() and _command_bootstraps_plan(command):
+    if text.strip() and _command_bootstraps_plan(command) and _plan_needs_bootstrap(workspace):
         try:
             from plan_idea import bootstrap_plan
 
@@ -715,6 +728,20 @@ def session_end(
     # cross-workspace and skill writes go through the approval queue, so a
     # closeout no longer leaves work for the user to remember to do.
     actions = apply_report(workspace, report, stage_only=stage)
+
+    # State drift is reconciled here rather than left for the user to notice.
+    # `/sync-loop-state` existed as a command the user had to think to run, which meant
+    # HANDOFF pointing one way while MEMORY pointed another survived until somebody
+    # tripped over it. The mechanical half fixes itself; what is left is reported.
+    try:
+        from sync_loop_state import detect_drift
+
+        drift, fixes = detect_drift(workspace)
+        actions.extend(f"state sync: {fix}" for fix in fixes)
+        for item in drift:
+            actions.append(f"state drift: {item}")
+    except Exception as exc:  # noqa: BLE001 - closeout must never fail on a reconcile
+        actions.append(f"state sync skipped: {exc}")
 
     converge_note = ""
     if _command_reconciles_feature(command):

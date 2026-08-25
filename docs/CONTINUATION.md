@@ -62,7 +62,7 @@ When you stop, report **which condition fired and what you need** - not a bare
 | `/spec-clarify` | → spec-checklist → resolve-doubts → task-compiler | Same as above |
 | `/spec-checklist` | → resolve-doubts → task-compiler | Same as above |
 | `/resolve-doubts` | → task-compiler (on GO) | Same as above |
-| `/ultraplan-loop` | one step's pack → feature spec → clarify → checklist | Step's pack complete, spec ready |
+| `/ultraplan-loop` | one step's pack → feature spec → clarify → checklist → resolve-doubts → task-compiler | Step fully planned, tasks compiled + go/no-go for build |
 | `/develop-product` | task → diff → tests → review → QA → security → converge → prod-gap | Task done, gates evaluated, drift checked |
 | `/loop-engine` | plan terminus **→ crosses into build when gates pass** | Build slice complete |
 | `/revise-plan` | edit → reconcile gates/tasks | Plan consistent, rework tasks created |

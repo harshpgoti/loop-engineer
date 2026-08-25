@@ -13,6 +13,7 @@ Confirm what was built is what was planned, and close the loop on the task.
 2. `skills/feature-converge/SKILL.md`
 3. `skills/code-reviewer/SKILL.md`
 4. Active feature: `spec.md`, `feature-plan.md`, `tasks.md`
+5. `skills/docs/SKILL.md` - when the change alters what the docs say
 
 ## Process
 

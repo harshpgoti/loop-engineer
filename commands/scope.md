@@ -31,6 +31,7 @@ phrase - resolve it, do not make them learn a syntax:
 ```text
 /scope                                    -> list sub-products, say which is active
 /scope work on the payer forms product    -> switch to it
+/scope work on shared platform            -> select root plan/tasks explicitly
 /scope absorb the auth-service folder     -> fold its workspace into this one
 /scope what breaks if auth changes?       -> contract impact
 "merge my sub-products into the main workspace"
@@ -65,6 +66,8 @@ loop scope eject auth                 # reverse an absorb
   Run it, then report *what it found*. "Run `loop scope check`" is never an acceptable
   answer - run it and say what it said. The only commands a user should ever see are
   slash commands like `/scope` and `/develop-product`.
+- **Shared platform is explicit.** Phrases such as `shared platform`, `platform work`,
+  or `root plan` resolve to root plan/tasks; they are never a fallback.
 - **Never guess which sub-product.** `loop scope resolve` exits `2` when it cannot answer;
   that is an instruction to ask the user, not a soft failure. A forgotten word must never
   become edits to shared CI, database schema, or design-system code.

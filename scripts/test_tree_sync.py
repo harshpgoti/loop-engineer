@@ -184,9 +184,11 @@ class AutoMaintenance(TreeSyncSandbox):
         self.assertEqual(before, product_map.read_text(encoding="utf-8"))
         self.assertFalse((self.main_ws / "plan" / "PLAN_BOOTSTRAP.md").exists())
 
-    def test_plan_loop_text_still_bootstraps_the_product(self) -> None:
+    def test_plan_loop_text_does_not_rebootstrap_an_initialized_product(self) -> None:
         from session_lifecycle import session_start
 
+        product_map = self.main_ws / "plan" / "PRODUCT_MAP.md"
+        before = product_map.read_text(encoding="utf-8")
         session_start(
             self.main_ws,
             command="/plan-loop",
@@ -195,7 +197,25 @@ class AutoMaintenance(TreeSyncSandbox):
             skip_recall=True,
         )
 
-        self.assertTrue((self.main_ws / "plan" / "PLAN_BOOTSTRAP.md").exists())
+        self.assertEqual(before, product_map.read_text(encoding="utf-8"))
+        self.assertFalse((self.main_ws / "plan" / "PLAN_BOOTSTRAP.md").exists())
+
+    def test_plan_loop_text_bootstraps_an_uninitialized_product(self) -> None:
+        from session_lifecycle import session_start
+
+        fresh = self._seed(
+            self.tmp / "fresh",
+            **{"plan/main_plan.md": "# Main Plan\n\nStatus: **UNINITIALIZED**\n"},
+        )
+        session_start(
+            fresh,
+            command="/plan-loop",
+            tool="codex",
+            text="A platform with centralized IAM and two workflow sub-products",
+            skip_recall=True,
+        )
+
+        self.assertTrue((fresh / "plan" / "PLAN_BOOTSTRAP.md").exists())
 
     def test_session_start_refreshes_ultraplan_status(self) -> None:
         from session_lifecycle import session_start

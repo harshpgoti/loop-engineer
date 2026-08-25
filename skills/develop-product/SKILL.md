@@ -48,6 +48,7 @@ judgement (`AGENTS.md` non-negotiable #4).
 | **converge** | task built, awaiting verification | `phases/converge.md` | feature-converge, code-reviewer |
 | **evaluate** | eval cases exist and the last score no longer describes the current agent, or a case regressed | `skills/eval-loop/SKILL.md` | eval-loop |
 | **release** | tasks complete, release gate open | `phases/release.md` | security-compliance, prod-gap, deployment-plan, cicd-release |
+| **deploy** | release passed, plan names a provider, an environment has nothing recorded | `phases/deploy.md` | deploy, deployment-plan, cicd-release, security-compliance |
 
 Read on demand, not up front: `skills/agent-builder/SKILL.md` (when the product is or
 includes an AI agent), `skills/frontend-animation/SKILL.md` (when `AUTO_SKILLS.md`

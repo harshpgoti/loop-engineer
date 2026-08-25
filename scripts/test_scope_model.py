@@ -164,6 +164,52 @@ class TextMatching(Sandbox):
 
 
 class Resolution(Sandbox):
+    def test_shared_platform_text_resolves_root_work_explicitly(self) -> None:
+        res = sp.resolve(
+            self.ws,
+            text="Deep-plan shared-platform Step 19 Identity and Access Platform",
+        )
+        self.assertTrue(res.resolved)
+        self.assertTrue(res.is_platform)
+        self.assertEqual(res.source, "text")
+
+    def test_shared_platform_resolves_even_before_the_first_sub_product_exists(self) -> None:
+        empty = self.root / "Empty" / ".loop-engineer"
+        empty.mkdir(parents=True)
+        res = sp.resolve(empty, text="continue shared platform work")
+        self.assertTrue(res.resolved)
+        self.assertTrue(res.is_platform)
+
+    def test_platform_can_be_selected_explicitly_and_remembered(self) -> None:
+        res = sp.resolve(self.ws, explicit="platform")
+        self.assertTrue(res.resolved)
+        self.assertTrue(res.is_platform)
+
+        sp.set_active(self.ws, sp.PLATFORM, session="s1")
+        remembered = sp.resolve(self.ws, session="s1")
+        self.assertTrue(remembered.resolved)
+        self.assertTrue(remembered.is_platform)
+        self.assertEqual(remembered.source, "remembered")
+
+    def test_an_explicit_scope_beats_platform_words_in_the_text(self) -> None:
+        """The flag is what scripts and internal calls pass; text must never override it."""
+        res = sp.resolve(self.ws, explicit="portal", text="align with shared platform work")
+        self.assertEqual(res.slug, "portal")
+        self.assertFalse(res.is_platform)
+        self.assertEqual(res.source, "flag")
+
+    def test_text_naming_a_sub_product_and_platform_asks_rather_than_guessing(self) -> None:
+        """Picking either would write into the wrong plan - the same rule as two scopes."""
+        res = sp.resolve(self.ws, text="work on auth to match the root plan")
+        self.assertFalse(res.resolved)
+        self.assertFalse(res.is_platform)
+        self.assertIn("both", res.reason)
+
+    def test_a_named_scope_alone_is_unaffected_by_the_platform_path(self) -> None:
+        res = sp.resolve(self.ws, text="work on auth product")
+        self.assertEqual(res.slug, "auth")
+        self.assertFalse(res.is_platform)
+
     def test_an_explicit_flag_wins(self) -> None:
         res = sp.resolve(self.ws, explicit="portal", text="work on auth")
         self.assertEqual(res.slug, "portal")

@@ -96,8 +96,10 @@ the active feature. Never return `loop workspace sync` or `/feature-converge` as
 
 ## Instructions
 
-0. Internally run `loop session-start --command /plan-loop --text "<user idea>"` and
-   read `plan/PLAN_BOOTSTRAP.md` + `plan/SESSION_MANIFEST.md`. Note the `PHASE:` line.
+0. Internally run `loop session-start --command /plan-loop --text "<user idea>"` for
+   an uninitialized plan. On an initialized plan, the runtime treats text as routing
+   context and does not bootstrap or decompose again. Read `plan/PLAN_BOOTSTRAP.md` +
+   `plan/SESSION_MANIFEST.md`. Note the `PHASE:` line.
    This runtime call belongs to the coding agent; never ask the user to run it.
 1. `session-start` auto-detects agent-development signals - if `plan/AUTO_AGENT_SKILLS.md` was written, read it and `skills/agent-builder/SKILL.md` before drafting architecture.
 2. **If product is uninitialized**, ask for product name, target user, problem, first product step, constraints, sensitive data, preferred stack, and deployment targets. Capture deployment choices in `plan/main_plan.md` â†’ **Deployment & Infrastructure**:

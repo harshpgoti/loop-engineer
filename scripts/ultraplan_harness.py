@@ -161,6 +161,38 @@ def parse_product_map(workspace: Path) -> list[dict]:
     return rows
 
 
+def root_ultraplan_modules(workspace: Path) -> list[dict]:
+    """Map rows whose deep plan is owned by the root workspace.
+
+    A row bound by `scope.json`, a `plan/products/...` plan path, or an external
+    Workspace path delegates planning to that owner. Product maps also use a column
+    named "Scope" for prose descriptions, so non-empty alone is not ownership.
+    Deferred roadmap rows stay out of the active tracker until promoted.
+    """
+    try:
+        from scope_paths import list_scopes
+
+        delegated_ids = {scope.map_id for scope in list_scopes(workspace) if scope.map_id}
+    except ImportError:
+        delegated_ids = set()
+
+    modules: list[dict] = []
+    for row in parse_product_map(workspace):
+        scope_value = str(row.get("scope") or "").strip(" `")
+        workspace_value = str(row.get("workspace") or "").strip(" `")
+        delegated = (
+            row.get("id") in delegated_ids
+            or scope_value.startswith("plan/products/")
+            or bool(workspace_value)
+        )
+        if delegated:
+            continue
+        if "deferred" in str(row.get("status", "")).lower():
+            continue
+        modules.append(row)
+    return modules
+
+
 def ensure_product_map_template(workspace: Path, product_name: str) -> Path:
     path = product_map_file(workspace)
     if path.exists():
@@ -256,9 +288,9 @@ Then `loop feature new "{title}" --step plan/{step_path.name}`.
 
 
 def decompose_from_map(workspace: Path, force: bool = False) -> list[dict]:
-    modules = parse_product_map(workspace)
+    modules = root_ultraplan_modules(workspace)
     if not modules:
-        raise SystemExit("No modules in PRODUCT_MAP.md - fill the table first.")
+        raise SystemExit("No root-owned active modules in PRODUCT_MAP.md - fill or promote a row first.")
 
     created: list[dict] = []
     for mod in modules:
@@ -336,19 +368,22 @@ def step_ultraplan_complete(workspace: Path, step_id: str, title: str) -> tuple[
 
 def update_ultraplan_status(workspace: Path, modules: list[dict] | None = None) -> Path:
     if modules is None:
-        modules = []
-        for step in list_step_files(workspace):
-            sid = parse_step_id(step.name)
-            if not sid:
-                continue
-            title_match = re.match(r"step_\d{2}_(.+)\.md", step.name)
-            title = (title_match.group(1) if title_match else step.stem).replace("-", " ")
-            folder = steps_dir(workspace) / step_folder_name(sid, title)
-            if not folder.is_dir():
-                alt = next((d for d in steps_dir(workspace).glob(f"{sid}-*") if d.is_dir()), None)
-                folder = alt or folder
-            complete, missing = step_ultraplan_complete(workspace, sid, title) if folder.is_dir() else (False, ["folder"])
-            modules.append({"id": sid, "title": title, "complete": complete, "missing": missing})
+        has_map = product_map_file(workspace).exists()
+        mapped = root_ultraplan_modules(workspace)
+        modules = mapped if mapped else []
+        if not has_map:
+            for step in list_step_files(workspace):
+                sid = parse_step_id(step.name)
+                if not sid:
+                    continue
+                title_match = re.match(r"step_\d{2}_(.+)\.md", step.name)
+                title = (title_match.group(1) if title_match else step.stem).replace("-", " ")
+                folder = steps_dir(workspace) / step_folder_name(sid, title)
+                if not folder.is_dir():
+                    alt = next((d for d in steps_dir(workspace).glob(f"{sid}-*") if d.is_dir()), None)
+                    folder = alt or folder
+                complete, missing = step_ultraplan_complete(workspace, sid, title) if folder.is_dir() else (False, ["folder"])
+                modules.append({"id": sid, "title": title, "complete": complete, "missing": missing})
 
     lines = [
         "# Ultraplan Status",
@@ -384,15 +419,39 @@ def update_ultraplan_status(workspace: Path, modules: list[dict] | None = None) 
     return path
 
 
-def find_next_incomplete(workspace: Path, modules: list[dict] | None = None) -> dict | None:
+def _target_module(modules: list[dict], target: str) -> dict | None:
+    wanted = str(target).strip()
+    wanted_id = wanted.zfill(2) if wanted.isdigit() else wanted
+    wanted_title = slugify(wanted)
+    for mod in modules:
+        sid = str(mod["id"]).zfill(2) if str(mod["id"]).isdigit() else str(mod["id"])
+        if sid == wanted_id or slugify(mod["title"]) == wanted_title:
+            return mod
+    return None
+
+
+def find_next_incomplete(
+    workspace: Path,
+    modules: list[dict] | None = None,
+    *,
+    target: str | None = None,
+) -> dict | None:
+    has_map = product_map_file(workspace).exists()
     if modules is None:
-        modules = parse_product_map(workspace)
+        modules = root_ultraplan_modules(workspace)
+    if target:
+        selected = _target_module(modules, target)
+        modules = [selected] if selected else []
     for mod in modules:
         sid = mod["id"].zfill(2) if str(mod["id"]).isdigit() else str(mod["id"])
         title = mod["title"]
         complete, _ = step_ultraplan_complete(workspace, sid, title)
         if not complete:
             return {"id": sid, "title": title}
+    if target:
+        return None
+    if has_map:
+        return None
     for step in list_step_files(workspace):
         sid = parse_step_id(step.name)
         if not sid:
@@ -436,7 +495,8 @@ def main() -> int:
     init_p.add_argument("--type", default="module")
 
     sub.add_parser("status", help="Refresh plan/ULTRAPLAN_STATUS.md")
-    sub.add_parser("next", help="Print next step needing ultraplan")
+    next_p = sub.add_parser("next", help="Print next step needing ultraplan")
+    next_p.add_argument("--step", default=None, help="Explicit root-owned step id or title")
 
     args = parser.parse_args()
     workspace = resolve_workspace(args.workspace)
@@ -473,8 +533,11 @@ def main() -> int:
         return 0
 
     if args.cmd == "next":
-        nxt = find_next_incomplete(workspace)
+        nxt = find_next_incomplete(workspace, target=args.step)
         if not nxt:
+            if args.step:
+                print(f"Step `{args.step}` is complete, delegated, deferred, or unknown in the root plan.")
+                return 1
             print("All ultraplan packs complete (or no platform steps).")
             return 0
         print(f"Next: step {nxt['id']} - {nxt['title']}")

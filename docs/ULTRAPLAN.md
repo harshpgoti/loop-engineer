@@ -79,6 +79,7 @@ Not for users - debugging or recovery only:
 loop plan-loop scale --write --text "..."
 loop plan-loop decompose
 loop plan-loop ultraplan next
+loop plan-loop ultraplan next --step "19"  # explicit existing step
 ```
 
 ## Skills

@@ -97,7 +97,7 @@ def cmd_resolve(workspace: Path, args: argparse.Namespace) -> int:
         cwd=Path.cwd(),
     )
     payload = {
-        "scope": res.slug if res.scope else None,
+        "scope": res.slug if res.resolved else None,
         "source": res.source,
         "needs_confirm": res.needs_confirm,
         "reason": res.reason,
@@ -122,12 +122,18 @@ def cmd_resolve(workspace: Path, args: argparse.Namespace) -> int:
         )
         if not res.needs_confirm and args.remember:
             sp.set_active(workspace, res.scope.slug, session=args.session)
+    elif res.platform_selected:
+        payload["plan_dir"] = "plan"
+        payload["code_dir"] = "."
+        payload["banner"] = "Scope: shared platform work (root plan, root TASKS.yml)"
+        if not res.needs_confirm and args.remember:
+            sp.set_active(workspace, sp.PLATFORM, session=args.session)
     else:
         payload["banner"] = "Scope: not selected - ask which sub-product"
         payload["platform_option"] = "shared platform work (root TASKS.yml)"
 
     print(json.dumps(payload, indent=2))
-    return 0 if (res.scope is not None and not res.needs_confirm) else 2
+    return 0 if (res.resolved and not res.needs_confirm) else 2
 
 
 # ---------------------------------------------------------------------------
@@ -136,6 +142,10 @@ def cmd_resolve(workspace: Path, args: argparse.Namespace) -> int:
 
 
 def cmd_use(workspace: Path, args: argparse.Namespace) -> int:
+    if sp.is_platform_token(args.slug):
+        sp.set_active(workspace, sp.PLATFORM, session=args.session)
+        print("Scope: shared platform work (root plan, root TASKS.yml)")
+        return 0
     scope = sp.find_scope(workspace, args.slug)
     if scope is None:
         print(f"No scope named `{args.slug}`.")

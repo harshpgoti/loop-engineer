@@ -41,6 +41,13 @@ STICKY_HOURS = 12
 CODE_LAYOUTS = ("own-dir", "shared", "external")
 
 PLATFORM = "platform"
+PLATFORM_ALIASES = frozenset({
+    "platform",
+    "shared-platform",
+    "shared-platform-work",
+    "root",
+    "root-platform",
+})
 
 
 def slugify(value: str) -> str:
@@ -523,6 +530,11 @@ class Resolution:
     needs_confirm: bool = False
     candidates: list[Scope] = field(default_factory=list)
     reason: str = ""
+    platform_selected: bool = False
+
+    @property
+    def resolved(self) -> bool:
+        return self.scope is not None or self.platform_selected
 
     @property
     def slug(self) -> str:
@@ -530,7 +542,24 @@ class Resolution:
 
     @property
     def is_platform(self) -> bool:
-        return self.scope is None
+        return self.platform_selected
+
+
+def is_platform_token(token: str | None) -> bool:
+    return bool(token) and slugify(str(token)) in PLATFORM_ALIASES
+
+
+def _text_selects_platform(text: str | None) -> bool:
+    """Recognize an affirmative root selection without treating `platform` alone as one.
+
+    A scoped product may itself be named "Identity Platform". Requiring a root/shared
+    phrase keeps that name from silently escaping its scope.
+    """
+    words = " ".join(_words(text or ""))
+    return any(
+        re.search(rf"(?<![a-z0-9]){re.escape(phrase)}(?![a-z0-9])", words)
+        for phrase in ("shared platform", "platform work", "root platform", "root plan", "root tasks")
+    )
 
 
 def resolve(
@@ -550,10 +579,13 @@ def resolve(
     or design-system code.
     """
     scopes = list_scopes(workspace)
-    if not scopes:
-        return Resolution(source="none", reason="This workspace has no sub-product scopes.")
+    platform_text = _text_selects_platform(text)
 
+    # 1. The explicit flag wins outright - scope or platform. It is what scripts and the
+    #    agent's own internal calls pass, so nothing in the text may override it.
     if explicit:
+        if is_platform_token(explicit):
+            return Resolution(source="flag", platform_selected=True)
         found = find_scope(workspace, explicit)
         if found is None:
             return Resolution(
@@ -563,8 +595,28 @@ def resolve(
             )
         return Resolution(scope=found, source="flag")
 
+    if not scopes:
+        # No sub-products yet: root work is the only thing there is to select, but it
+        # still has to be *said* rather than assumed.
+        if platform_text:
+            return Resolution(source="text", platform_selected=True)
+        return Resolution(source="none", reason="This workspace has no sub-product scopes.")
+
+    # 2. The command's own text.
     if text:
         match = match_text(workspace, text)
+        if match.ok and platform_text:
+            # Names a sub-product *and* asks for root work. Picking either would be a
+            # guess, and the wrong guess writes into the wrong plan - the same reason
+            # two matching sub-products never resolve.
+            return Resolution(
+                source="text",
+                candidates=match.candidates,
+                reason=(
+                    f"That names both `{match.scope.slug}` and shared platform work"
+                    " - say which one this is."
+                ),
+            )
         if match.ok:
             return Resolution(scope=match.scope, source="text")
         if match.ambiguous:
@@ -575,6 +627,9 @@ def resolve(
                 reason=f"That names more than one sub-product ({names}) - say which.",
             )
 
+    if platform_text:
+        return Resolution(source="text", platform_selected=True)
+
     pointed = pointer_slug(cwd, stop_at=product_folder(workspace)) if cwd else None
     if pointed:
         found = find_scope(workspace, pointed)
@@ -583,6 +638,19 @@ def resolve(
 
     record = read_active(workspace)
     if record:
+        if str(record.get("slug")) == PLATFORM:
+            stale = _stale(record, session)
+            return Resolution(
+                source="remembered",
+                platform_selected=True,
+                needs_confirm=stale,
+                reason=(
+                    f"Last scope was shared platform work, set {_age(record)}."
+                    " Continue there, or switch?"
+                    if stale
+                    else ""
+                ),
+            )
         found = find_scope(workspace, str(record.get("slug")))
         if found is not None:
             stale = _stale(record, session)

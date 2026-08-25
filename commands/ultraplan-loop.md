@@ -16,6 +16,17 @@ loop plan-loop ultraplan next
 loop plan-loop ultraplan status
 ```
 
+When the user names an existing step, target it explicitly instead of accepting the
+tracker's default:
+
+```bash
+loop plan-loop ultraplan next --step "<step id or exact title>"
+```
+
+Rows bound to `plan/products/<slug>` (by `scope.json` map id or plan path), or to an
+external `Workspace`, are planned by that owner and excluded from the root tracker.
+Deferred rows are excluded until promoted.
+
 ## Wired From
 
 - `/plan-loop` when `plan/PLAN_SCALE.md` says `platform`
@@ -23,16 +34,17 @@ loop plan-loop ultraplan status
 
 ## Continuation
 
-Terminus: **the active step's pack complete, its feature spec created and clarified.**
-After filling the pack, create the feature spec and continue into `/spec-clarify` -
-do not stop and list those for the user.
+Terminus: **the active step is fully planned: pack complete, feature spec ready,
+blocking doubts resolved or explicitly deferred, tasks compiled, and a go/no-go recorded.**
+After filling the pack, continue automatically through `/spec-clarify`, `/spec-checklist`,
+`/resolve-doubts`, and task compilation. Do not stop and list those for the user.
 
-**One step per session is a deliberate context Stop Condition**, not chunking:
-ultraplan packs are large, so after finishing one step's pack and spec, report
-progress (`plan/ULTRAPLAN_STATUS.md`), run `/compact-loop`, and continue the next
-step in a fresh session. See `docs/CONTINUATION.md`.
+**One fully planned step per session is a deliberate context Stop Condition**, not
+chunking: after its pack, spec and tasks are complete, report progress
+(`plan/ULTRAPLAN_STATUS.md`), run `/compact-loop`, and continue the next step in a
+fresh session. See `docs/CONTINUATION.md`.
 
 ## Output
 
-One fully detailed step pack under `plan/steps/NN-slug/`, its feature spec
-clarified, and `plan/ULTRAPLAN_STATUS.md` showing what remains.
+One fully detailed step pack under `plan/steps/NN-slug/`, a ready feature spec,
+compiled tasks, a go/no-go, and `plan/ULTRAPLAN_STATUS.md` showing what remains.

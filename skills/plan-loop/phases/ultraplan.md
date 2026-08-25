@@ -34,7 +34,8 @@ When the user's message contains a product idea, bootstrap already ran. Verify `
 
 ## Deep-plan one step (one session)
 
-1. Run `loop plan-loop ultraplan next` - pick the next incomplete step.
+1. If the user named a step, run `loop plan-loop ultraplan next --step "<id or title>"`;
+   otherwise run `loop plan-loop ultraplan next` to pick the next incomplete root-owned step.
 2. Fill **every** file in `plan/steps/NN-slug/`:
    - `overview.md` - role in platform, metrics
    - `prd.md` - requirements, stories, NFRs
@@ -78,8 +79,9 @@ When the active step's pack is complete: create its feature spec
 `phases/spec-clarify.md` and continue to the planning terminus for that step.
 Do not stop and ask the user to run the next command.
 
-**Deliberate boundary:** deep-plan **one step per session**. Ultraplan packs are
-context-heavy, so after finishing a step's pack and its spec, report progress
-(`plan/ULTRAPLAN_STATUS.md`) rather than starting the next step's pack - run
-`/compact-loop` and continue in a fresh session. This is a context Stop Condition,
-not a chunking habit. See `docs/CONTINUATION.md`.
+**Deliberate boundary:** fully plan **one step per session**. Ultraplan packs are
+context-heavy, so finish that step through spec clarification, checklist, doubt
+resolution and task compilation; then report progress (`plan/ULTRAPLAN_STATUS.md`)
+rather than starting another step's pack. Run `/compact-loop` and continue the next
+step in a fresh session. This is a context Stop Condition, not a chunking habit. See
+`docs/CONTINUATION.md`.

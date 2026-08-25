@@ -133,7 +133,9 @@ RECALL â†’ DETECT INIT â†’ ASK/INFER (PRODUCT + DEPLOYMENT) â†’ G
 
 ## Steps
 
-0. **Session start + auto-bootstrap** (pass the user's idea as `--text`):
+0. **Session start + auto-bootstrap** (pass the user's idea as `--text` only when
+   `plan/main_plan.md` is missing or `UNINITIALIZED`; on an initialized plan the text
+   is routing context and must not rewrite `IDEA.md` or `PRODUCT_MAP.md`):
    ```bash
    loop session-start --command /plan-loop --tool "<tool>" --text "<user product idea>"
    ```
@@ -160,7 +162,8 @@ RECALL â†’ DETECT INIT â†’ ASK/INFER (PRODUCT + DEPLOYMENT) â†’ G
 11. **Update `plan/main_plan.md`** with product-level strategy and the **Deployment & Infrastructure** table. Use `templates/main_plan.template.md` on first initialization.
 12. **Follow `plan/PLAN_BOOTSTRAP.md`** for scale branch (already auto-detected):
     - **`convenient`:** one step file + feature spec (steps 15-17).
-    - **`platform`:** ultraplan the step named in bootstrap (one step per session), then feature spec for that step only.
+    - **`platform`:** ultraplan the step named in bootstrap (one step per session), then
+      run that step through feature spec, clarification, checklist, doubts, and task compilation.
 
 ## Plan scale branch (automatic - do not ask user to run manual commands)
 
@@ -170,7 +173,8 @@ Continue with standard step + deep **feature spec** (steps 15-17 below).
 
 ### B) `platform` - multiple sub-products / agents
 
-Already bootstrapped: `PRODUCT_MAP.md`, step stubs, `plan/steps/NN-slug/` folders. **Your job:** fill the ultraplan pack for the step listed in `PLAN_BOOTSTRAP.md` - one step per session.
+Already bootstrapped: `PRODUCT_MAP.md`, step stubs, `plan/steps/NN-slug/` folders. **Your job:**
+fully plan the step listed in `PLAN_BOOTSTRAP.md` through compiled tasks - one step per session.
 
 13. **Use the initializer when enough product inputs are known** (convenient scale only, or first platform step):
    ```bash

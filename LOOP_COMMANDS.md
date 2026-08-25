@@ -33,6 +33,7 @@ Use these directly in any agent that can access the repo:
 /product-tree-sync
 /subproduct-new
 /scope
+/deploy
 /plan-loop <idea>
 /loop-engine <idea>
 /ultraplan-loop
@@ -105,6 +106,7 @@ The agent must route the command through `commands/*.md` and update `memories/ME
 | `/research-search` | `commands/research-search.md` | Search arXiv, Research Square, and SSRN to ground a claim |
 | `/diagnose-loop` | `commands/diagnose-loop.md` | Build a feedback loop that goes red on a bug, then hypothesise |
 | `/subproduct-new` | `commands/subproduct-new.md` | Carve a map row out of the main product into its own workspace |
+| `/deploy` | `commands/deploy.md` | Deploy to the chosen cloud, recording every resource and what it serves |
 | `/scope` | `commands/scope.md` | Sub-products inside one workspace: list, switch, check contracts, absorb a federated sub-product |
 | `/upgrade-loop-engineer` | `commands/upgrade-loop-engineer.md` | Safe tool update without overwriting product data |
 

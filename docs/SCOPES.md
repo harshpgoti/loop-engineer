@@ -81,6 +81,7 @@ Exit code is the instruction: `0` go, `2` **ask the user first**.
 | Ambiguous never resolves | Picking the first of two matches is the mis-binding that the federated binder's substring fallback was removed for |
 | The scope is always announced | `Scope: auth (plan/products/auth, code services/auth)` in the banner and the manifest |
 | Nothing resolved asks | Treating "no scope named" as "shared platform work" turns a forgotten word into edits to CI, schema, or the design system |
+| Shared platform is explicit | `shared platform`, `platform work`, or `root plan` resolves root plan/tasks without pretending a sub-product was selected |
 
 ### Remembered, but re-confirmed after a break
 

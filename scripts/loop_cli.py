@@ -331,6 +331,24 @@ def cmd_subproduct(args: argparse.Namespace) -> int:
     return run_script("subproduct_new.py", _workspace_args(args) + tail)
 
 
+def cmd_cloud(args: argparse.Namespace) -> int:
+    """The record of what a deploy actually created - see `cloud_inventory.py`."""
+    cmd = getattr(args, "cloud_cmd", None) or "list"
+    tail = [cmd]
+    if cmd == "add":
+        for flag in ("env", "provider", "service", "resource", "purpose", "scope", "region", "teardown"):
+            value = getattr(args, flag, None)
+            if value:
+                tail += [f"--{flag}", value]
+    elif cmd == "mark":
+        tail += [args.id, args.status]
+    elif cmd == "teardown" and getattr(args, "stale_days", None):
+        tail += ["--stale-days", str(args.stale_days)]
+    elif cmd == "list" and getattr(args, "env", None):
+        tail += ["--env", args.env]
+    return run_script("cloud_inventory.py", _workspace_args(args) + tail)
+
+
 def cmd_scope(args: argparse.Namespace) -> int:
     """Scopes in a unified workspace, and folding a federated sub-product into one.
 
@@ -638,7 +656,10 @@ def cmd_plan(args: argparse.Namespace) -> int:
         if len(tokens) < 2 or tokens[1] not in ("status", "next"):
             print("usage: loop plan-loop ultraplan status|next", file=sys.stderr)
             return 2
-        return run_script("ultraplan_harness.py", [tokens[1], *extra])
+        tail = [tokens[1], *tokens[2:]]
+        if getattr(args, "step", None):
+            tail.extend(["--step", args.step])
+        return run_script("ultraplan_harness.py", [*extra, *tail])
 
     return 2
 
@@ -878,6 +899,44 @@ def build_parser() -> argparse.ArgumentParser:
     sp_new.add_argument("--workspace", default=argparse.SUPPRESS)
     sp_new.set_defaults(func=cmd_subproduct)
     sp.set_defaults(func=cmd_subproduct)
+
+    cl = sub.add_parser(
+        "cloud",
+        help="Cloud resources this product created: what they serve, and what can be removed.",
+    )
+    cl.add_argument("--workspace", default=argparse.SUPPRESS)
+    cl_sub = cl.add_subparsers(dest="cloud_cmd")
+    cl_list = cl_sub.add_parser("list", help="Everything recorded, by environment.")
+    cl_list.add_argument("--env", default=None, choices=["dev", "staging", "prod"])
+    cl_list.add_argument("--workspace", default=argparse.SUPPRESS)
+    cl_list.set_defaults(func=cmd_cloud)
+    cl_add = cl_sub.add_parser("add", help="Record a resource at the moment it is created.")
+    cl_add.add_argument("--env", required=True, choices=["dev", "staging", "prod"])
+    cl_add.add_argument("--provider", required=True)
+    cl_add.add_argument("--service", required=True)
+    cl_add.add_argument("--resource", required=True)
+    cl_add.add_argument("--purpose", required=True)
+    cl_add.add_argument("--scope", default=None)
+    cl_add.add_argument("--region", default=None)
+    cl_add.add_argument("--teardown", default=None)
+    cl_add.add_argument("--workspace", default=argparse.SUPPRESS)
+    cl_add.set_defaults(func=cmd_cloud)
+    cl_mark = cl_sub.add_parser("mark", help="Mark a resource deleted or failed.")
+    cl_mark.add_argument("id")
+    cl_mark.add_argument("status", choices=["active", "deleted", "failed"])
+    cl_mark.add_argument("--workspace", default=argparse.SUPPRESS)
+    cl_mark.set_defaults(func=cmd_cloud)
+    cl_td = cl_sub.add_parser("teardown", help="Dev resources that have outlived their reason.")
+    cl_td.add_argument("--stale-days", type=int, default=None)
+    cl_td.add_argument("--workspace", default=argparse.SUPPRESS)
+    cl_td.set_defaults(func=cmd_cloud)
+    cl_orph = cl_sub.add_parser("orphans", help="Live resources with no purpose recorded.")
+    cl_orph.add_argument("--workspace", default=argparse.SUPPRESS)
+    cl_orph.set_defaults(func=cmd_cloud)
+    cl_sum = cl_sub.add_parser("summary", help="Counts per environment, and what needs attention.")
+    cl_sum.add_argument("--workspace", default=argparse.SUPPRESS)
+    cl_sum.set_defaults(func=cmd_cloud)
+    cl.set_defaults(func=cmd_cloud)
 
     sc = sub.add_parser(
         "scope",
@@ -1124,6 +1183,7 @@ def build_parser() -> argparse.ArgumentParser:
         nargs="*",
         help='Product idea text, or subcommand: scale, modules, decompose, ultraplan status|next',
     )
+    plan.add_argument("--step", default=None, help="Explicit ultraplan step id or exact title.")
     plan.set_defaults(func=cmd_plan)
 
 

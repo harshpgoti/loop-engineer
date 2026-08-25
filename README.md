@@ -310,6 +310,36 @@ Details: [`docs/SCOPES.md`](docs/SCOPES.md)
 
 Details of the federated model: [`docs/PRODUCT_HIERARCHY.md`](docs/PRODUCT_HIERARCHY.md)
 
+### Deploying, and knowing what you created
+
+`/develop-product` reaches deployment on its own once the release gate passes and the
+plan names a real cloud - or say **"lets deploy this"** to go there now.
+
+```text
+/deploy                      # deploy the chosen environment to the chosen cloud
+/deploy to staging
+what did we create in AWS?   # the inventory, per environment
+what can I delete?           # dev resources that have outlived their reason
+```
+
+Two things make it safe to repeat. It **reads the provider's current official docs**
+before running any command rather than deploying from memory, and it **records every
+resource the moment it is created** - what it serves, which sub-product, which
+environment, and the command that removes it:
+
+```text
+| ID    | Env | Provider | Service | Resource       | Purpose               | Scope  |
+| R-001 | dev | aws      | ECS     | denial-api-dev | denial engine API     | denial |
+| R-002 | dev | aws      | RDS     | denial-db-dev  | application database  | denial |
+```
+
+That is what makes a temporary environment findable later. `dev` rows are treated as
+disposable and are the ones offered for teardown; `prod` and `staging` never are.
+Creating and deleting both stop and ask first - one question listing everything, with
+costs, not a prompt per resource.
+
+Details: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)
+
 ### Operations & maintenance
 
 ```text

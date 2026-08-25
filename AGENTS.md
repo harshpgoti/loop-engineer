@@ -117,6 +117,7 @@ The user should be able to type these commands in Cursor, Codex, Claude Code, Gr
 | `/product-tree` | Show main product ⇄ sub-product workspaces, their roll-up, and where a sub-product's plan contradicts the master plan | `commands/product-tree.md` + `skills/product-tree/SKILL.md` |
 | `/product-tree-sync` | Make main product and sub-products agree, run from either folder - refreshes both ends and stages drift notes | `commands/product-tree-sync.md` + `skills/product-tree-sync/SKILL.md` |
 | `/subproduct-new` | Carve a product-map row out of the main product into its own workspace, seeded from that row's plan and ready for `/loop-engine` | `commands/subproduct-new.md` + `skills/subproduct-new/SKILL.md` |
+| `/deploy` | Deploy to the chosen cloud and record every resource created - what it serves, which environment, and how to remove it. Also answers "what can I delete?" | `commands/deploy.md` + `skills/deploy/SKILL.md` |
 | `/scope` | Sub-products planned and built inside **one** workspace (`plan/products/<slug>/`): list, switch, check cross-scope contracts, and absorb a sub-product that still has its own `.loop-engineer/` | `commands/scope.md` + `skills/scope/SKILL.md` |
 | `/ultraplan-loop` | Deep per-step planning for platform-scale products | `commands/ultraplan-loop.md` + `skills/plan-loop/phases/ultraplan.md` |
 | `/frontend-animation` | Route to built-in GSAP, Motion.dev, and 3D core skills for frontend work | `commands/frontend-animation.md` + `skills/frontend-animation/SKILL.md` |
