@@ -211,6 +211,7 @@ def check_memory_health(workspace: Path, errors: list[str], warnings: list[str],
         passes.append(f"LOOP_HOME registry present: `{loop_home()}`")
 
     check_hierarchy_health(workspace, errors, warnings, passes)
+    check_scope_health(workspace, errors, warnings, passes)
 
 
 def check_hierarchy_health(workspace: Path, errors: list[str], warnings: list[str], passes: list[str]) -> None:
@@ -253,6 +254,65 @@ def check_hierarchy_health(workspace: Path, errors: list[str], warnings: list[st
 
     if tree.get("children"):
         passes.append(f"Hierarchy link healthy: {len(tree['children'])} sub-product(s) resolved.")
+
+
+def check_scope_health(workspace: Path, errors: list[str], warnings: list[str], passes: list[str]) -> None:
+    """Scopes, their cross-scope findings, and sub-products still holding a workspace.
+
+    The last one is the reason this check exists at all: a unified workspace that still
+    has a child `.loop-engineer/` next to it resolves *there* whenever anyone works in
+    that folder, so the sub-product is planned twice and neither copy is wrong on its
+    face. Naming it here is cheaper than discovering it from a divergent plan.
+    """
+    try:
+        import scope_paths as sp
+        import scope_state
+        import contracts as ct
+    except ImportError as exc:  # pragma: no cover - defensive
+        errors.append(f"scope check: cannot import scope modules ({exc})")
+        return
+
+    if sp.workspace_mode(workspace) != "unified":
+        return
+
+    scopes = sp.list_scopes(workspace)
+    passes.append(f"Unified workspace: {len(scopes)} sub-product scope(s) under `plan/products/`.")
+
+    for scope in scopes:
+        if not scope.map_id:
+            warnings.append(
+                f"Scope `{scope.slug}` has no `map_id` in scope.json - "
+                f"the PRODUCT_MAP row it belongs to cannot be resolved."
+            )
+        if not scope.code_dir:
+            warnings.append(
+                f"Scope `{scope.slug}` has no code dir yet - `/plan-loop` should ask how its code is laid out."
+            )
+
+    tasks = scope_state.load_tasks(workspace)
+    for item in scope_state.unresolved_blockers(tasks):
+        errors.append(f"Dangling reference: {item}")
+    for clash in scope_state.duplicate_gate_ids(scope_state.load_gates(workspace)):
+        errors.append(f"Duplicate gate: {clash}")
+    for finding in ct.check(workspace, tasks=tasks):
+        (errors if finding.level == "error" else warnings).append(finding.line())
+
+    _ordered, cycles = sp.dependency_order(workspace)
+    for cycle in cycles:
+        errors.append("Dependency cycle between scopes: " + " -> ".join(cycle))
+
+    try:
+        import scope_absorb
+
+        leftovers = scope_absorb.discover(workspace)
+    except Exception:  # noqa: BLE001
+        leftovers = []
+    for folder in leftovers:
+        warnings.append(
+            f"`{folder.name}` still has its own `.loop-engineer/` in a unified workspace - "
+            f"working inside that folder resolves there, not here. "
+            f"Run `loop scope absorb {folder.name} --dry-run` to see what folding it in would do."
+        )
 
 
 def diagnose(workspace: Path | None) -> tuple[str, int]:

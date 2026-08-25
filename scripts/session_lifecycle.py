@@ -210,6 +210,69 @@ def attention_block(workspace: Path) -> list[str]:
     return lines
 
 
+def _scope_block(workspace: Path, command: str | None) -> list[str]:
+    """The manifest's scope section: which sub-product this session is about.
+
+    Scope-filtered on purpose. A unified workspace with ten sub-products would
+    otherwise put ten plans in front of every command, which is the one way this
+    layout could cost more context than the federated one it replaces. Siblings are
+    listed by name only; the active scope is the one whose plan is read.
+    """
+    try:
+        import scope_paths as sp
+        import scope_state
+
+        if sp.workspace_mode(workspace) != "unified":
+            return []
+        scopes = sp.list_scopes(workspace)
+        if not scopes:
+            return []
+
+        res = sp.resolve(workspace, cwd=Path.cwd())
+        lines = ["", "## Scope", ""]
+        if res.scope is None or res.needs_confirm:
+            lines.append(
+                "- **Not selected.** Ask which sub-product this is about before writing anything."
+            )
+            if res.reason:
+                lines.append(f"- {res.reason}")
+            for scope in scopes:
+                lines.append(f"  - `{scope.slug}` - {scope.title} ({scope.code_dir or 'no code dir yet'})")
+            lines.append("  - shared platform work - root `TASKS.yml`, CI, schema, design system")
+            return lines
+
+        scope = res.scope
+        lines.extend(
+            [
+                f"- **Active scope:** `{scope.slug}` - {scope.title} (source: {res.source})",
+                f"- **Plan:** `plan/products/{scope.slug}/` - read `prd.md`, `TASKS.yml`, `GATES.yml`, `DOUBTS.md` there",
+                f"- **Code:** `{scope.code_dir or '(not decided - ask during planning)'}`",
+            ]
+        )
+        if scope.provides:
+            lines.append(f"- **Provides:** {', '.join(scope.provides)}")
+        if scope.consumes:
+            lines.append(f"- **Consumes:** {', '.join(scope.consumes)} - see `plan/contracts/`")
+        blocks = [
+            b
+            for b in scope_state.cross_scope_blocks(scope_state.load_tasks(workspace))
+            if b["scope"] == scope.slug and not b["satisfied"]
+        ]
+        for block in blocks:
+            lines.append(
+                f"- **Blocked:** {block['task']} waits on {block['blocked_by']} in `{block['provider_scope']}`"
+            )
+        others = [s.slug for s in scopes if s.slug != scope.slug]
+        if others:
+            lines.append(f"- **Other sub-products (names only):** {', '.join(others)}")
+        lines.append(
+            "- A change needed in another sub-product: locate it, **ask the user**, then apply it there."
+        )
+        return lines
+    except Exception:
+        return []
+
+
 def render_manifest(
     workspace: Path,
     *,
@@ -351,6 +414,8 @@ def render_manifest(
             lines.extend(["", render_build_phase(workspace, heading="## Build phase")])
         except Exception:
             pass
+
+    lines.extend(_scope_block(workspace, command))
 
     active = read_active_feature(workspace)
     if active:

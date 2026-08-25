@@ -52,7 +52,22 @@ def connect(db_path: Path) -> sqlite3.Connection:
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     conn.executescript(SCHEMA)
+    ensure_scope_column(conn)
     return conn
+
+
+def ensure_scope_column(conn: sqlite3.Connection) -> None:
+    """Add `sessions.scope` in place for databases created before scopes existed.
+
+    Recall is scope-filtered in a unified workspace, and an absorbed sub-product's
+    sessions have to keep saying which sub-product they were about. Adding the column
+    rather than rebuilding the table keeps every existing row, and its id, intact -
+    the FTS index is content-linked by rowid.
+    """
+    columns = {row[1] for row in conn.execute("PRAGMA table_info(sessions)")}
+    if "scope" not in columns:
+        conn.execute("ALTER TABLE sessions ADD COLUMN scope TEXT")
+        conn.commit()
 
 
 def init_db(db_path: Path) -> None:
@@ -68,16 +83,17 @@ def log_session(
     body: str,
     command: str | None = None,
     tags: str | None = None,
+    scope: str | None = None,
 ) -> int:
     conn = connect(db_path)
     try:
         now = datetime.now(timezone.utc).isoformat()
         cur = conn.execute(
             """
-            INSERT INTO sessions (created_at, workspace, command, title, body, tags)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO sessions (created_at, workspace, command, title, body, tags, scope)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-            (now, workspace, command, title, body, tags),
+            (now, workspace, command, title, body, tags, scope),
         )
         conn.commit()
         return int(cur.lastrowid)

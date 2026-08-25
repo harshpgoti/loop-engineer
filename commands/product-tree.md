@@ -58,7 +58,7 @@ read-only exemption in `docs/CONTINUATION.md`.
 
 Return:
 
-1. Role of the current workspace (main / sub / standalone) and its parent, if any
+1. Role of the current workspace (main / sub / standalone) and its parent, if any - plus any sub-products held as **scopes** in this workspace (`loop scope list`), which have no workspace of their own
 2. Sub-product table: map row, plan status, gate, tasks, open doubts, last session
 3. Drift findings by level, and what each one means for the master plan
 4. What was staged into which sub-product, and the command to apply it there

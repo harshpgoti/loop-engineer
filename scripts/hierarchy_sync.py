@@ -91,6 +91,17 @@ def drop_resolved(children: list[dict], findings: list[dict]) -> list[dict]:
     return kept
 
 
+
+def _bridge_state(workspace: Path) -> dict:
+    """Whether a second workspace is still involved. See `scope_paths.bridge_state`."""
+    try:
+        import scope_paths
+
+        return scope_paths.bridge_state(workspace)
+    except Exception:  # noqa: BLE001 - a workspace without scopes behaves as it always did
+        return {"needed": True, "reason": "", "mode": "federated"}
+
+
 def run(workspace: Path, *, stage: bool = True) -> dict:
     """Refresh the hierarchy and regenerate whichever report this workspace needs."""
     tree = refresh(workspace)
@@ -106,6 +117,20 @@ def run(workspace: Path, *, stage: bool = True) -> dict:
     }
     if not tree.get("enabled"):
         result["reason"] = tree.get("reason")
+        return result
+
+    bridge = _bridge_state(workspace)
+    if not bridge["needed"]:
+        # Nothing on the other side of a boundary, so there is nothing to reconcile.
+        # A workspace whose sub-products are all scopes pays for this sync every
+        # session-start and session-end and it can only ever find nothing - and a
+        # `SUBPRODUCTS.md` left from before the absorb would keep describing
+        # workspaces that no longer exist.
+        result["skipped"] = True
+        result["reason"] = bridge["reason"]
+        result["mode"] = bridge["mode"]
+        _drop_stale(workspace / SUBPRODUCTS_FILE, result)
+        _drop_stale(workspace / PARENT_CONTEXT_FILE, result)
         return result
 
     if tree.get("parent"):

@@ -488,6 +488,44 @@ def describe_tree(workspace: Path, tree: dict | None = None) -> str:
             lines.append(f"    - {child['name']:<24} {child['path']}  ({', '.join(flags)})")
     elif tree["role"] == ROLE_MAIN:
         lines.append("  sub-products: none resolved")
-    if tree["role"] == ROLE_STANDALONE:
+
+    scope_lines = _scope_lines(workspace)
+    if scope_lines:
+        # `role` describes this workspace's place among *workspaces*. A unified main
+        # product has no workspace children, so it reads `standalone` - true of the
+        # hierarchy and misleading about the product. Say both.
+        lines[0] = lines[0].replace(
+            f"[{tree['role']}", f"[{tree['role']} - unified, sub-products are scopes here"
+        )
+        lines.extend(scope_lines)
+    elif tree["role"] == ROLE_STANDALONE:
         lines.append("  standalone - no parent or sub-product workspaces detected")
     return "\n".join(lines)
+
+
+def _scope_lines(workspace: Path) -> list[str]:
+    """Sub-products held as scopes in this workspace.
+
+    Without this, a workspace that has absorbed every sub-product reports "standalone -
+    no parent or sub-product workspaces detected" while holding three of them. That
+    sentence is true about *workspaces* and false about the product, and it is the sort
+    of report that makes someone re-carve a sub-product that already exists.
+    """
+    try:
+        import scope_paths
+
+        scopes = scope_paths.list_scopes(workspace)
+        if not scopes:
+            return []
+        ordered, cycles = scope_paths.dependency_order(workspace)
+        out = [f"  scopes: {len(scopes)} (in this workspace, `plan/products/`)"]
+        for scope in ordered or scopes:
+            flags = [f"map {scope.map_id}"] if scope.map_id else ["unbound"]
+            if scope.code_dir:
+                flags.append(scope.code_dir)
+            out.append(f"    - {scope.slug:<24} ({', '.join(flags)})")
+        for cycle in cycles:
+            out.append("    ! dependency cycle: " + " -> ".join(cycle))
+        return out
+    except Exception:  # noqa: BLE001 - a federated workspace has no scopes
+        return []

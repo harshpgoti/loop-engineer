@@ -271,7 +271,44 @@ row's step plan so it does not re-plan from nothing, and links both ends. It rep
 main-product tasks carrying the gate the row declares - and does not move them, because
 the new workspace compiles its own.
 
-Details: [`docs/PRODUCT_HIERARCHY.md`](docs/PRODUCT_HIERARCHY.md)
+### One workspace instead of many
+
+The layout above gives every sub-product its own workspace, and everything that keeps the
+two ends agreeing is a bridge across that boundary. A sub-product needing something from
+*another* sub-product has no channel at all - it can only be reported as two plans
+disagreeing.
+
+The alternative is one workspace, with each sub-product as a **scope**:
+
+```text
+main-product/
+├── .loop-engineer/plan/products/auth/     plan, tasks, gates, doubts - all of it here
+├── .loop-engineer/plan/contracts/         what auth provides, and who consumes it
+├── services/auth/                         its code
+└── apps/portal/
+```
+
+Everything is run from the main folder, naming the sub-product in the command:
+
+```text
+/plan-loop start working on auth product
+/develop-product continue the portal checkout flow
+/scope                              # which sub-products exist, and which one is active
+/scope check auth and portal            # contracts, blockers, cycles across sub-products
+/scope absorb the auth-service folder   # fold its own workspace into this one
+```
+
+Or just say it: "work on the portal checkout flow", "merge the auth sub-product into the
+main workspace".
+
+A portal task can now be `blocked_by` an auth task, and a contract has one provider and
+real consumers - so nothing needs syncing. Sub-products in **another repo** stay
+federated, exactly as above. `/scope absorb` migrates an existing one and
+`/scope eject` reverses it.
+
+Details: [`docs/SCOPES.md`](docs/SCOPES.md)
+
+Details of the federated model: [`docs/PRODUCT_HIERARCHY.md`](docs/PRODUCT_HIERARCHY.md)
 
 ### Operations & maintenance
 

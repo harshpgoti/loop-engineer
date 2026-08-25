@@ -67,6 +67,12 @@ Example: set up `H:/POC/QEAutoAI` once with local mode, close the terminal, come
 
 ## Nested products (main product + sub-products)
 
+Two layouts. A sub-product can be a **scope** inside the main workspace
+(`plan/products/<slug>/`, no second data dir - see [`SCOPES.md`](SCOPES.md)), or a
+folder with its own `.loop-engineer/`, described below. Scopes are preferred inside the
+main product tree; a separate workspace is for a sub-product in another repo.
+
+
 Local workspaces nest. A main product folder can contain sub-product folders that each
 have their own `.loop-engineer/`, and resolution still picks the **nearest** one - working
 inside `auth-svc/` uses `auth-svc/.loop-engineer/`, never the parent's.

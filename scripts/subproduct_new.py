@@ -402,6 +402,22 @@ def carveable(main_ws: Path) -> list[dict]:
     return out
 
 
+
+def _is_unified(main_ws) -> bool:
+    try:
+        import scope_paths
+
+        return scope_paths.workspace_mode(main_ws) == "unified"
+    except Exception:  # noqa: BLE001 - never let this stop a federated carve
+        return False
+
+
+def _slug(title: str) -> str:
+    from plan_paths import slugify
+
+    return slugify(title)
+
+
 def main() -> int:
     from workspace_utils import console_utf8, resolve_workspace
 
@@ -421,6 +437,24 @@ def main() -> int:
 
     args = parser.parse_args()
     main_ws = resolve_workspace(args.workspace)
+
+    if (args.cmd or "list") == "new" and _is_unified(main_ws):
+        # A unified workspace plans sub-products as scopes. Carving a *workspace* out of
+        # one would re-create the boundary it was absorbed to remove, and the two copies
+        # would then have to be kept in sync by the machinery this layout retires.
+        print(
+            "This workspace plans sub-products as scopes (`plan/products/`).\n"
+            "Create one there instead - it needs no separate workspace:\n"
+        )
+        for row_id in args.rows:
+            row_id = normalize_row(row_id)
+            title = next(
+                (str(r.get("title") or "") for r in _rows(main_ws) if str(r.get("id")) == row_id), ""
+            )
+            slug = _slug(title) if title else f"row-{row_id}"
+            print(f'  loop scope new {slug} --name "{title or row_id}" --map-id {row_id}')
+        print("\nTo split a scope back out into its own workspace: `loop scope eject <slug>`.")
+        return 1
 
     if (args.cmd or "list") == "list":
         rows = carveable(main_ws)

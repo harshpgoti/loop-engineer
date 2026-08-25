@@ -1,4 +1,15 @@
-# Product Hierarchy - Main Product and Sub-Products
+# Product Hierarchy - Main Product and Sub-Products (federated)
+
+> **There are two layouts.** This one gives every sub-product its own
+> `.loop-engineer/` workspace, and everything below exists to keep the two ends
+> agreeing across that boundary. The other holds sub-products as **scopes** inside a
+> single workspace, where nothing needs syncing and one sub-product can depend on
+> another directly - see [`SCOPES.md`](SCOPES.md).
+>
+> Federated remains the right answer for a sub-product in **another repo**. For one
+> inside the main product tree, prefer a scope; `loop scope absorb` migrates an
+> existing sub-product workspace and `loop scope eject` reverses it.
+
 
 User-facing operations happen through `/product-tree`, `/product-tree-sync`,
 `/subproduct-new`, or natural language. Shell examples below are internal runtime references
@@ -24,6 +35,15 @@ main-product/
 Workspace resolution walks *upward*, so working inside `auth-svc/` has always used the
 right workspace. What was missing was the **link**: standing in `main-product/`, nothing
 knew the sub-products existed. This adds it in both directions.
+
+## When this machinery runs
+
+Everything in this document is a **cross-workspace** mechanism, so it runs only while a
+second workspace is involved: a parent, or a child folder that still holds its own
+`.loop-engineer/` (one in another repo, or one not yet absorbed). A workspace whose
+sub-products are all scopes skips the sync entirely and says so - see
+[`SCOPES.md`](SCOPES.md#the-federated-bridge-and-when-it-runs). Nothing here changed for
+a workspace that still has sub-product workspaces.
 
 ## Roles
 

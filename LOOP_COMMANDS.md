@@ -32,6 +32,7 @@ Use these directly in any agent that can access the repo:
 /product-tree
 /product-tree-sync
 /subproduct-new
+/scope
 /plan-loop <idea>
 /loop-engine <idea>
 /ultraplan-loop
@@ -40,7 +41,8 @@ Use these directly in any agent that can access the repo:
 /research-search
 ```
 
-CLI:
+Internal runtime (agents, installers, maintainers - **not** steps users chain by hand;
+see `docs/INTERNAL_RUNTIME.md`):
 
 ```bash
 loop setup
@@ -49,7 +51,7 @@ loop skills install            # wire every coding agent to this app
 loop skills install --project  # or project scope, committed with the repo
 loop team-init required        # make Loop the team standard (auto-bootstrap teammates)
 loop plan-loop "your full product idea here"
-loop workspace tree            # main product <-> sub-product workspaces
+loop workspace tree            # federated main product <-> sub-product workspaces
 loop workspace link ../billing # sub-product that lives outside the main folder
 loop research "your topic"
 loop agent scaffold
@@ -103,6 +105,7 @@ The agent must route the command through `commands/*.md` and update `memories/ME
 | `/research-search` | `commands/research-search.md` | Search arXiv, Research Square, and SSRN to ground a claim |
 | `/diagnose-loop` | `commands/diagnose-loop.md` | Build a feedback loop that goes red on a bug, then hypothesise |
 | `/subproduct-new` | `commands/subproduct-new.md` | Carve a map row out of the main product into its own workspace |
+| `/scope` | `commands/scope.md` | Sub-products inside one workspace: list, switch, check contracts, absorb a federated sub-product |
 | `/upgrade-loop-engineer` | `commands/upgrade-loop-engineer.md` | Safe tool update without overwriting product data |
 
 ## Aliases

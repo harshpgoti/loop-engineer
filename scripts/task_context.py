@@ -42,7 +42,13 @@ def build_context_file(workspace: Path) -> Path:
 
 
 def parse_tasks(workspace: Path) -> list[dict]:
-    path = workspace / "TASKS.yml"
+    return parse_tasks_file(workspace / "TASKS.yml")
+
+
+def parse_tasks_file(path: Path) -> list[dict]:
+    """Parse one `TASKS.yml`. Split out from `parse_tasks` so the scope loader can
+    read a sub-product's file (`plan/products/<slug>/TASKS.yml`) with the same parser
+    rather than growing a second one that drifts."""
     if not path.is_file():
         return []
     try:

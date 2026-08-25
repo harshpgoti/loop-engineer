@@ -48,6 +48,14 @@ Run it from the folder the user is standing in. It works out the rest:
 
 It also refreshes `plan/ULTRAPLAN_STATUS.md` and drops duplicate pending writes.
 
+## In a unified workspace
+
+Sub-products held as scopes (`plan/products/`) have no boundary to sync, so this command
+reports that and stops - it does **not** tell the user to create sub-product workspaces.
+The equivalent check there is `loop scope check` (contracts, dangling blockers, duplicate
+gates, dependency cycles). This command still syncs a sub-product that keeps its own
+workspace: one in another repo, or one not yet absorbed.
+
 ## Rules
 
 - **Authored state never crosses a workspace.** Only generated reports

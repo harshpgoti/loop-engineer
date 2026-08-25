@@ -16,6 +16,12 @@ This skill closes that gap in both directions:
 - **Main product** reads every sub-product's plan state into `plan/SUBPRODUCTS.md`.
 - **Sub-product** reads the constraints it inherits into `plan/PARENT_CONTEXT.md`.
 
+> **Two layouts.** This skill describes sub-products that own a **workspace** each. A
+> sub-product can instead be a **scope** inside this workspace (`plan/products/<slug>/`),
+> which has no boundary and needs no sync - see `skills/scope/SKILL.md` and
+> `docs/SCOPES.md`. `loop workspace tree` lists both. In a workspace where every
+> sub-product is a scope, the sync below is skipped and says so.
+
 ## Read First
 
 - `commands/product-tree.md`

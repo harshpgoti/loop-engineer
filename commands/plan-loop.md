@@ -20,7 +20,31 @@ command separately.
 
 Advanced (agent-only, not for users): `loop plan-loop scale`, `loop plan-loop decompose`, `loop plan-loop ultraplan next`.
 
+## Scope resolution (unified workspaces)
+
+When this workspace plans sub-products as scopes (`plan/products/` exists), decide **which
+sub-product** this run is about before reading a plan or writing a file. You run this,
+not the user:
+
+```bash
+loop scope resolve --text "<exactly what the user typed>" --session "<session id>" --remember
+```
+
+- Exit `0` - print the returned `banner`, then read and write only inside `plan_dir` and
+  `code_dir`.
+- Exit `2` - **ask the user which sub-product**, listing the returned candidates plus
+  "shared platform work". Do not proceed on a guess, and never treat an unnamed scope as
+  platform work.
+
+A change this run needs in a *different* sub-product: locate it (`loop scope impact
+<contract-id>`), ask the user with the specific change named, and apply it there on their
+yes. See `skills/scope/SKILL.md`.
+
+A workspace with no scopes skips this entirely and behaves exactly as before.
+
 ## Required Reads
+
+Plus `skills/scope/SKILL.md` whenever `plan/products/` exists.
 
 Read command/skill files from the tool app (`~/.loop-engineer/app/` or your clone). Read and write product-state files in the **active workspace** (local `.loop-engineer/` auto-detected from cwd, else `~/.loop-engineer/data/`). See `docs/DATA_LAYOUT.md`.
 

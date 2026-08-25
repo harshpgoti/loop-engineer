@@ -49,9 +49,34 @@ def _dedupe(workspace: Path) -> int:
         return 0
 
 
+
+def _bridge_state(workspace: Path) -> dict:
+    try:
+        import scope_paths
+
+        return scope_paths.bridge_state(workspace)
+    except Exception:  # noqa: BLE001
+        return {"needed": True, "reason": "", "mode": "federated"}
+
+
 def sync(workspace: Path, *, stage: bool = True) -> dict:
     """Sync this workspace and the other end of its link. Idempotent."""
     tree = refresh(workspace)
+
+    bridge = _bridge_state(workspace)
+    if not bridge["needed"]:
+        return {
+            "workspace": str(workspace),
+            "skipped": True,
+            "reason": bridge["reason"],
+            "mode": bridge["mode"],
+            "self": hierarchy_sync.run(workspace, stage=stage),
+            "parent_refreshed": None,
+            "children_refreshed": [],
+            "children_errors": [],
+            "ultraplan_status": _ultraplan_status(workspace),
+            "deduped": 0,
+        }
     result: dict = {
         "workspace": str(workspace),
         "self": hierarchy_sync.run(workspace, stage=stage),
@@ -112,6 +137,15 @@ def describe(result: dict) -> str:
     self_result = result.get("self") or {}
     if not self_result.get("enabled"):
         return f"Nothing to sync - {self_result.get('reason', 'not a local product workspace')}."
+    if result.get("skipped") and result.get("mode") == "unified":
+        # Telling a unified workspace to go create sub-product *workspaces* is advice to
+        # rebuild the boundary it removed. There is nothing to sync here because there is
+        # nothing on the other side of anything.
+        return (
+            "Nothing to sync - every sub-product here is a scope in this workspace.\n"
+            "  `loop scope list` shows them; `loop scope check` is the equivalent check.\n"
+            "  A sub-product in another repo still uses `loop workspace link <path> --map-id NN`."
+        )
     if not self_result.get("children") and not self_result.get("parent"):
         return (
             "Nothing to sync - this is a standalone workspace: no parent and no sub-products.\n"

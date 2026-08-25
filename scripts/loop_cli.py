@@ -331,6 +331,60 @@ def cmd_subproduct(args: argparse.Namespace) -> int:
     return run_script("subproduct_new.py", _workspace_args(args) + tail)
 
 
+def cmd_scope(args: argparse.Namespace) -> int:
+    """Scopes in a unified workspace, and folding a federated sub-product into one.
+
+    Two scripts back this: `scope_cli.py` for everything about scopes that exist, and
+    `scope_absorb.py` for the migration. Splitting them keeps the migration - the one
+    part that rewrites another workspace - out of the path every ordinary command runs.
+    """
+    cmd = getattr(args, "scope_cmd", None) or "list"
+    ws = _workspace_args(args)
+
+    if cmd in {"absorb", "eject", "discover"}:
+        tail = [cmd]
+        if cmd != "discover" and getattr(args, "target", None):
+            tail.append(args.target)
+        for flag, value in (("--map-id", getattr(args, "map_id", None)), ("--slug", getattr(args, "slug", None))):
+            if value:
+                tail += [flag, value]
+        for flag in ("all", "merge", "dry_run", "accept_conflicts"):
+            if getattr(args, flag, False):
+                tail.append("--" + flag.replace("_", "-"))
+        return run_script("scope_absorb.py", tail + ws)
+
+    tail = [cmd]
+    if cmd in {"show", "use"}:
+        tail.append(args.slug)
+    elif cmd == "match":
+        tail.append(args.text)
+    elif cmd == "impact":
+        tail.append(args.contract)
+    elif cmd == "rename":
+        tail += [args.old, args.new]
+    elif cmd == "new":
+        tail.append(args.slug)
+        for flag, value in (
+            ("--name", args.name),
+            ("--map-id", args.map_id),
+            ("--code-dir", args.code_dir),
+            ("--code-layout", args.code_layout),
+            ("--type", args.type),
+        ):
+            if value:
+                tail += [flag, value]
+    elif cmd == "resolve":
+        for flag, value in (("--text", args.text), ("--scope", args.scope), ("--session", args.session)):
+            if value:
+                tail += [flag, value]
+        if getattr(args, "remember", False):
+            tail.append("--remember")
+    if cmd == "use" and getattr(args, "session", None):
+        tail += ["--session", args.session]
+    # `--workspace` is a top-level option on scope_cli.py, so it precedes the subcommand.
+    return run_script("scope_cli.py", ws + tail)
+
+
 def cmd_fog(args: argparse.Namespace) -> int:
     cmd = getattr(args, "fog_cmd", None) or "list"
     tail = [cmd]
@@ -824,6 +878,82 @@ def build_parser() -> argparse.ArgumentParser:
     sp_new.add_argument("--workspace", default=argparse.SUPPRESS)
     sp_new.set_defaults(func=cmd_subproduct)
     sp.set_defaults(func=cmd_subproduct)
+
+    sc = sub.add_parser(
+        "scope",
+        help="Sub-products planned and built inside this workspace (plan/products/<slug>/).",
+    )
+    sc.add_argument("--workspace", default=argparse.SUPPRESS)
+    sc_sub = sc.add_subparsers(dest="scope_cmd")
+    sc_list = sc_sub.add_parser("list", help="Scopes in dependency order, with task counts.")
+    sc_list.add_argument("--workspace", default=argparse.SUPPRESS)
+    sc_list.set_defaults(func=cmd_scope)
+    sc_show = sc_sub.add_parser("show", help="One scope in detail.")
+    sc_show.add_argument("slug")
+    sc_show.add_argument("--workspace", default=argparse.SUPPRESS)
+    sc_show.set_defaults(func=cmd_scope)
+    sc_match = sc_sub.add_parser("match", help="Which scope a command's text names.")
+    sc_match.add_argument("text")
+    sc_match.add_argument("--workspace", default=argparse.SUPPRESS)
+    sc_match.set_defaults(func=cmd_scope)
+    sc_resolve = sc_sub.add_parser("resolve", help="Full scope resolution for one command, as JSON.")
+    sc_resolve.add_argument("--text", default=None)
+    sc_resolve.add_argument("--scope", default=None)
+    sc_resolve.add_argument("--session", default=None)
+    sc_resolve.add_argument("--remember", action="store_true")
+    sc_resolve.add_argument("--workspace", default=argparse.SUPPRESS)
+    sc_resolve.set_defaults(func=cmd_scope)
+    sc_use = sc_sub.add_parser("use", help="Remember a scope for subsequent commands.")
+    sc_use.add_argument("slug")
+    sc_use.add_argument("--session", default=None)
+    sc_use.add_argument("--workspace", default=argparse.SUPPRESS)
+    sc_use.set_defaults(func=cmd_scope)
+    sc_clear = sc_sub.add_parser("clear", help="Forget the remembered scope.")
+    sc_clear.add_argument("--workspace", default=argparse.SUPPRESS)
+    sc_clear.set_defaults(func=cmd_scope)
+    sc_new = sc_sub.add_parser("new", help="Create a scope folder.")
+    sc_new.add_argument("slug")
+    sc_new.add_argument("--name", default=None)
+    sc_new.add_argument("--map-id", default=None)
+    sc_new.add_argument("--code-dir", default=None)
+    sc_new.add_argument("--code-layout", default=None)
+    sc_new.add_argument("--type", default=None)
+    sc_new.add_argument("--workspace", default=argparse.SUPPRESS)
+    sc_new.set_defaults(func=cmd_scope)
+    sc_rename = sc_sub.add_parser("rename", help="Rename a scope and every reference to it.")
+    sc_rename.add_argument("old")
+    sc_rename.add_argument("new")
+    sc_rename.add_argument("--workspace", default=argparse.SUPPRESS)
+    sc_rename.set_defaults(func=cmd_scope)
+    sc_check = sc_sub.add_parser("check", help="Contract, dependency and gate findings across scopes.")
+    sc_check.add_argument("--workspace", default=argparse.SUPPRESS)
+    sc_check.set_defaults(func=cmd_scope)
+    sc_impact = sc_sub.add_parser("impact", help="Who is affected by a change to one contract.")
+    sc_impact.add_argument("contract")
+    sc_impact.add_argument("--workspace", default=argparse.SUPPRESS)
+    sc_impact.set_defaults(func=cmd_scope)
+    sc_lock = sc_sub.add_parser("lock", help="Record agreed contract surfaces so a later edit is visible.")
+    sc_lock.add_argument("--workspace", default=argparse.SUPPRESS)
+    sc_lock.set_defaults(func=cmd_scope)
+    sc_discover = sc_sub.add_parser("discover", help="Sub-product workspaces that could be absorbed.")
+    sc_discover.add_argument("--workspace", default=argparse.SUPPRESS)
+    sc_discover.set_defaults(func=cmd_scope)
+    sc_absorb = sc_sub.add_parser("absorb", help="Fold a sub-product workspace into this one as a scope.")
+    sc_absorb.add_argument("target", nargs="?")
+    sc_absorb.add_argument("--map-id", default=None)
+    sc_absorb.add_argument("--slug", default=None)
+    sc_absorb.add_argument("--all", action="store_true")
+    sc_absorb.add_argument("--merge", action="store_true")
+    sc_absorb.add_argument("--dry-run", action="store_true")
+    sc_absorb.add_argument("--accept-conflicts", action="store_true")
+    sc_absorb.add_argument("--workspace", default=argparse.SUPPRESS)
+    sc_absorb.set_defaults(func=cmd_scope)
+    sc_eject = sc_sub.add_parser("eject", help="Move a scope back out into its own workspace.")
+    sc_eject.add_argument("target")
+    sc_eject.add_argument("--dry-run", action="store_true")
+    sc_eject.add_argument("--workspace", default=argparse.SUPPRESS)
+    sc_eject.set_defaults(func=cmd_scope)
+    sc.set_defaults(func=cmd_scope)
 
     fg = sub.add_parser("fog", help="Decisions the plan can see coming but cannot yet state.")
     fg.add_argument("--workspace", default=argparse.SUPPRESS)

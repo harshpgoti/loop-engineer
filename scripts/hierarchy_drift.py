@@ -406,6 +406,23 @@ def _finding(
 # ---------------------------------------------------------------------------
 
 
+
+def _scope_bound_ids(main_ws: Path) -> set[str]:
+    """Map rows built as scopes in *this* workspace, rather than delegated to one of their own.
+
+    `unbuilt-row` means "the plan says this is a sub-product and nothing is building it".
+    A row absorbed into `plan/products/<slug>/` is being built - here - so counting only
+    workspace-bound rows would report every absorbed sub-product as unbuilt, permanently,
+    while its tasks are actively being worked.
+    """
+    try:
+        import scope_paths
+
+        return {s.map_id for s in scope_paths.list_scopes(main_ws) if s.map_id}
+    except Exception:  # noqa: BLE001 - a federated workspace has no scopes and needs none
+        return set()
+
+
 def check_children(main_ws: Path, children: list[dict]) -> list[dict]:
     """All hierarchy drift between a main workspace and its sub-products."""
     from ultraplan_harness import parse_product_map
@@ -427,7 +444,7 @@ def check_children(main_ws: Path, children: list[dict]) -> list[dict]:
             )
         )
 
-    bound_ids = {c.get("map_id") for c in children if c.get("map_id")}
+    bound_ids = {c.get("map_id") for c in children if c.get("map_id")} | _scope_bound_ids(main_ws)
     for row in rows:
         if not row_is_delegated(row) or row.get("id") in bound_ids:
             continue
