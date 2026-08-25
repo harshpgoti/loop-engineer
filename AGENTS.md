@@ -135,6 +135,7 @@ Tool-specific files are adapters only:
 - `CODEX.md`
 - `OPENCODE.md`
 - `GROK.md`
+- `PI.md`
 
 Do not put canonical logic only in a tool-specific folder.
 

@@ -70,6 +70,11 @@ HOSTS: dict[str, dict[str, str]] = {
     "kiro": {"user": "~/.kiro/skills", "project": ".agents/skills"},
     "slate": {"user": "~/.slate/skills", "project": ".agents/skills"},
     "hermes": {"user": "~/.hermes/skills", "project": ".agents/skills"},
+    # Pi (pi.dev) scans `~/.pi/agent/skills` and `~/.agents/skills` globally, and
+    # `.pi/skills` + `.agents/skills` per project once the project is trusted. The
+    # project row uses `.agents/skills` so it collapses with the other universal
+    # readers instead of writing a second copy Pi would then list twice.
+    "pi": {"user": "~/.pi/agent/skills", "project": ".agents/skills"},
 }
 
 # Loop <= v2 also generated flat command wrappers via a per-tool generator that
@@ -104,8 +109,15 @@ ALIASES: dict[str, str] = {
 #
 # Paths are opencode's own documented layout (`opencode debug skill` -> the built-in
 # `customize-opencode` skill): `~/.config/opencode/command/<name>.md`, singular.
+# Pi has the same split for a different reason: its skills ARE user-invocable, but only
+# under a reserved namespace - `/skill:loop-plan-loop`, never `/plan-loop`. A user who
+# installed Pi and typed `/plan-loop` got no match even with every router in place. Pi's
+# plain `/<name>` namespace is its prompt templates: `~/.pi/agent/prompts/<name>.md`,
+# project `.pi/prompts/<name>.md` (trusted projects only), filename = command name,
+# frontmatter `description` + optional `argument-hint`.
 SLASH_COMMAND_HOSTS: dict[str, dict[str, str]] = {
     "opencode": {"user": "~/.config/opencode/command", "project": ".opencode/command"},
+    "pi": {"user": "~/.pi/agent/prompts", "project": ".pi/prompts"},
 }
 
 
@@ -237,6 +249,30 @@ def install_commands(dest: Path, names: list[str], *, dry_run: bool) -> tuple[in
                     entry.unlink()
                 pruned += 1
     return written, pruned
+
+
+def uninstall_commands(dest: Path, *, dry_run: bool) -> int:
+    """Remove Loop-written slash commands from one directory. Returns how many.
+
+    `install_commands` prunes stale ones, but uninstall used to skip these dirs
+    entirely - so `loop skills uninstall` left `/plan-loop` completing in opencode
+    and Pi long after the routers were gone, pointing at an app root that may no
+    longer exist. Only files carrying our marker are touched.
+    """
+    if not dest.exists():
+        return 0
+    removed = 0
+    for entry in dest.glob("*.md"):
+        try:
+            text = entry.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        if MARKER not in text:
+            continue
+        if not dry_run:
+            entry.unlink()
+        removed += 1
+    return removed
 
 
 def _check_aliases() -> None:
@@ -620,6 +656,16 @@ def cmd_uninstall(hosts: list[str], scope: str, project_root: Path, *, dry_run: 
             dests += 1
             total += n
             print(f"  [{host}] removed {n} -> {dest}")
+    for host in hosts:
+        cfg = SLASH_COMMAND_HOSTS.get(host)
+        if not cfg:
+            continue
+        cmd_dest = _resolve(cfg[scope], project_root)
+        n = uninstall_commands(cmd_dest, dry_run=dry_run)
+        if n:
+            dests += 1
+            total += n
+            print(f"  [{host}] removed {n} slash command(s) -> {cmd_dest}")
     for host in hosts:
         legacy_dest, n = prune_legacy_commands(host, scope, project_root, dry_run=dry_run)
         if n:

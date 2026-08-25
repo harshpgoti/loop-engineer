@@ -137,6 +137,48 @@ class SlashCommandInstall(unittest.TestCase):
         self.mod.install_commands(self.dest, self.names, dry_run=True)
         self.assertEqual([], list(self.dest.glob("*.md")))
 
+    def test_uninstall_removes_the_commands_we_wrote_and_nothing_else(self) -> None:
+        """Uninstall used to skip these dirs, leaving `/plan-loop` completing in
+        opencode and Pi with the routers already gone."""
+        self.mod.install_commands(self.dest, self.names, dry_run=False)
+        mine = self.dest / "my-own.md"
+        mine.write_text("# mine", encoding="utf-8")
+        removed = self.mod.uninstall_commands(self.dest, dry_run=False)
+        self.assertEqual(removed, len(self.names) + len(self.mod.ALIASES))
+        self.assertTrue(mine.is_file())
+        self.assertFalse((self.dest / "plan-loop.md").exists())
+
+
+class PiHost(unittest.TestCase):
+    """Pi (pi.dev) reads `~/.agents/skills`, which install skips at user scope
+    because every host was assumed to have its own global dir. Pi had no row, so
+    a Pi user got zero routers - and its skills answer to `/skill:<name>`, not
+    `/<name>`, so even installed routers do not match what the user types."""
+
+    def setUp(self) -> None:
+        import install_skills
+
+        self.mod = install_skills
+
+    def test_pi_is_a_known_host_with_its_own_global_skills_dir(self) -> None:
+        self.assertIn("pi", self.mod.HOSTS)
+        self.assertEqual("~/.pi/agent/skills", self.mod.HOSTS["pi"]["user"])
+
+    def test_pi_project_scope_collapses_onto_the_universal_dir(self) -> None:
+        """Pi reads `.agents/skills` from cwd and ancestors; a second copy in
+        `.pi/skills` would list every command twice."""
+        self.assertEqual(".agents/skills", self.mod.HOSTS["pi"]["project"])
+
+    def test_pi_gets_prompt_templates_for_the_plain_slash_namespace(self) -> None:
+        self.assertIn("pi", self.mod.SLASH_COMMAND_HOSTS)
+        self.assertEqual("~/.pi/agent/prompts", self.mod.SLASH_COMMAND_HOSTS["pi"]["user"])
+        self.assertEqual(".pi/prompts", self.mod.SLASH_COMMAND_HOSTS["pi"]["project"])
+
+    def test_pi_survives_the_universal_dedupe_at_user_scope(self) -> None:
+        kept = self.mod.install_hosts(list(self.mod.HOSTS), "user")
+        self.assertIn("pi", kept)
+        self.assertNotIn("universal", kept)
+
 
 class RouterNaming(unittest.TestCase):
     def test_a_skill_name_matches_the_folder_it_lives_in(self) -> None:

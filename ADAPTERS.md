@@ -1,6 +1,6 @@
 # Tool Adapters
 
-This repo is designed to work across Cursor, Claude Code, Codex, OpenCode, Grok Build, and any other coding agent without duplicating logic.
+This repo is designed to work across Cursor, Claude Code, Codex, OpenCode, Grok Build, Pi, and any other coding agent without duplicating logic.
 
 ## Source of Truth
 
@@ -20,6 +20,7 @@ This repo is designed to work across Cursor, Claude Code, Codex, OpenCode, Grok 
 | Codex | `AGENTS.md`, `CODEX.md` | Reads universal instructions and skill map |
 | OpenCode | `AGENTS.md`, `OPENCODE.md` | Reads universal instructions and skill map |
 | Grok Build | `GROK.md` | Reads command + skill map |
+| Pi | `PI.md`, `AGENTS.md` | Reads universal instructions and skill map |
 | Any other agent | `AGENTS.md` | Portable interpretation of commands |
 
 ## Use
@@ -39,7 +40,7 @@ the single installed app** — no copies, one runtime to update. Loop distribute
 
 **1. Router skills in every agent's skills dir** (universal `.agents/skills` plus
 `~/.claude/skills`, `~/.codex/skills`, `~/.cursor/skills`, OpenCode, Gemini, Grok,
-Factory, Kiro, ...). One generated ~15-line router SKILL.md per command, pointing
+Pi, Factory, Kiro, ...). One generated ~15-line router SKILL.md per command, pointing
 the agent at the installed app. Installed to **all** agents at once so switching
 mid-task needs no setup. Canonical command/skill edits need no reinstall.
 `loop setup` / `loop update` run this automatically.

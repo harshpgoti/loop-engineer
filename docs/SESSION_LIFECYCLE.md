@@ -63,7 +63,7 @@ loop pending approve <id>     # decide one at a time
 |------|-----|
 | **Cursor** | Same CLI; optional: Cursor hook on session start (see below) |
 | **Claude Code** | Read `CLAUDE.md`; commands route to `commands/session-start.md` + `session-end.md` |
-| **Codex / OpenCode / Grok** | Read `CODEX.md`, `OPENCODE.md`, `GROK.md` |
+| **Codex / OpenCode / Grok / Pi** | Read `CODEX.md`, `OPENCODE.md`, `GROK.md`, `PI.md` |
 | **Any other coding agent** | Read `AGENTS.md`; run the same `loop session-start` / `session-end` CLI |
 
 ### Optional Cursor hook (local)

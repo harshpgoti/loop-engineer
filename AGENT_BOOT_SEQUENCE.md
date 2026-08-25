@@ -70,5 +70,6 @@ Master loop: session-start → plan/feature-spec → task-compiler → build →
 | **Cursor** | Read `CURSOR.md`; optional hooks in `docs/SESSION_LIFECYCLE.md` |
 | **OpenCode** | Read `OPENCODE.md` |
 | **Grok Build** | Read `GROK.md` |
+| **Pi** | Read `PI.md`; skills answer at `/skill:<name>`, prompt templates at `/<name>` |
 | **Any other agent with filesystem access** | Read `AGENTS.md` and interpret commands portably |
 | **Sandboxed runtime** | Run long jobs in approved sandbox; restrict external egress until approved |
