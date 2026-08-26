@@ -26,13 +26,17 @@ in the `release` phase.
 1. **Check the blockers first.** `plan/BUILD_CONTEXT.md` lists blocking doubts and
    non-empty - each comes with a recommended answer. Do not build past an unanswered
    blocking question.
-2. **Plan the diff** with `skills/implementation-planner/SKILL.md` before editing.
-3. **Implement the smallest change** that satisfies the task's `acceptance` list.
+2. **Maintain the frontend chain when applicable.** Run `loop auto-skills --write` after
+   selecting a frontend task. This installs missing selected external layers, refreshes
+   installed selected layers for every use, and rewrites `plan/AUTO_SKILLS.md`. Read only
+   layers marked `available` or `installed-or-refreshed`.
+3. **Plan the diff** with `skills/implementation-planner/SKILL.md` before editing.
+4. **Implement the smallest change** that satisfies the task's `acceptance` list.
    Match surrounding conventions; no drive-by refactors (`AGENTS.md` #9).
-4. **Write the tests with the code** (`AGENTS.md` #10), at the seam the plan named, to
+5. **Write the tests with the code** (`AGENTS.md` #10), at the seam the plan named, to
    the bar in `skills/tdd/SKILL.md`. No task is done without them, or a documented reason
    they could not run.
-5. **Update the task's status** in `TASKS.yml` when it is genuinely complete - that is
+6. **Update the task's status** in `TASKS.yml` when it is genuinely complete - that is
    the source of truth, and it is what moves the next session on.
 
 ## Gate check

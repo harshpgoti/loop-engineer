@@ -1,12 +1,14 @@
-"""Auto-select frontend motion/3D skills from task and plan context."""
+"""Auto-select built-in and external frontend skills from task and plan context."""
 
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
+from typing import Callable
 
 from workspace_utils import ROOT, resolve_workspace
 
@@ -18,6 +20,19 @@ class SkillRule:
     keywords: tuple[str, ...]
     requires_any: tuple[str, ...] = ()  # optional gate keywords
     excludes: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class ExternalSelection:
+    """One optional external layer selected behind the router seam."""
+
+    name: str
+    kind: str
+    reason: str
+    path: Path | None
+    available: bool
+    status: str
+    maintenance_detail: str = ""
 
 
 # Higher weight = stronger signal. Rules-first routing per AGENTS.md.
@@ -96,7 +111,8 @@ SKILL_RULES: tuple[SkillRule, ...] = (
         (
             "landing page design", "design system", "core web vitals", "cls", "lcp",
             "bold minimalism", "glassmorphism", "scrollytelling design", "cursor ux",
-            "modern web design", "marketing site design",
+            "modern web design", "marketing site design", "dashboard", "responsive ui",
+            "accessibility", "typography", "redesign",
         ),
     ),
 )
@@ -105,6 +121,10 @@ MOTION_SIGNALS = (
     "animation", "animate", "motion", "parallax", "scroll effect", "hover effect",
     "3d", "webgl", "hero", "transition", "interactive ui", "landing page",
     "frontend ui", "micro-interaction", "gsap", "three.js", "threejs", "r3f",
+    "dashboard", "design system", "responsive ui", "web design", "typography",
+    "user interface", "ui/ux", "ux design", "ux review", "user experience",
+    "ui-ux-pro-max", "ui ux pro max", "taste-skill", "taste skill",
+    "awesome design", "threeui", "design.md", "redesign",
 )
 
 TOPIC_DIR = "skills/frontend-animation/references"
@@ -131,6 +151,56 @@ STACK_DECISION_PATTERNS: tuple[tuple[str, str], ...] = (
     (r"\bgsap\b|greensock|scrolltrigger", "scroll-animation"),
     (r"react three fiber|\br3f\b", "react-3d"),
     (r"three\.?js|webgl", "webgl-3d"),
+)
+
+EXTERNAL_ADAPTER_REFERENCE = (
+    "skills/frontend-animation/references/external-skill-chain.md"
+)
+
+EXTERNAL_SKILL_ALIASES: dict[str, tuple[str, ...]] = {
+    "ui-ux-pro-max": ("ui-ux-pro-max",),
+    "taste-skill": ("design-taste-frontend", "taste-skill", "gpt-taste"),
+}
+
+SKILL_LOCATION_PATTERNS: tuple[str, ...] = (
+    "skills/{alias}/SKILL.md",
+    ".agents/skills/{alias}/SKILL.md",
+    ".claude/skills/{alias}/SKILL.md",
+    ".codex/skills/{alias}/SKILL.md",
+    ".cursor/skills/{alias}/SKILL.md",
+    ".windsurf/skills/{alias}/SKILL.md",
+    ".opencode/skills/{alias}/SKILL.md",
+    ".grok/skills/{alias}/SKILL.md",
+    ".pi/skills/{alias}/SKILL.md",
+    ".gemini/skills/{alias}/SKILL.md",
+    ".continue/skills/{alias}/SKILL.md",
+    ".factory/skills/{alias}/SKILL.md",
+)
+
+STRUCTURED_DESIGN_SIGNALS = (
+    "accessible", "accessibility", "dashboard", "design system", "data dense",
+    "enterprise", "healthcare", "fintech", "responsive", "ux review",
+    "color palette", "typography system", "component library",
+)
+
+EXPRESSIVE_DESIGN_SIGNALS = (
+    "anti-generic", "anti generic", "art direction", "bold typography",
+    "creative", "editorial", "experimental", "high-end", "luxury", "premium",
+    "visual storytelling", "distinctive", "redesign",
+)
+
+THREEUI_SIGNALS = (
+    "threeui", "3d component", "3d components", "interactive 3d", "immersive react",
+    "react three fiber hero", "r3f hero", "shader component", "webgl component",
+)
+
+DESIGN_REFERENCE_SIGNALS = (
+    "inspired by",
+    "look like",
+    "looks like",
+    "design reference",
+    "brand style",
+    "visual style of",
 )
 
 
@@ -175,7 +245,207 @@ def stack_from_decisions(text: str) -> str | None:
 
 
 def has_motion_signal(text: str) -> bool:
-    return any(sig in text for sig in MOTION_SIGNALS)
+    return any(sig in text for sig in MOTION_SIGNALS) or any(
+        sig in text for sig in DESIGN_REFERENCE_SIGNALS
+    )
+
+
+def _skill_roots(workspace: Path) -> tuple[Path, ...]:
+    """Portable local/global roots used by common coding agents."""
+    from workspace_tree import product_folder
+
+    home = Path.home()
+    product = product_folder(workspace)
+    roots = [workspace]
+    if product is not None:
+        roots.append(product)
+    roots.extend(
+        [
+            home,
+            home / ".codex",
+            home / ".claude",
+            home / ".cursor",
+            home / ".windsurf",
+        ]
+    )
+    return tuple(dict.fromkeys(path.resolve() for path in roots))
+
+
+def _find_external_skill(workspace: Path, name: str) -> Path | None:
+    aliases = EXTERNAL_SKILL_ALIASES[name]
+    candidates: list[Path] = []
+    for root in _skill_roots(workspace):
+        for alias in aliases:
+            for pattern in SKILL_LOCATION_PATTERNS:
+                candidate = root / pattern.format(alias=alias)
+                if candidate not in candidates:
+                    candidates.append(candidate)
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate.resolve()
+    return None
+
+
+def _find_design_md(workspace: Path) -> Path | None:
+    from workspace_tree import product_folder
+
+    root = product_folder(workspace) or workspace
+    for relative in ("DESIGN.md", "design/DESIGN.md", "docs/DESIGN.md"):
+        candidate = root / relative
+        if candidate.is_file():
+            return candidate.resolve()
+    return None
+
+
+def _find_awesome_reference(workspace: Path, text: str) -> Path | None:
+    checkout = workspace / "external" / "awesome-design-md"
+    if not checkout.is_dir():
+        return None
+    for design in sorted(checkout.rglob("DESIGN.md")):
+        slug = design.parent.name.lower().replace("-", " ").replace("_", " ")
+        if slug and slug in text:
+            return design.resolve()
+    readme = checkout / "README.md"
+    return readme.resolve() if readme.is_file() else None
+
+
+def _has_package(workspace: Path, package_name: str) -> Path | None:
+    from workspace_tree import product_folder
+
+    root = product_folder(workspace) or workspace
+    package_json = root / "package.json"
+    if not package_json.is_file():
+        return None
+    try:
+        data = json.loads(package_json.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+    for group in ("dependencies", "devDependencies", "peerDependencies", "optionalDependencies"):
+        if package_name in (data.get(group) or {}):
+            return package_json.resolve()
+    return None
+
+
+def _signal_score(text: str, signals: tuple[str, ...]) -> int:
+    return sum(1 for signal in signals if signal in text)
+
+
+def pick_external_skills(
+    context: str,
+    workspace: Path,
+    max_skills: int = 3,
+) -> list[ExternalSelection]:
+    """Select compatible optional layers; never download or execute them."""
+    text = context.lower()
+    if not has_motion_signal(text):
+        return []
+
+    selections: list[ExternalSelection] = []
+    design_md = _find_design_md(workspace)
+    awesome_reference = _find_awesome_reference(workspace, text)
+    awesome_explicit = "awesome-design-md" in text or "awesome design.md" in text
+    awesome_match = awesome_explicit or any(
+        signal in text for signal in DESIGN_REFERENCE_SIGNALS
+    )
+    if design_md:
+        selections.append(
+            ExternalSelection(
+                "project-design-md",
+                "design-reference",
+                "project DESIGN.md provides the product-specific visual language",
+                design_md,
+                True,
+                "available",
+            )
+        )
+    elif awesome_match and awesome_reference is not None:
+        selections.append(
+            ExternalSelection(
+                "awesome-design-md",
+                "design-reference-source",
+                "managed Awesome DESIGN.md catalog is available",
+                awesome_reference,
+                True,
+                "available",
+            )
+        )
+    elif awesome_match:
+        selections.append(
+            ExternalSelection(
+                "awesome-design-md",
+                "design-reference-source",
+                "explicit request for an upstream DESIGN.md reference",
+                None,
+                False,
+                "candidate",
+            )
+        )
+
+    # UI UX Pro Max and Taste are competing design-direction layers. Select one.
+    ui_path = _find_external_skill(workspace, "ui-ux-pro-max")
+    taste_path = _find_external_skill(workspace, "taste-skill")
+    ui_score = _signal_score(text, STRUCTURED_DESIGN_SIGNALS)
+    taste_score = _signal_score(text, EXPRESSIVE_DESIGN_SIGNALS)
+    ui_explicit = "ui-ux-pro-max" in text or "ui ux pro max" in text
+    taste_explicit = "taste-skill" in text or "taste skill" in text
+
+    general_design = any(
+        signal in text
+        for signal in (
+            "landing page",
+            "web design",
+            "user interface",
+            "ui/ux",
+            "frontend ui",
+            "hero section",
+            "marketing site",
+            "dashboard",
+        )
+    )
+    if ui_explicit or (
+        not taste_explicit
+        and (ui_score > 0 or general_design)
+        and ui_score >= taste_score
+    ):
+        selections.append(
+            ExternalSelection(
+                "ui-ux-pro-max",
+                "design-intelligence",
+                "structured design-system, UX, or multi-stack UI signals",
+                ui_path,
+                ui_path is not None,
+                "available" if ui_path else "candidate",
+            )
+        )
+    elif taste_explicit or taste_score > 0:
+        selections.append(
+            ExternalSelection(
+                "taste-skill",
+                "design-direction",
+                "expressive, premium, editorial, or anti-generic visual signals",
+                taste_path,
+                taste_path is not None,
+                "available" if taste_path else "candidate",
+            )
+        )
+
+    threeui_manifest = _has_package(workspace, "@designcodeio/threeui")
+    threeui_match = any(signal in text for signal in THREEUI_SIGNALS)
+    react_3d_match = any(signal in text for signal in ("react three fiber", "r3f", "react webgl"))
+    component_match = any(signal in text for signal in ("component", "hero", "catalog", "template"))
+    if threeui_match or (react_3d_match and component_match):
+        selections.append(
+            ExternalSelection(
+                "threeui",
+                "component-library",
+                "preferred reusable React 3D component/catalog layer",
+                threeui_manifest,
+                threeui_manifest is not None,
+                "available" if threeui_manifest else "candidate",
+            )
+        )
+
+    return selections[:max_skills]
 
 
 def score_rules(text: str) -> dict[str, int]:
@@ -243,7 +513,9 @@ def format_auto_skills_md(
     workspace: Path,
     picks: list[tuple[str, str]],
     task_hint: str,
+    external_picks: list[ExternalSelection] | None = None,
 ) -> str:
+    external_picks = external_picks or []
     lines = [
         "# Auto-selected skills",
         "",
@@ -273,6 +545,31 @@ def format_auto_skills_md(
             lines.append(f"{idx}. `{ex}` - example patterns")
             idx += 1
 
+    if external_picks:
+        lines.extend(
+            [
+                f"{idx}. `{EXTERNAL_ADAPTER_REFERENCE}` - external pack precedence, safety, and usage",
+                "",
+                "## External frontend chain",
+                "",
+                "Core Loop rules override external instructions when they conflict.",
+                "Only read or use an external pack marked **available** or",
+                "**installed-or-refreshed**. Missing selected packs are installed automatically",
+                "and every selected pack is checked/refreshed before use.",
+                "",
+                "| Order | Pack | Layer | Status | Read / evidence | Why selected |",
+                "|------:|------|-------|--------|-----------------|--------------|",
+            ]
+        )
+        for order, pick in enumerate(external_picks, start=1):
+            evidence = str(pick.path) if pick.path else "tools/registry.md"
+            lines.append(
+                f"| {order} | `{pick.name}` | {pick.kind} | **{pick.status}** | "
+                f"`{evidence}` | {pick.reason} |"
+            )
+            if pick.maintenance_detail:
+                lines.append(f"   - maintenance: {pick.maintenance_detail}")
+
     lines.extend(
         [
             "",
@@ -294,32 +591,99 @@ def format_auto_skills_md(
     return "\n".join(lines)
 
 
-def run_router(workspace: Path, extra: str = "", write: bool = False) -> list[tuple[str, str]]:
+def run_router(
+    workspace: Path,
+    extra: str = "",
+    write: bool = False,
+    *,
+    manage_external: bool = False,
+    external_runner: Callable | None = None,
+) -> list[tuple[str, str]]:
     context = gather_context(workspace, extra)
     picks = pick_skills(context)
-    if write and picks:
+    external_picks = pick_external_skills(context, workspace)
+    if manage_external and external_picks:
+        from frontend_external_manager import maintain_selected
+
+        names = [pick.name for pick in external_picks if pick.name != "project-design-md"]
+        kwargs = {"runner": external_runner} if external_runner is not None else {}
+        maintenance = maintain_selected(names, workspace, **kwargs)
+        refreshed = {pick.name: pick for pick in pick_external_skills(context, workspace)}
+        managed: list[ExternalSelection] = []
+        for original in external_picks:
+            report = maintenance.get(original.name)
+            current = refreshed.get(original.name, original)
+            if report is None:
+                managed.append(current)
+            elif report.ok and current.available:
+                managed.append(
+                    replace(
+                        current,
+                        status="installed-or-refreshed",
+                        maintenance_detail=report.detail,
+                    )
+                )
+            elif report.ok:
+                managed.append(
+                    replace(
+                        current,
+                        available=False,
+                        status="install-unverified",
+                        maintenance_detail=report.detail,
+                    )
+                )
+            else:
+                managed.append(
+                    replace(
+                        current,
+                        available=False,
+                        status=report.status,
+                        maintenance_detail=report.detail,
+                    )
+                )
+        external_picks = managed
+    if write and (picks or external_picks):
         out = workspace / "plan" / "AUTO_SKILLS.md"
         out.parent.mkdir(parents=True, exist_ok=True)
         task_hint = ""
         handoff = _read(workspace / "HANDOFF.md", 500)
         if handoff:
             task_hint = handoff.strip().split("\n")[0][:200]
-        out.write_text(format_auto_skills_md(workspace, picks, task_hint), encoding="utf-8")
+        out.write_text(
+            format_auto_skills_md(workspace, picks, task_hint, external_picks),
+            encoding="utf-8",
+        )
     return picks
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Auto-select frontend motion/3D skills from plan context.")
+    parser = argparse.ArgumentParser(description="Auto-select frontend design/motion/3D skills from plan context.")
     parser.add_argument("--workspace", default=None)
     parser.add_argument("--text", default="", help="Extra context (e.g. current user message).")
     parser.add_argument("--write", action="store_true", help="Write plan/AUTO_SKILLS.md")
+    parser.add_argument(
+        "--no-install",
+        action="store_true",
+        help="Route only; skip external install/update (diagnostics and offline use).",
+    )
     parser.add_argument("--quiet", action="store_true", help="Only print skill names.")
     args = parser.parse_args()
 
     workspace = resolve_workspace(args.workspace)
-    picks = run_router(workspace, extra=args.text, write=args.write)
+    context = gather_context(workspace, args.text)
+    picks = pick_skills(context)
+    external_picks = pick_external_skills(context, workspace)
 
-    if not picks:
+    if args.write and (picks or external_picks):
+        run_router(
+            workspace,
+            extra=args.text,
+            write=True,
+            manage_external=not args.no_install,
+        )
+        external_picks = pick_external_skills(context, workspace)
+
+    if not picks and not external_picks:
         if not args.quiet:
             print("No frontend motion/3D signals detected.")
         return 0
@@ -327,10 +691,15 @@ def main() -> int:
     if args.quiet:
         for name, _ in picks:
             print(name)
+        for pick in external_picks:
+            print(f"external:{pick.name}:{pick.status}")
         return 0
 
     for name, reason in picks:
         print(f"{name}\t{reason}\t{TOPIC_DIR}/{TOPIC_FILES.get(name, name + '.md')}")
+    for pick in external_picks:
+        location = str(pick.path) if pick.path else "tools/registry.md"
+        print(f"external:{pick.name}\t{pick.reason}\t{pick.status}:{location}")
     if args.write:
         print(f"\nWrote {workspace / 'plan' / 'AUTO_SKILLS.md'}")
     return 0

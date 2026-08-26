@@ -257,7 +257,12 @@ def cmd_auto_skills(args: argparse.Namespace) -> int:
     from workspace_utils import resolve_workspace
 
     workspace = resolve_workspace(args.workspace)
-    picks = run_router(workspace, extra=getattr(args, "text", "") or "", write=args.write)
+    picks = run_router(
+        workspace,
+        extra=getattr(args, "text", "") or "",
+        write=args.write,
+        manage_external=args.write and not getattr(args, "no_install", False),
+    )
     if not picks:
         print("No frontend motion/3D signals detected.")
         return 0
@@ -680,9 +685,14 @@ def build_parser() -> argparse.ArgumentParser:
     bootstrap_p.add_argument("--workspace", default=argparse.SUPPRESS)
     bootstrap_p.set_defaults(func=cmd_bootstrap)
 
-    auto_skills = sub.add_parser("auto-skills", help="Auto-select frontend motion/3D skills from plan context.")
+    auto_skills = sub.add_parser("auto-skills", help="Auto-select and maintain frontend design/motion/3D skills.")
     auto_skills.add_argument("--text", default="", help="Extra context (e.g. user message).")
     auto_skills.add_argument("--write", action="store_true", help="Write plan/AUTO_SKILLS.md.")
+    auto_skills.add_argument(
+        "--no-install",
+        action="store_true",
+        help="Route only; skip external install/update for diagnostics or offline use.",
+    )
     auto_skills.set_defaults(func=cmd_auto_skills)
 
     compact_p = sub.add_parser("compact", help="Write COMPACT.md summary.")

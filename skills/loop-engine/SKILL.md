@@ -101,7 +101,8 @@ say, and report what changed (`docs/CONTINUATION.md`).
 4. If no active feature or spec incomplete → feature workflow (`feature-new`, `spec-clarify`, `spec-checklist`).
 3. If tasks missing → `task-compiler`.
 4. If build gates pass → execute `skills/develop-product/SKILL.md` / `commands/develop-product.md`.
-5. Read `plan/AUTO_SKILLS.md` when manifest lists frontend skills.
+5. For a frontend build task, run `loop auto-skills --write` to install/update selected
+   external layers for this use, then read `plan/AUTO_SKILLS.md`.
 5a. Read `plan/AUTO_AGENT_SKILLS.md` when manifest lists agent-development skills (auto-detected at session-start) and execute `skills/agent-builder/SKILL.md`.
 6. After develop work → `feature-converge` + `prod-gap`.
 7. If sensitive-data gates blocked → synthetic data only.

@@ -134,7 +134,7 @@ the user to run the next branch yourself.
 | No `tasks.md` or `TASKS.yml` empty | **`task-compiler`** |
 | Build gates pass, tasks ready | Execute **`/develop-product` flow** (`commands/develop-product.md`) |
 | Requirements blocked mid-build | **`/spec-clarify`** then resume develop |
-| Frontend motion/3D in task | Read `plan/AUTO_SKILLS.md` + matched skills |
+| Frontend design/motion/3D in task | Run `loop auto-skills --write`, then read verified `plan/AUTO_SKILLS.md` + matched skills |
 | After dev slice or before session-end on develop | **`loop feature converge`** + **`/prod-gap`** |
 | P0/P1 technical blockers from prod-gap | Route back to **`/develop-product`** |
 | Human-required blockers | `DOUBTS.md` + `HANDOFF.md` - ask user |

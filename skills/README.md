@@ -22,7 +22,7 @@ Adapters for Cursor, Claude Code, Codex, OpenCode, Grok Build, and every other c
 | `session-recall` | Past session search (included in session-start) |
 | `memory-review` | Memory curation (included in session-end) |
 | `compact-loop` | Compact long-running context into `COMPACT.md` |
-| `frontend-animation` | Single core skill for all frontend motion/3D/design - topic references (Motion, GSAP, Three.js, R3F, web design) auto-routed via `plan/AUTO_SKILLS.md` |
+| `frontend-animation` | Core frontend design/motion/3D skill with auto-routed Motion, GSAP, Three.js/R3F references plus compatible installed external design skills, project DESIGN.md, and ThreeUI via `plan/AUTO_SKILLS.md` |
 | `feature-workflow` | Feature spec folders under `plan/features/` |
 | `spec-clarify` | Structured clarification on active feature |
 | `spec-checklist` | Spec quality gate before feature-plan |

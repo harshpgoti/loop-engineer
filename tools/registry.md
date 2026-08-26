@@ -49,12 +49,23 @@ Use these to extend Loop Engineer when the product plan needs more than the defa
 | Role agents | [GStack](https://github.com/garrytan/gstack) | CEO, PM, design, engineering manager, QA, release roles |
 | Sandboxed execution | [NemoClaw](https://github.com/NVIDIA/NemoClaw) | safer long-running agents, network policy, sandbox lifecycle |
 | RAG / retrieval | [NVIDIA RAG Blueprint](https://github.com/NVIDIA-AI-Blueprints/rag) | ingestion, hybrid search, reranking, RAGAS eval, guardrails |
+| Frontend design intelligence | [UI UX Pro Max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) | MIT portable skill; design-system generation, UX guidance, searchable styles/colors/type, and broad stack coverage |
+| Frontend art direction | [Taste Skill](https://github.com/Leonxlnx/taste-skill) | MIT portable skill collection; task-inferred visual direction, redesign guidance, motion/density/variance controls |
+| Design-language references | [Awesome DESIGN.md](https://github.com/VoltAgent/awesome-design-md) | MIT collection of project-readable design-system analyses; use a selected `DESIGN.md`, not the whole catalog |
+| React 3D components | [ThreeUI Community](https://github.com/MengTo/threeui) | MIT React package/catalog for reusable Three.js/WebGL components; verify bundled asset and font notices |
 
-### Frontend animation & 3D (one built-in core skill)
+### Frontend design, animation & 3D (core plus optional chain)
 
 `skills/frontend-animation/` - a single core skill, nothing to install. Topic references inside cover the Motion library (React/Next UI motion), GSAP (tweens, timelines, ScrollTrigger, React, performance), Three.js/WebGL + React Three Fiber, and modern web design (a11y, Core Web Vitals), plus examples, starter scaffolds, and generator scripts.
 
 Router: `scripts/frontend_skill_router.py` writes `plan/AUTO_SKILLS.md` during `/develop-product` - agents read the selected topic references automatically; users never pick a library manually. See `docs/FRONTEND_ANIMATION.md`.
+
+The router can discover and manage UI UX Pro Max or Taste skills, a project `DESIGN.md`, the
+Awesome DESIGN.md catalog, and the `@designcodeio/threeui` package. Before each selected use,
+it installs missing layers or refreshes installed ones through provider-specific npm commands
+(managed Git fallback for Awesome DESIGN.md), reruns discovery, and fails back to core
+guidance when maintenance cannot be verified. Installation targets all supported harnesses;
+the generated exact-path chain remains harness-neutral.
 
 ### Suggested pairings (when you extend)
 
@@ -66,7 +77,7 @@ Router: `scripts/frontend_skill_router.py` writes `plan/AUTO_SKILLS.md` during `
 | Role coverage | skills council, QA, security | GStack role agents |
 | Long-running builds | `/loop-engine`, gates | NemoClaw sandbox |
 | Evidence retrieval | `EVIDENCE_LOG.md` | NVIDIA RAG blueprint when RAG is in scope |
-| Animated UI / 3D frontend | Built-in `skills/frontend-animation`, `ui-motion`, `gsap-*`, `webgl-3d` | - (already in Loop Engineer) |
+| Animated UI / 3D frontend | Built-in `skills/frontend-animation`, `ui-motion`, `gsap-*`, `webgl-3d` | UI UX Pro Max or Taste for design direction; project DESIGN.md for visual language; ThreeUI for suitable React 3D components |
 
 ---
 
