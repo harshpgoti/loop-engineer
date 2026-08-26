@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
-from workspace_tree import product_folder
+from frontend_scope import frontend_project_root, package_roots
 from workspace_utils import ROOT
 
 
@@ -79,7 +79,7 @@ def awesome_checkout(workspace: Path) -> Path:
 
 
 def _product_root(workspace: Path) -> Path | None:
-    return product_folder(workspace)
+    return frontend_project_root(workspace)
 
 
 def _result(name: str, command: CommandResult) -> MaintenanceResult:
@@ -157,7 +157,7 @@ def maintain_pack(
         return _result(name, runner(command, root, COMMAND_TIMEOUT_SECONDS))
 
     if name == "threeui":
-        if not (root / "package.json").is_file():
+        if not package_roots(workspace):
             return MaintenanceResult(
                 name,
                 False,

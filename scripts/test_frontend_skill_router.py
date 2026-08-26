@@ -42,6 +42,56 @@ class FrontendSkillRouterTests(unittest.TestCase):
         skill.write_text(f"---\nname: {folder}\ndescription: test\n---\n", encoding="utf-8")
         return skill
 
+    @staticmethod
+    def install_scope(workspace: Path, slug: str = "payer-form-assistant") -> tuple[Path, Path]:
+        product = workspace.parent
+        scope_plan = workspace / "plan" / "products" / slug
+        code = product / "Payer Form Assistant"
+        (scope_plan).mkdir(parents=True)
+        (code / "frontend").mkdir(parents=True)
+        (scope_plan / "scope.json").write_text(
+            json.dumps({"slug": slug, "name": "Payer Form Assistant", "map_id": "18", "code_dir": "Payer Form Assistant"}),
+            encoding="utf-8",
+        )
+        (workspace / ".loop").mkdir(parents=True, exist_ok=True)
+        (workspace / ".loop" / "active-scope.json").write_text(
+            json.dumps({"slug": slug, "set_at": "2099-01-01T00:00:00+00:00"}),
+            encoding="utf-8",
+        )
+        return scope_plan, code
+
+    def test_scope_context_and_skill_roots_follow_active_scope(self) -> None:
+        with self.make_workspace() as temp:
+            workspace = Path(temp) / ".loop-engineer"
+            workspace.mkdir()
+            scope_plan, code = self.install_scope(workspace)
+            (scope_plan / "HANDOFF.md").write_text("scope-only-react-marker", encoding="utf-8")
+            skill = code / ".agents" / "skills" / "ui-ux-pro-max" / "SKILL.md"
+            skill.parent.mkdir(parents=True)
+            skill.write_text("---\nname: ui-ux-pro-max\n---\n", encoding="utf-8")
+
+            context = router.gather_context(workspace, "build the frontend")
+
+            self.assertIn("scope-only-react-marker", context)
+            self.assertEqual(skill.resolve(), router._find_external_skill(workspace, "ui-ux-pro-max"))
+
+    def test_scope_local_design_and_threeui_dependency_are_detected(self) -> None:
+        with self.make_workspace() as temp:
+            workspace = Path(temp) / ".loop-engineer"
+            workspace.mkdir()
+            _, code = self.install_scope(workspace)
+            design = code / "DESIGN.md"
+            design.write_text("# Scope design language\n", encoding="utf-8")
+            package = code / "frontend" / "package.json"
+            package.write_text(json.dumps({"dependencies": {"@designcodeio/threeui": "0.3.0"}}), encoding="utf-8")
+
+            picks = router.pick_external_skills("build an interactive React WebGL hero", workspace)
+
+            self.assertEqual("project-design-md", picks[0].name)
+            self.assertEqual(design.resolve(), picks[0].path)
+            self.assertEqual("threeui", picks[1].name)
+            self.assertEqual(package.resolve(), picks[1].path)
+
     def test_structured_ui_routes_to_installed_ui_ux_pro_max(self) -> None:
         with self.make_workspace() as temp:
             workspace = Path(temp)

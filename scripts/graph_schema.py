@@ -26,7 +26,8 @@ ERROR, WARN, INFO = "error", "warn", "info"
 # The TIM itself: which edge may connect which kinds. An edge outside this table is a
 # schema violation, not a finding about the product.
 ALLOWED = {
-    "blocked_by": {(gi.TASK, gi.TASK)},
+    # A gate is a legitimate blocker while a task waits for that gate.
+    "blocked_by": {(gi.TASK, gi.TASK), (gi.TASK, gi.GATE)},
     "gate": {(gi.TASK, gi.GATE)},
     "supersedes": {(gi.DECISION, gi.DOUBT), (gi.DECISION, gi.DECISION)},
     "depends": {(gi.MODULE, gi.MODULE)},

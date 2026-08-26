@@ -106,6 +106,16 @@ class Sandbox(unittest.TestCase):
 
 
 class Structure(Sandbox):
+    def test_supersedes_nothing_does_not_create_edges_from_explanatory_prose(self) -> None:
+        (self.ws / "DECISIONS.md").write_text(
+            DECISIONS + "\n### D-003: Concrete detail\n- **Supersedes:** nothing. Extends D-001 by adding detail.\n",
+            encoding="utf-8",
+        )
+
+        graph = gi.build(self.ws)
+
+        self.assertNotIn(["D-003", "supersedes", "D-001"], graph["edges"])
+
     def test_every_record_becomes_a_node(self) -> None:
         nodes = self.graph()["nodes"]
         for node_id in ("TASK-001", "TASK-002", "G-PLATFORM-01", "G-MODULE-01",
@@ -235,6 +245,17 @@ class History(Sandbox):
 
 
 class ArchiveIntegration(Sandbox):
+    def test_evidence_after_read_bound_is_indexed(self) -> None:
+        late = "\n".join(["- filler"] * 40_000)
+        (self.ws / "EVIDENCE_LOG.md").write_text(
+            "# Evidence Log\n" + late + "\n### E-LATE-001: Late evidence\n- **Claim:** retained\n",
+            encoding="utf-8",
+        )
+
+        graph = gi.build(self.ws)
+
+        self.assertIn("E-LATE-001", graph["nodes"])
+
     def test_graph_liveness_is_a_superset_of_the_flat_scan(self) -> None:
         """The safety property: the graph must never archive something the scan kept."""
         import state_archive as sa

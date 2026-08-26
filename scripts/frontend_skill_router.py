@@ -222,6 +222,22 @@ def gather_context(workspace: Path, extra: str = "") -> str:
         for step in sorted(plan_dir.glob("step_*.md")):
             chunks.append(_read(step))
         chunks.append(_read(plan_dir / "SESSION_RECALL.md", 4000))
+    # In a unified workspace the selected scope is the task's plan context. Keep the
+    # platform context above (it carries shared gates), then add the scope's own state
+    # and step/feature documents so unrelated scopes do not steer frontend selection.
+    try:
+        from frontend_scope import scope_plan_root
+
+        scope_plan = scope_plan_root(workspace)
+        if scope_plan is not None:
+            for name in ("HANDOFF.md", "DECISIONS.md", "CONTEXT.md", "TASKS.yml", "GATES.yml"):
+                chunks.append(_read(scope_plan / name))
+            for step in sorted(scope_plan.glob("step_*.md")):
+                chunks.append(_read(step))
+            for step in sorted(scope_plan.glob("steps/*/*.md")):
+                chunks.append(_read(step))
+    except ImportError:
+        pass
     try:
         from feature_paths import read_active_feature
 
@@ -259,6 +275,14 @@ def _skill_roots(workspace: Path) -> tuple[Path, ...]:
     roots = [workspace]
     if product is not None:
         roots.append(product)
+    try:
+        from frontend_scope import frontend_project_root, scope_code_root
+
+        for root in (scope_code_root(workspace), frontend_project_root(workspace)):
+            if root is not None:
+                roots.append(root)
+    except ImportError:
+        pass
     roots.extend(
         [
             home,
@@ -290,10 +314,20 @@ def _find_design_md(workspace: Path) -> Path | None:
     from workspace_tree import product_folder
 
     root = product_folder(workspace) or workspace
-    for relative in ("DESIGN.md", "design/DESIGN.md", "docs/DESIGN.md"):
-        candidate = root / relative
-        if candidate.is_file():
-            return candidate.resolve()
+    roots = [root]
+    try:
+        from frontend_scope import scope_code_root
+
+        code = scope_code_root(workspace)
+        if code is not None:
+            roots.insert(0, code)
+    except ImportError:
+        pass
+    for base in roots:
+        for relative in ("DESIGN.md", "design/DESIGN.md", "docs/DESIGN.md"):
+            candidate = base / relative
+            if candidate.is_file():
+                return candidate.resolve()
     return None
 
 
@@ -310,19 +344,15 @@ def _find_awesome_reference(workspace: Path, text: str) -> Path | None:
 
 
 def _has_package(workspace: Path, package_name: str) -> Path | None:
-    from workspace_tree import product_folder
-
-    root = product_folder(workspace) or workspace
-    package_json = root / "package.json"
-    if not package_json.is_file():
-        return None
     try:
-        data = json.loads(package_json.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
-        return None
-    for group in ("dependencies", "devDependencies", "peerDependencies", "optionalDependencies"):
-        if package_name in (data.get(group) or {}):
-            return package_json.resolve()
+        from frontend_scope import package_roots, package_has_dependency
+
+        for root in package_roots(workspace):
+            package_json = root / "package.json"
+            if package_has_dependency(package_json, package_name):
+                return package_json.resolve()
+    except ImportError:
+        pass
     return None
 
 

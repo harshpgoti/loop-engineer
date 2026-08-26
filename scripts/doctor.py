@@ -60,9 +60,6 @@ SCRIPT_IMPORTS = [
     "source_tree_scan",
     "workspace_tree",
     "hierarchy_drift",
-    "hierarchy_sync",
-    "subproducts_report",
-    "parent_context",
 ]
 
 

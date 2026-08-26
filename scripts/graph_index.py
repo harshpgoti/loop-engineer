@@ -208,11 +208,12 @@ def kind_of(node_id: str) -> str | None:
     return None
 
 
-def _read(path: Path, limit: int = 200_000) -> str:
+def _read(path: Path, limit: int | None = 200_000) -> str:
     if not path.is_file():
         return ""
     try:
-        return path.read_text(encoding="utf-8", errors="ignore")[:limit]
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        return text if limit is None else text[:limit]
     except OSError:
         return ""
 
@@ -331,7 +332,12 @@ def _from_decisions(workspace: Path, nodes: dict, edges: list) -> None:
         for line in body.splitlines():
             supersedes = re.match(r"^[-*]\s+\*\*Supersedes:?\*\*:?\s*(.+)$", line.strip(), re.I)
             if supersedes:
-                for ref in _refs(supersedes.group(1), exclude=node_id):
+                target = supersedes.group(1).strip()
+                # "Supersedes: nothing. Extends ..." is explanatory prose, not
+                # a supersession edge to the references that follow it.
+                if re.match(r"nothing\b", target, re.I):
+                    continue
+                for ref in _refs(target, exclude=node_id):
                     edges.append([node_id, "supersedes", ref])
         for ref in _refs(body, exclude=node_id):
             if kind_of(ref) == EVIDENCE:
@@ -366,7 +372,9 @@ def _from_architecture(workspace: Path, nodes: dict, edges: list) -> None:
 
 
 def _from_evidence(workspace: Path, nodes: dict, edges: list) -> None:
-    for node_id, body in _sections(_read(workspace / "EVIDENCE_LOG.md")):
+    # Evidence logs are append-only and can exceed the bounded plan-document read.
+    # Truncating here creates false dangling references for valid late entries.
+    for node_id, body in _sections(_read(workspace / "EVIDENCE_LOG.md", limit=None)):
         if kind_of(node_id) != EVIDENCE:
             continue
         nodes[node_id] = {
@@ -473,12 +481,28 @@ def build(workspace: Path) -> dict:
 def _related_ids(workspace: Path) -> set[str]:
     """Node IDs defined in the parent product or in any sub-product."""
     found: set[str] = set()
+
+    # Unified workspaces keep scopes under plan/products rather than as child
+    # workspaces. Read them first; hierarchy metadata refresh may be unavailable
+    # in a read-only diagnostic invocation.
+    try:
+        import scope_paths as sp
+
+        for scope in sp.list_scopes(workspace):
+            for name in ("DECISIONS.md", "DOUBTS.md", "EVIDENCE_LOG.md", "GATES.yml", "TASKS.yml"):
+                limit = None if name == "EVIDENCE_LOG.md" else 60_000
+                text = _read(scope.path / name, limit)
+                found.update(node_id for node_id, _body in _sections(text))
+                found.update(_refs(text))
+    except (ImportError, OSError):
+        pass
+
     try:
         from workspace_tree import refresh
 
         tree = refresh(workspace)
     except Exception:
-        return found
+        tree = {}
 
     neighbours = [c.get("data_dir") for c in (tree.get("children") or []) if not c.get("missing")]
     parent = (tree.get("parent") or {}).get("data_dir")
@@ -489,9 +513,11 @@ def _related_ids(workspace: Path) -> set[str]:
         if not other:
             continue
         for name in ("DECISIONS.md", "DOUBTS.md", "EVIDENCE_LOG.md", "GATES.yml", "TASKS.yml"):
-            for node_id, _body in _sections(_read(Path(other) / name, 60_000)):
+            limit = None if name == "EVIDENCE_LOG.md" else 60_000
+            for node_id, _body in _sections(_read(Path(other) / name, limit)):
                 found.add(node_id)
-            found.update(_refs(_read(Path(other) / name, 60_000)))
+            found.update(_refs(_read(Path(other) / name, limit)))
+
     return found
 
 

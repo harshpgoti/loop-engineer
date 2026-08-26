@@ -100,6 +100,28 @@ class FrontendExternalManagerTests(unittest.TestCase):
         self.assertEqual("not-applicable", result.status)
         self.assertEqual([], runner.calls)
 
+    def test_threeui_uses_active_scope_frontend_package_root(self) -> None:
+        scope_plan = self.workspace / "plan" / "products" / "payer-form-assistant"
+        scope_plan.mkdir(parents=True)
+        (scope_plan / "scope.json").write_text(
+            '{"slug":"payer-form-assistant","name":"Payer Form Assistant","map_id":"18","code_dir":"Payer Form Assistant"}',
+            encoding="utf-8",
+        )
+        (self.workspace / ".loop").mkdir()
+        (self.workspace / ".loop" / "active-scope.json").write_text(
+            '{"slug":"payer-form-assistant","set_at":"2099-01-01T00:00:00+00:00"}',
+            encoding="utf-8",
+        )
+        frontend = self.product / "Payer Form Assistant" / "frontend"
+        frontend.mkdir(parents=True)
+        (frontend / "package.json").write_text("{}\n", encoding="utf-8")
+        runner = FakeRunner()
+
+        result = manager.maintain_pack("threeui", self.workspace, runner=runner)
+
+        self.assertTrue(result.ok)
+        self.assertEqual(frontend.resolve(), runner.calls[0][1])
+
     def test_awesome_design_md_clones_then_pulls_managed_checkout(self) -> None:
         runner = FakeRunner()
 
