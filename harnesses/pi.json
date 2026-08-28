@@ -1,0 +1,1 @@
+{"name":"pi","skill_paths":{"user":"~/.pi/agent/skills","project":".agents/skills"},"command_paths":{"user":"~/.pi/agent/prompts","project":".pi/prompts"},"invocation":"/command via prompt or /skill:name","trust":"project-trust","hooks":"extensions"}

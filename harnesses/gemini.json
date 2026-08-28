@@ -1,0 +1,1 @@
+{"name":"gemini","skill_paths":{"user":"~/.gemini/skills","project":".agents/skills"},"invocation":"natural-language","trust":"project-trust","hooks":"host-defined"}

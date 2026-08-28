@@ -1,0 +1,1 @@
+{"name":"claude","skill_paths":{"user":"~/.claude/skills","project":".claude/skills"},"invocation":"/command","trust":"project-trust","hooks":"settings","legacy_command_paths":{"user":"~/.claude/commands","project":".claude/commands"}}

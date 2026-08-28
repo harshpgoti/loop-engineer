@@ -46,6 +46,8 @@ import shutil
 import sys
 from pathlib import Path
 
+from harness_adapters import path_table
+
 ROOT = Path(__file__).resolve().parents[1]
 COMMANDS_DIR = ROOT / "commands"
 SKILLS_DIR = ROOT / "skills"
@@ -54,28 +56,11 @@ GENERATOR = "loop-engineer"
 MARKER = "loop-engineer:generated"
 DIR_PREFIX = "loop-"
 
-# One line per supported agent. `user` is the global skills dir; `project` is the
-# per-repo skills dir. Adding an agent = one row, zero code (gstack's model).
+# Loaded from one declarative file per supported agent. `user` is the global
+# skills dir; `project` is the optional per-repo skills dir.
 # Several agents read the universal `.agents/skills` at project scope, so those
 # project paths intentionally collapse and are de-duplicated at install time.
-HOSTS: dict[str, dict[str, str]] = {
-    "universal": {"user": "~/.agents/skills", "project": ".agents/skills"},
-    "claude": {"user": "~/.claude/skills", "project": ".claude/skills"},
-    "codex": {"user": "~/.codex/skills", "project": ".agents/skills"},
-    "cursor": {"user": "~/.cursor/skills", "project": ".cursor/skills"},
-    "opencode": {"user": "~/.config/opencode/skills", "project": ".opencode/skills"},
-    "gemini": {"user": "~/.gemini/skills", "project": ".agents/skills"},
-    "grok": {"user": "~/.grok/skills", "project": ".grok/skills"},
-    "factory": {"user": "~/.factory/skills", "project": ".agents/skills"},
-    "kiro": {"user": "~/.kiro/skills", "project": ".agents/skills"},
-    "slate": {"user": "~/.slate/skills", "project": ".agents/skills"},
-    "hermes": {"user": "~/.hermes/skills", "project": ".agents/skills"},
-    # Pi (pi.dev) scans `~/.pi/agent/skills` and `~/.agents/skills` globally, and
-    # `.pi/skills` + `.agents/skills` per project once the project is trusted. The
-    # project row uses `.agents/skills` so it collapses with the other universal
-    # readers instead of writing a second copy Pi would then list twice.
-    "pi": {"user": "~/.pi/agent/skills", "project": ".agents/skills"},
-}
+HOSTS: dict[str, dict[str, str]] = path_table("skill_paths")
 
 # Loop <= v2 also generated flat command wrappers via a per-tool generator that
 # v3 removed. Claude Code unifies slash commands and skills in
@@ -85,11 +70,7 @@ HOSTS: dict[str, dict[str, str]] = {
 # marker, and never touches hand-written commands. Codex's legacy wrappers went
 # to `~/.codex/skills/<name>/SKILL.md` (bare, unprefixed) and are already caught
 # by the stale-router prune in `install_dest`.
-LEGACY_COMMAND_DIRS: dict[str, dict[str, str]] = {
-    "claude": {"user": "~/.claude/commands", "project": ".claude/commands"},
-    "cursor": {"user": "~/.cursor/commands", "project": ".cursor/commands"},
-    "opencode": {"user": "~/.config/opencode/commands", "project": ".opencode/commands"},
-}
+LEGACY_COMMAND_DIRS: dict[str, dict[str, str]] = path_table("legacy_command_paths")
 
 
 # Documented aliases (LOOP_COMMANDS.md / AGENTS.md). Each gets its own router so
@@ -115,10 +96,7 @@ ALIASES: dict[str, str] = {
 # plain `/<name>` namespace is its prompt templates: `~/.pi/agent/prompts/<name>.md`,
 # project `.pi/prompts/<name>.md` (trusted projects only), filename = command name,
 # frontmatter `description` + optional `argument-hint`.
-SLASH_COMMAND_HOSTS: dict[str, dict[str, str]] = {
-    "opencode": {"user": "~/.config/opencode/command", "project": ".opencode/command"},
-    "pi": {"user": "~/.pi/agent/prompts", "project": ".pi/prompts"},
-}
+SLASH_COMMAND_HOSTS: dict[str, dict[str, str]] = path_table("command_paths")
 
 
 # A router points at the installed app, which by construction sits outside whatever
@@ -130,9 +108,7 @@ SLASH_COMMAND_HOSTS: dict[str, dict[str, str]] = {
 # Config lives at `~/.config/opencode/opencode.json[c]`. opencode hard-fails on invalid
 # config, so this only ever writes a file it could parse, and never edits a value the
 # user already set.
-PERMISSION_HOSTS: dict[str, dict[str, str]] = {
-    "opencode": {"user": "~/.config/opencode", "project": ".opencode"},
-}
+PERMISSION_HOSTS: dict[str, dict[str, str]] = path_table("permission_paths")
 CONFIG_NAMES = ("opencode.jsonc", "opencode.json")
 SCHEMA_URL = "https://opencode.ai/config.json"
 

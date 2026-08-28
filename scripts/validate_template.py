@@ -203,6 +203,7 @@ REQUIRED_PATHS = [
     "scripts/loop_update.py",
     "scripts/loop_cli.py",
     "scripts/install_skills.py",
+    "scripts/harness_adapters.py",
     "scripts/auto_update.py",
     "scripts/team_init.py",
     "docs/DISTRIBUTION.md",

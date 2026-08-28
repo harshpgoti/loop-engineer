@@ -27,8 +27,15 @@ collision-safety; `name:` stays clean so `/plan-loop` still resolves.
 
 **Installed into every agent at once — not just the one you picked.** Switching
 agents mid-task must need no setup, so `loop skills install` writes routers to
-the universal `.agents/skills` **and** each agent's own skills dir. Adding a new
-agent is one row in the `HOSTS` table in `scripts/install_skills.py` — zero code.
+the universal `.agents/skills` **and** each agent's own global skills dir. Adding
+a new agent is one declarative file in `harnesses/`; the installer derives its
+destinations from that registry instead of maintaining parallel host tables.
+
+The canonical commands and skills remain only in the globally installed app at
+`~/.loop-engineer/app/`. Harness adapters contain discovery paths, invocation
+syntax, trust, hooks, and permissions—not copies of Loop behavior. Project-scope
+installation is optional for team bootstrap or harnesses that explicitly require
+trusted project-local integration.
 
 | Agent | Global (`--user`) | Project (`--project`) |
 |---|---|---|

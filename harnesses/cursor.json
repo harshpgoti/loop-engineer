@@ -1,0 +1,1 @@
+{"name":"cursor","skill_paths":{"user":"~/.cursor/skills","project":".cursor/skills"},"invocation":"/command or natural-language","trust":"project-trust","hooks":"project-hooks","legacy_command_paths":{"user":"~/.cursor/commands","project":".cursor/commands"}}

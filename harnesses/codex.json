@@ -1,0 +1,1 @@
+{"name":"codex","skill_paths":{"user":"~/.codex/skills","project":".agents/skills"},"invocation":"$skill-name or natural-language","trust":"sandbox-and-approval-policy","hooks":"project-hooks"}

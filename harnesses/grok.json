@@ -1,0 +1,1 @@
+{"name":"grok","skill_paths":{"user":"~/.grok/skills","project":".grok/skills"},"invocation":"/command or natural-language","trust":"project-trust","hooks":"project-hooks"}

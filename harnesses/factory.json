@@ -1,0 +1,1 @@
+{"name":"factory","skill_paths":{"user":"~/.factory/skills","project":".agents/skills"},"invocation":"natural-language","trust":"host-defined","hooks":"host-defined"}
