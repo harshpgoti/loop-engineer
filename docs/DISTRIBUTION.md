@@ -47,21 +47,24 @@ trusted project-local integration.
 | Gemini CLI | `~/.gemini/skills` | `.agents/skills` |
 | Grok Build | `~/.grok/skills` | `.grok/skills` |
 | Pi | `~/.pi/agent/skills` | `.agents/skills` |
+| Cline | `~/.cline/skills` | `.cline/skills` |
 | Factory / Kiro / Slate / Hermes | `~/.<tool>/skills` | `.agents/skills` |
 
 Grok Build also auto-reads Claude Code skills and `CLAUDE.md`, so it is covered a
 second way by the `~/.claude/skills` router and team mode.
 
-**Two agents keep slash commands in a second namespace**, so routers alone leave
+**Three agents keep slash commands in a second namespace**, so routers alone leave
 `/plan-loop` matching nothing and install writes a command file as well:
 
 | Agent | Command namespace | Why |
 |---|---|---|
 | OpenCode | `~/.config/opencode/command/<name>.md` | Skills there are model-invoked only |
 | Pi | `~/.pi/agent/prompts/<name>.md` | Pi answers skills at `/skill:<name>`, never `/<name>` |
+| Cline | `~/Documents/Cline/Workflows/<name>.md` | Cline answers skills at `/loop-<name>`; `/<name>.md` is a workflow |
 
 Pi also scans `~/.agents/skills` and `.agents/skills`, and gates every project-scope
-path behind its own project trust - see `PI.md`.
+path behind its own project trust - see `PI.md`. Cline reads `.claude/skills` as well as
+its own dirs, so a project carrying Claude Code routers is covered twice - see `CLINE.md`.
 
 Because routers are pointers, **editing canonical commands/skills never requires
 a reinstall** — only adding or renaming a command does, and `loop setup` /

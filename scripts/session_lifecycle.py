@@ -850,7 +850,7 @@ def main() -> int:
     parser.add_argument("phase", choices=("start", "end"))
     parser.add_argument("--workspace", default=None)
     parser.add_argument("--command", default=None, help="Active loop command e.g. /develop-product")
-    parser.add_argument("--tool", default=None, help="Tool hint e.g. cursor, claude, codex")
+    parser.add_argument("--tool", default=None, help="Tool hint e.g. cursor, claude, codex, cline")
     parser.add_argument("--text", default="", help="Extra context for routers (user message).")
     parser.add_argument("--skip-recall", action="store_true")
     parser.add_argument("--apply", action="store_true", help="Apply memory directly on end (default).")

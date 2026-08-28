@@ -12,7 +12,7 @@ import harness_adapters
 
 class HarnessAdapterRegistry(unittest.TestCase):
     def test_every_supported_harness_has_behavior_metadata(self) -> None:
-        expected = {"universal", "claude", "codex", "cursor", "opencode", "gemini", "grok", "pi", "kimi", "factory", "kiro", "slate", "hermes"}
+        expected = {"universal", "claude", "cline", "codex", "cursor", "opencode", "gemini", "grok", "pi", "kimi", "factory", "kiro", "slate", "hermes"}
         self.assertEqual(expected, set(harness_adapters.ADAPTERS))
         for adapter in harness_adapters.ADAPTERS.values():
             self.assertTrue(adapter["invocation"])
@@ -20,12 +20,18 @@ class HarnessAdapterRegistry(unittest.TestCase):
             self.assertTrue(adapter["hooks"])
 
     def test_behavior_specific_paths_are_derived_from_one_registry(self) -> None:
-        self.assertEqual({"opencode", "pi"}, set(harness_adapters.path_table("command_paths")))
+        self.assertEqual({"cline", "opencode", "pi"}, set(harness_adapters.path_table("command_paths")))
         self.assertEqual({"opencode"}, set(harness_adapters.path_table("permission_paths")))
 
     def test_codex_and_pi_record_different_invocation_contracts(self) -> None:
         self.assertIn("$skill-name", harness_adapters.ADAPTERS["codex"]["invocation"])
         self.assertIn("/skill:name", harness_adapters.ADAPTERS["pi"]["invocation"])
+
+    def test_cline_reaches_slash_commands_through_its_workflow_namespace(self) -> None:
+        cline = harness_adapters.ADAPTERS["cline"]
+        self.assertEqual("~/.cline/skills", cline["skill_paths"]["user"])
+        self.assertEqual("~/Documents/Cline/Workflows", cline["command_paths"]["user"])
+        self.assertEqual(".clinerules/workflows", cline["command_paths"]["project"])
 
     def test_invalid_adapter_fails_before_installation(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

@@ -1,0 +1,1 @@
+{"name":"cline","skill_paths":{"user":"~/.cline/skills","project":".cline/skills"},"command_paths":{"user":"~/Documents/Cline/Workflows","project":".clinerules/workflows"},"invocation":"/command.md via workflow or /loop-name skill","trust":"host-defined","hooks":"host-defined"}

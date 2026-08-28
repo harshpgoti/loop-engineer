@@ -17,7 +17,7 @@ Run a reusable product loop that helps any user plan, validate, build, test, sec
 9. **Minimal diffs** - Match existing conventions; no drive-by refactors.
 10. **Tests required** - No task marked done without relevant tests or a documented reason tests could not run.
 11. **Handoff required** - Update `memories/MEMORY.md`, `DOUBTS.md`, and `HANDOFF.md` before ending session.
-12. **Always-on lifecycle** - Before loop work: `loop session-start`. Before stopping: `loop session-end`. Read `plan/SESSION_MANIFEST.md` first. Works in any coding agent (Cursor, Claude, Codex, OpenCode, Grok, ...).
+12. **Always-on lifecycle** - Before loop work: `loop session-start`. Before stopping: `loop session-end`. Read `plan/SESSION_MANIFEST.md` first. Works in any coding agent (Cursor, Claude, Codex, OpenCode, Grok, Cline, ...).
 13. **Run to terminus, not to chunk** - A command cascades automatically through its downstream phases until its **terminus** or a **Stop Condition**. Never end a turn by telling the user to run a command you could have run. Reconcile whatever your work invalidates (gates, tasks, specs, decisions) in the same run. When you must stop, name the Stop Condition and what you need. See `docs/CONTINUATION.md`.
 14. **Skills are the public interface** - Users invoke slash commands or describe the work in natural language. The `loop` shell is an internal deterministic runtime bridge for agents, installers, diagnostics, and compatibility. Agents run required runtime operations themselves and never assign them to the user. See `docs/INTERNAL_RUNTIME.md`.
 15. **Scope before writing** - In a workspace with `plan/products/`, every command resolves *which sub-product* it is about before reading a plan or writing a file: `loop scope resolve --text "<what the user typed>"`. Exit `2` means **ask the user** - never treat an unnamed sub-product as shared platform work. Announce the resolved scope. A change needed in another sub-product is located, asked about, then applied there. See `docs/SCOPES.md`.
@@ -83,7 +83,7 @@ workspace (local `.loop-engineer/` or `~/.loop-engineer/data/`), never in the ap
 
 ## Portable Commands
 
-The user should be able to type these commands in Cursor, Codex, Claude Code, Grok Build, OpenCode, or any other coding agent with filesystem access. Do not ask the user to paste boot prompts.
+The user should be able to type these commands in Cursor, Codex, Claude Code, Grok Build, OpenCode, Cline, or any other coding agent with filesystem access. Do not ask the user to paste boot prompts.
 
 | Command | Meaning | First file to read |
 |---------|---------|--------------------|
@@ -136,6 +136,7 @@ Tool-specific files are adapters only:
 - `OPENCODE.md`
 - `GROK.md`
 - `PI.md`
+- `CLINE.md`
 
 Do not put canonical logic only in a tool-specific folder.
 

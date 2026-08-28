@@ -96,6 +96,12 @@ ALIASES: dict[str, str] = {
 # plain `/<name>` namespace is its prompt templates: `~/.pi/agent/prompts/<name>.md`,
 # project `.pi/prompts/<name>.md` (trusted projects only), filename = command name,
 # frontmatter `description` + optional `argument-hint`.
+# Cline splits the namespace a third way: its skills are on-demand and reachable from the
+# `/` picker only under their folder name (`/loop-plan-loop`), while a user typing
+# `/plan-loop` is addressing Cline's *workflows* - `~/Documents/Cline/Workflows/<name>.md`
+# globally, `.clinerules/workflows/<name>.md` per repo, invoked with the extension
+# (`/plan-loop.md`). Cline also requires a skill's `name` to equal its directory, which
+# the `loop-` prefixed routers already satisfy.
 SLASH_COMMAND_HOSTS: dict[str, dict[str, str]] = path_table("command_paths")
 
 

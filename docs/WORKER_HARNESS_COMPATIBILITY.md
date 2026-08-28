@@ -5,6 +5,7 @@ Generated from executable local preflights; unavailable tools are not advertised
 | Harness | Local status | Version | Pointer launch |
 |---|---|---|---|
 | claude | verified-local | 2.1.247 (Claude Code) | yes |
+| cline | unsupported-local | - | no |
 | codex | verified-local | codex-cli 0.149.1 | yes |
 | cursor | verified-local | 2026.06.29-2ad2186 | yes |
 | factory | unsupported-local | - | no |
