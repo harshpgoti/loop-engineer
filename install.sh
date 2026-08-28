@@ -94,9 +94,22 @@ echo "==> Data workspace=$WORKSPACE"
 run mkdir -p "$LOOP_HOME" "$APP" "$LOOP_HOME/data/registry" "$BIN"
 
 if [[ -d "$APP/.git" ]]; then
-  run git -C "$APP" fetch origin "$REF" --tags
-  run git -C "$APP" checkout "$REF"
-  run git -C "$APP" pull --ff-only origin "$REF" || true
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    echo "[dry-run] recoverably update $APP to origin/$REF"
+  else
+    UPDATE_STAMP="$(date -u +%Y%m%d-%H%M%S)"
+    if [[ -n "$(git -C "$APP" status --porcelain)" ]]; then
+      git -C "$APP" stash push --include-untracked -m "loop-engineer-auto-backup-$UPDATE_STAMP"
+      echo "Local runtime edits saved in git stash."
+    fi
+    git -C "$APP" fetch origin "$REF" --tags
+    if [[ "$(git -C "$APP" rev-list --count "origin/$REF..HEAD")" -gt 0 ]]; then
+      BACKUP_BRANCH="loop-engineer/local-backup-$UPDATE_STAMP"
+      git -C "$APP" branch "$BACKUP_BRANCH" HEAD
+      echo "Local runtime commits preserved on branch $BACKUP_BRANCH."
+    fi
+    git -C "$APP" checkout -B "$REF" "origin/$REF"
+  fi
 else
   run git clone --depth 1 --branch "$REF" "$REPO" "$APP"
 fi

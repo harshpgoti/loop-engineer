@@ -10,6 +10,7 @@ from pathlib import Path
 
 from loop_home import app_path, describe_layout, ensure_loop_home
 from workspace_utils import ROOT, load_config, resolve_workspace
+from runtime_update import update_runtime
 
 
 def run(cmd: list[str], cwd: Path) -> tuple[int, str]:
@@ -76,8 +77,8 @@ def main() -> int:
     print(describe_layout())
     print(f"App root: {runtime}")
 
-    code, out = run(["git", "pull"], runtime)
-    print(out or f"git pull exit {code}")
+    code, notes = update_runtime(runtime)
+    print("\n".join(notes))
     if code != 0:
         return code
 

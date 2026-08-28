@@ -78,7 +78,23 @@ Invoke-Step { New-Item -ItemType Directory -Force -Path $LoopHome, $App, (Join-P
 
 if (Test-Path (Join-Path $App ".git")) {
     Write-Step "Updating app..."
-    Invoke-Step { git -C $App fetch origin $Ref --tags; git -C $App checkout $Ref; git -C $App pull --ff-only origin $Ref } "git pull"
+    Invoke-Step {
+        $dirty = git -C $App status --porcelain
+        if ($dirty) {
+            $stamp = [DateTime]::UtcNow.ToString("yyyyMMdd-HHmmss")
+            git -C $App stash push --include-untracked -m "loop-engineer-auto-backup-$stamp"
+            Write-Host "Local runtime edits saved in git stash."
+        }
+        git -C $App fetch origin $Ref --tags
+        $ahead = [int](git -C $App rev-list --count "origin/$Ref..HEAD")
+        if ($ahead -gt 0) {
+            if (-not $stamp) { $stamp = [DateTime]::UtcNow.ToString("yyyyMMdd-HHmmss") }
+            $backup = "loop-engineer/local-backup-$stamp"
+            git -C $App branch $backup HEAD
+            Write-Host "Local runtime commits preserved on branch $backup."
+        }
+        git -C $App checkout -B $Ref "origin/$Ref"
+    } "Recoverably update app"
 } else {
     Write-Step "Cloning app..."
     Invoke-Step { git clone --depth 1 --branch $Ref $Repo $App } "git clone"

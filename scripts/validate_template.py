@@ -201,6 +201,7 @@ REQUIRED_PATHS = [
     "scripts/plan_idea.py",
     "scripts/ultraplan_harness.py",
     "scripts/loop_update.py",
+    "scripts/runtime_update.py",
     "scripts/loop_cli.py",
     "scripts/install_skills.py",
     "scripts/harness_adapters.py",

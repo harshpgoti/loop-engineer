@@ -48,9 +48,7 @@ Main/
 Upgrade only the tool:
 
 ```bash
-cd loop-engineer
-git pull
-python scripts/validate_template.py
+loop update
 ```
 
 Do not copy product data into `loop-engineer/`.

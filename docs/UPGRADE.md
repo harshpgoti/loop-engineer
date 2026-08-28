@@ -10,13 +10,16 @@ Main/
 └── product/
 ```
 
-Update the tool only:
+Update the tool only through Loop's recoverable updater:
 
 ```bash
-cd loop-engineer
-git pull
-python scripts/validate_template.py
+loop update
 ```
+
+If the installed runtime contains local edits, Loop saves tracked and untracked
+files in a named Git stash before updating. Divergent local commits are preserved
+on a `loop-engineer/local-backup-*` branch. Product data is never stored in this
+checkout and is not part of either backup.
 
 Product data remains in `product/.loop-engineer/` (a hidden nested folder - see `docs/DATA_LAYOUT.md`).
 
