@@ -26,7 +26,8 @@ loop session-start --command /plan-loop --text "<idea>"  # internal agent runtim
 1. **Scale detect** → `plan/PLAN_SCALE.md` (`convenient` vs `platform`)
 2. **Idea capture** → `plan/IDEA.md`
 3. **Route card** → `plan/PLAN_BOOTSTRAP.md` (agent reads this first)
-4. **If platform:** extract modules from idea text → `PRODUCT_MAP.md` → step stubs → `plan/steps/NN-slug/` ultraplan folders
+4. **If platform:** extract modules from idea text → `PRODUCT_MAP.md` → owner folders
+   (`plan/products/<slug>/` for sub-products; `plan/steps/NN-slug/` for root-owned work)
 5. **Ultraplan next step** named in bootstrap - agent fills deep docs **one step per session**
 
 No manual scale, module, or decomposition commands for users.

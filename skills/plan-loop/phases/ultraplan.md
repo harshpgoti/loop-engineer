@@ -12,7 +12,7 @@ When the user's idea is **platform-scale** (multiple sub-products, agents, or ma
 | Scale | Harness |
 |-------|---------|
 | `convenient` | Standard `plan/step_XX.md` + feature spec - skip ultraplan |
-| `platform` | `PRODUCT_MAP.md` + `plan/steps/NN-slug/` ultraplan pack per step |
+| `platform` | `PRODUCT_MAP.md` + canonical owner folder per row |
 
 Detect scale: automatic via `loop plan-loop "<idea>"` → `plan/PLAN_SCALE.md`.
 
@@ -23,7 +23,7 @@ Detect scale: automatic via `loop plan-loop "<idea>"` → `plan/PLAN_SCALE.md`.
 3. `plan/PRODUCT_MAP.md`
 4. `plan/ULTRAPLAN_STATUS.md`
 5. Active step index `plan/step_XX_*.md`
-6. Active ultraplan folder `plan/steps/NN-slug/`
+6. The `Folder:` printed by `loop plan-loop ultraplan next --step ...`
 7. `plan/main_plan.md`, `EVIDENCE_LOG.md`, `DOUBTS.md`
 
 ## Auto-bootstrap (default)
@@ -36,15 +36,21 @@ When the user's message contains a product idea, bootstrap already ran. Verify `
 
 1. If the user named a step, run `loop plan-loop ultraplan next --step "<id or title>"`;
    otherwise run `loop plan-loop ultraplan next` to pick the next incomplete root-owned step.
-2. Fill **every** file in `plan/steps/NN-slug/`:
+2. Use the printed `Folder:` as the only write target. For a scope-owned sub-product it
+   is `plan/products/<slug>/`; for root-owned work it is `plan/steps/NN-slug/`.
+3. Fill **every** ultraplan artifact in that folder:
    - `overview.md` - role in platform, metrics
    - `prd.md` - requirements, stories, NFRs
    - `architecture.md` - components, APIs, ADRs
    - `agents.md` - required for type `agent`; else N/A
    - `data-model.md`, `integrations.md`, `risks.md`, `acceptance.md`
-3. Run `loop plan-loop ultraplan status` - refresh tracker.
-4. Repeat until all steps complete.
-5. For the **active** step only: `loop feature new` → `spec-clarify` → `spec-checklist` → `task-compiler`.
+4. When the owner is a sub-product, decompose its build into authored step indexes and
+   deep packs under `plan/products/<slug>/steps/`; create its feature workflow under
+   `plan/products/<slug>/features/`. Never recreate the sub-product pack under root
+   `plan/steps/`.
+5. Run `loop plan-loop ultraplan status` - refresh tracker.
+6. Repeat until all steps complete.
+7. For the **active** step only: `loop feature new` → `spec-clarify` → `spec-checklist` → `task-compiler`.
 
 Do **not** shallow-fill all steps in one session - ultraplan one step at a time with council + evidence.
 

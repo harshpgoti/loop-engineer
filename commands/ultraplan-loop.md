@@ -46,5 +46,7 @@ fresh session. See `docs/CONTINUATION.md`.
 
 ## Output
 
-One fully detailed step pack under `plan/steps/NN-slug/`, a ready feature spec,
+One fully detailed pack under its canonical owner (`plan/products/<slug>/` for a
+sub-product, otherwise `plan/steps/NN-slug/`), with sub-product steps/features nested
+inside that scope, a ready feature spec,
 compiled tasks, a go/no-go, and `plan/ULTRAPLAN_STATUS.md` showing what remains.

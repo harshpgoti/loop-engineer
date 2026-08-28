@@ -93,7 +93,11 @@ def resolve_workspace(workspace: str | None = None) -> Path:
         if raw_path:
             resolved = _resolve_from_root(raw_path) if not Path(raw_path).is_absolute() else Path(raw_path).resolve()
             if entry.get("memory_mode") == "local" and resolved.exists():
-                return resolved
+                # Registry entries name the product folder. Local product state is
+                # nested beneath it; returning the product root silently creates a
+                # second, flat workspace beside the canonical `.loop-engineer/` one.
+                nested = resolved / ".loop-engineer"
+                return nested if nested.is_dir() else resolved
 
     return auto_path
 

@@ -144,14 +144,15 @@ Do not put canonical logic only in a tool-specific folder.
 Product-specific planning belongs here:
 
 - `plan/main_plan.md`: full product plan for the current user.
-- `plan/`: step/module plans such as `plan/step_01_<module>.md`.
+- `plan/`: root-owned step/module plans such as `plan/step_01_<module>.md`.
+- `plan/products/<slug>/`: a sub-product's ultraplan pack, with its own `steps/` and `features/`.
 - `plan/features/`: one folder per buildable feature (`spec.md`, `feature-plan.md`, `tasks.md`). Active pointer: `.loop/active-feature.json`.
 
 Reusable loop mechanics belong in `skills/` and `commands/`.
 
 ## Feature workflow (built-in)
 
-During `/plan-loop`, detect scale (`loop plan-loop scale --write`). **Convenient** → standard step + feature spec. **Platform** → `PRODUCT_MAP.md` + ultraplan pack per sub-product/agent (`skills/plan-loop/phases/ultraplan.md`).
+During `/plan-loop`, detect scale (`loop plan-loop scale --write`). **Convenient** → standard step + feature spec. **Platform** → `PRODUCT_MAP.md` + an ultraplan pack at each row's canonical owner: sub-products in `plan/products/<slug>/`, root-owned work in `plan/steps/NN-slug/` (`skills/plan-loop/phases/ultraplan.md`).
 
 ```text
 /feature-new → /spec-clarify → /spec-checklist → feature-plan → task-compiler → /develop-product → /feature-converge

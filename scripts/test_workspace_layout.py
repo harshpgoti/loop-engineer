@@ -15,6 +15,8 @@ from pathlib import Path
 import loop_home
 import migrate_legacy_layout as mll
 import workspace_resolver as wr
+import workspace_utils as wu
+from unittest.mock import patch
 
 
 class LoopHomeSandbox(unittest.TestCase):
@@ -131,6 +133,23 @@ class TestResolveEffectiveWorkspace(LoopHomeSandbox):
         self.assertEqual(mode, "local")
         self.assertEqual(path, self.product / ".loop-engineer")
 
+
+class TestRegisteredWorkspaceResolution(unittest.TestCase):
+    def test_registered_local_product_resolves_to_nested_data_root(self) -> None:
+        root = Path(tempfile.mkdtemp(prefix="loop-registered-workspace-"))
+        self.addCleanup(shutil.rmtree, root, True)
+        nested = root / ".loop-engineer"
+        nested.mkdir()
+        config = {
+            "current": "product",
+            "workspaces": {
+                "product": {"path": str(root), "memory_mode": "local"},
+            },
+        }
+        with patch.object(wu, "resolve_effective_workspace", return_value=(Path("/global"), "global")), patch.object(
+            wu, "load_config", return_value=config
+        ):
+            self.assertEqual(nested.resolve(), wu.resolve_workspace())
 
 class TestMigrateLegacyLayout(unittest.TestCase):
     def setUp(self) -> None:

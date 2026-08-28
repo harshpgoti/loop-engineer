@@ -26,6 +26,7 @@ from plan_paths import (
     ultraplan_status_file,
 )
 from workspace_utils import ROOT, resolve_workspace
+from scope_paths import list_scopes
 
 
 def load_template(name: str) -> str:
@@ -187,10 +188,40 @@ def root_ultraplan_modules(workspace: Path) -> list[dict]:
         )
         if delegated:
             continue
-        if "deferred" in str(row.get("status", "")).lower():
+        if is_deferred(row):
             continue
         modules.append(row)
     return modules
+
+
+def is_deferred(module: dict) -> bool:
+    """True only when the current state is deferred, not its transition history."""
+    status = re.sub(r"[*_`]", "", str(module.get("status") or "")).strip().lower()
+    return status.startswith("deferred")
+
+
+def scope_for_module(workspace: Path, module: dict):
+    """Return the scope that owns a product-map row, using explicit bindings only."""
+    row_id = str(module.get("id") or "").zfill(2)
+    scope_value = str(module.get("scope") or "").strip(" `").replace("\\", "/").rstrip("/")
+    for scope in list_scopes(workspace):
+        if scope.map_id and scope.map_id.zfill(2) == row_id:
+            return scope
+        if scope_value == f"plan/products/{scope.slug}":
+            return scope
+    return None
+
+
+def module_plan_dir(workspace: Path, module: dict) -> Path:
+    """Canonical deep-plan folder for a map row.
+
+    A sub-product scope is itself the ultraplan pack. Only root-owned programs and
+    capabilities use the legacy root ``plan/steps/NN-slug`` location.
+    """
+    scope = scope_for_module(workspace, module)
+    if scope is not None:
+        return scope.path
+    return step_ultraplan_dir(workspace, str(module["id"]), str(module["title"]))
 
 
 def ensure_product_map_template(workspace: Path, product_name: str) -> Path:
@@ -210,15 +241,24 @@ def ensure_product_map_template(workspace: Path, product_name: str) -> Path:
 
 
 def init_ultraplan_folder(workspace: Path, step_id: str, title: str, module_type: str) -> Path:
-    folder = step_ultraplan_dir(workspace, step_id, title)
+    module = _target_module(parse_product_map(workspace), step_id) or {
+        "id": step_id,
+        "title": title,
+        "type": module_type,
+    }
+    folder = module_plan_dir(workspace, module)
+    scope_owned = scope_for_module(workspace, module) is not None
     # Step identity is the number, not the title. If a folder for this step already
     # exists under an older title-slug, rename it to the new slug (preserving its
     # ultraplan content) instead of creating a duplicate sibling.
-    existing = find_step_folder(workspace, step_id)
+    existing = None if scope_owned else find_step_folder(workspace, step_id)
     if existing is not None and existing != folder and not folder.exists():
         folder.parent.mkdir(parents=True, exist_ok=True)
         existing.rename(folder)
     folder.mkdir(parents=True, exist_ok=True)
+    if scope_owned:
+        (folder / "steps").mkdir(exist_ok=True)
+        (folder / "features").mkdir(exist_ok=True)
     values = {
         "STEP_ID": step_id,
         "STEP_TITLE": title,
@@ -355,7 +395,11 @@ def artifact_complete(path: Path) -> bool:
 
 
 def step_ultraplan_complete(workspace: Path, step_id: str, title: str) -> tuple[bool, list[str]]:
-    folder = step_ultraplan_dir(workspace, step_id, title)
+    module = _target_module(parse_product_map(workspace), step_id) or {
+        "id": step_id,
+        "title": title,
+    }
+    folder = module_plan_dir(workspace, module)
     missing: list[str] = []
     for artifact in ULTRAPLAN_ARTIFACTS:
         if artifact == "agents":
@@ -440,7 +484,11 @@ def find_next_incomplete(
     if modules is None:
         modules = root_ultraplan_modules(workspace)
     if target:
-        selected = _target_module(modules, target)
+        # An explicit map row may be scope-owned. The user named that scope, so route
+        # to its canonical plan folder rather than excluding it as "delegated".
+        selected = _target_module(parse_product_map(workspace), target)
+        if selected and is_deferred(selected):
+            selected = None
         modules = [selected] if selected else []
     for mod in modules:
         sid = mod["id"].zfill(2) if str(mod["id"]).isdigit() else str(mod["id"])
@@ -536,12 +584,18 @@ def main() -> int:
         nxt = find_next_incomplete(workspace, target=args.step)
         if not nxt:
             if args.step:
-                print(f"Step `{args.step}` is complete, delegated, deferred, or unknown in the root plan.")
+                selected = _target_module(parse_product_map(workspace), args.step)
+                if selected and not is_deferred(selected):
+                    folder = module_plan_dir(workspace, selected)
+                    print(f"Complete: step {selected['id']} - {selected['title']}")
+                    print(f"Folder: {folder.relative_to(workspace)}")
+                    return 0
+                print(f"Step `{args.step}` is deferred or unknown in the product map.")
                 return 1
             print("All ultraplan packs complete (or no platform steps).")
             return 0
         print(f"Next: step {nxt['id']} - {nxt['title']}")
-        folder = step_ultraplan_dir(workspace, nxt["id"], nxt["title"])
+        folder = module_plan_dir(workspace, nxt)
         print(f"Folder: {folder.relative_to(workspace)}")
         return 0
 
