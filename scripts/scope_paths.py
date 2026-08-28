@@ -3,7 +3,7 @@
 A **scope** is a sub-product planned and built inside the main product's single
 `.loop-engineer/` workspace, at `plan/products/<slug>/`. It replaces the federated
 model where each sub-product owned a workspace of its own and the two ends had to be
-kept in sync across a boundary (`docs/proposals/unified-workspace.md`).
+kept in sync across a boundary. See `docs/SCOPES.md` for the canonical model.
 
 Three things this module is deliberately strict about, because each was a real failure
 in the federated design:

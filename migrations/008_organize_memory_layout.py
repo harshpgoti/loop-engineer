@@ -1,8 +1,12 @@
-"""Migration 008: relocate memory/plan-loop files to their canonical homes.
+"""Migration 008: bring any older workspace to the current canonical layout.
 
+- Seed all state files introduced by migrations 001-007.
 - main_plan.md          -> plan/main_plan.md
 - root MEMORY.md        -> memories/MEMORY.md (or removed if an exact duplicate)
 - STARTUP_MEMORY.md     -> memories/STARTUP_MEMORY.md (legacy, preserved not deleted)
+
+Every operation is idempotent, so one cumulative migration safely upgrades workspaces
+whose recorded version is anywhere from 0 through 7.
 """
 
 from __future__ import annotations
@@ -17,6 +21,35 @@ NAME = "organize_memory_layout"
 
 def apply(workspace: Path, seed: Callable[[Path, str, str], str | None]) -> list[str]:
     results: list[str] = []
+
+    for rel, source in (
+        ("COMPACT.md", "templates/starter/COMPACT.md"),
+        ("plan/PROD-GAP.md", "templates/prod_gap.template.md"),
+        ("RELEASE_CHECK.md", "templates/release_check.template.md"),
+        ("STATUS.md", "templates/status.template.md"),
+        ("DOCTOR.md", "templates/doctor.template.md"),
+        ("SYNC_REPORT.md", "templates/sync_loop_state.template.md"),
+        ("DEPLOYMENT_PLAN.md", "templates/deployment_plan.template.md"),
+        ("plan/SESSION_RECALL.md", "templates/session_recall.template.md"),
+        ("plan/MEMORY_REVIEW.md", "templates/memory_review.template.md"),
+    ):
+        created = seed(workspace, rel, source)
+        if created:
+            results.append(created)
+
+    from memory_paths import ensure_memory_layout, state_db
+    from session_store import init_db
+
+    results.extend(f"{key}: {value}" for key, value in ensure_memory_layout(workspace).items())
+    database = state_db(workspace)
+    if not database.exists():
+        init_db(database)
+        results.append("initialized state.db")
+
+    pending = workspace / ".loop" / "pending"
+    (pending / "memory").mkdir(parents=True, exist_ok=True)
+    (pending / "skills").mkdir(parents=True, exist_ok=True)
+    results.append("pending write dirs: ensured")
 
     main_src = workspace / "main_plan.md"
     main_dest = workspace / "plan" / "main_plan.md"
@@ -63,6 +96,4 @@ def apply(workspace: Path, seed: Callable[[Path, str, str], str | None]) -> list
             startup.rename(dest)
             results.append("moved legacy STARTUP_MEMORY.md -> memories/STARTUP_MEMORY.md")
 
-    if not results:
-        results.append("memory layout already organized")
     return results

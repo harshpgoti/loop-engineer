@@ -2,8 +2,8 @@
 """Fold a sub-product's own `.loop-engineer/` workspace into the main product as a scope.
 
 The federated layout gave each sub-product a workspace of its own. This moves one into
-`plan/products/<slug>/` so both ends stop needing to be kept in sync across a boundary
-(`docs/proposals/unified-workspace.md`, section 9).
+`plan/products/<slug>/` so both ends stop needing to be kept in sync across a boundary.
+See `docs/SCOPES.md` for the shipped scope and absorb model.
 
 Three rules the design turns on:
 

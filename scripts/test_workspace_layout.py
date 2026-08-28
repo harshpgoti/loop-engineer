@@ -315,7 +315,33 @@ class TestMigration008(unittest.TestCase):
         (self.tmp / "plan").mkdir()
         (self.tmp / "plan" / "main_plan.md").write_text("# Plan", encoding="utf-8")
         results = self.mod.apply(self.tmp, self._seed)
-        self.assertIn("memory layout already organized", results)
+        self.assertIn("pending write dirs: ensured", results)
+
+    def test_cumulative_migration_requests_every_current_scaffold(self) -> None:
+        requested = []
+
+        def record_seed(ws, rel, src):
+            requested.append((rel, src))
+            return None
+
+        self.mod.apply(self.tmp, record_seed)
+        self.assertEqual(
+            {
+                "COMPACT.md",
+                "plan/PROD-GAP.md",
+                "RELEASE_CHECK.md",
+                "STATUS.md",
+                "DOCTOR.md",
+                "SYNC_REPORT.md",
+                "DEPLOYMENT_PLAN.md",
+                "plan/SESSION_RECALL.md",
+                "plan/MEMORY_REVIEW.md",
+            },
+            {rel for rel, _source in requested},
+        )
+        self.assertTrue((self.tmp / "state.db").exists())
+        self.assertTrue((self.tmp / ".loop" / "pending" / "memory").is_dir())
+        self.assertTrue((self.tmp / ".loop" / "pending" / "skills").is_dir())
 
 
 

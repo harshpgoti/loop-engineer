@@ -1,0 +1,1 @@
+{"name":"kimi","skill_paths":{"user":"~/.kimi-code/skills","project":".agents/skills"},"invocation":"/command or natural-language","trust":"--auto policy","hooks":"project-hooks"}

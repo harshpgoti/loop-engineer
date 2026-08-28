@@ -28,18 +28,14 @@ Apply:
 python scripts/migrate_workspace.py --workspace ../product
 ```
 
-## Current Migrations
+## Current Migration
 
 | ID | Name | Purpose |
 |----|------|---------|
-| 001 | `add_compact` | Seed missing `COMPACT.md` |
-| 002 | `add_prod_gap` | Seed missing `plan/PROD-GAP.md` scaffold |
-| 003 | `add_release_check` | Seed missing `RELEASE_CHECK.md` scaffold |
-| 004 | `add_status_doctor_sync` | Seed missing status/doctor/sync scaffolds and version file |
-| 005 | `add_deployment_plan` | Seed missing `DEPLOYMENT_PLAN.md` scaffold |
-| 006 | `memory_layout` | Create `memories/`, `memories/USER.md`, `state.db`, user `skills/` |
-| 007 | `session_bootstrap` | Seed `memories/SOUL.md`, `CONTEXT.md`, recall/review scaffolds, pending dirs |
-| 008 | `organize_memory_layout` | Move root `main_plan.md` -> `plan/main_plan.md`, root `MEMORY.md`/`STARTUP_MEMORY.md` -> `memories/` |
+| 008 | `organize_memory_layout` | Cumulatively seed current state and organize legacy memory/plan files |
+
+Migration 008 contains the idempotent effects of the former migrations 001-007. A
+workspace recorded at any earlier version therefore upgrades directly to version 8.
 
 ## Unified CLI
 

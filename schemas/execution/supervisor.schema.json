@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","required":["schema_version","state","pid","generation","token","workspace"],"properties":{"schema_version":{"const":1},"state":{"enum":["running","stopped","crashed"]},"pid":{"type":"integer","minimum":0},"generation":{"type":"integer","minimum":1}}}

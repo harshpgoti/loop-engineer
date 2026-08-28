@@ -5,6 +5,15 @@ description: Runs product engineering from the approved plan: frontend, backend,
 
 # Product Develop
 
+## Isolated execution runs
+
+When a compiled task is deliberately delegated to a separate local coding-agent
+process, use the internal `loop worker` bridge documented in
+`docs/LOOP_EXECUTION_ARCHITECTURE_PLAN.md`. Prepare the run before launch, keep
+all edits inside its recorded worktree, bind independent validation to the exact
+candidate commit, and run cleanup only after its landed-work proof succeeds.
+Ordinary single-agent development remains unchanged.
+
 ## Purpose
 
 Build the product from `plan/main_plan.md` and `plan/` while respecting gates.

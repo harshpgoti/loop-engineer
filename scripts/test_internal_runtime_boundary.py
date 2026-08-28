@@ -31,6 +31,14 @@ class InternalRuntimeBoundary(unittest.TestCase):
         self.assertIn("/plan-loop", result.stdout)
         self.assertIn("coding agent", result.stdout)
 
+    def test_worker_execution_plane_is_available_as_an_internal_bridge(self) -> None:
+        result = self.run_cli("worker", "--help")
+        self.assertEqual(0, result.returncode)
+        for command in ("spawn", "status", "events", "stop", "teardown", "enqueue", "dispatch", "supervisor-start", "supervisor-status", "supervisor-stop"):
+            self.assertIn(command, result.stdout)
+        self.assertNotIn("prepare", result.stdout)
+        self.assertNotIn("cleanup", result.stdout)
+
     def test_free_form_plan_cli_is_compatibility_only(self) -> None:
         with tempfile.TemporaryDirectory(prefix="loop-internal-runtime-") as tmp:
             workspace = Path(tmp) / ".loop-engineer"

@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","required":["run_id","generation","sequence","timestamp","event","event_id"],"properties":{"generation":{"type":"integer","minimum":1},"sequence":{"type":"integer","minimum":1},"summary":{"type":"string","maxLength":500}}}

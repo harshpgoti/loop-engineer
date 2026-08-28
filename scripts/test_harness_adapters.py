@@ -12,7 +12,7 @@ import harness_adapters
 
 class HarnessAdapterRegistry(unittest.TestCase):
     def test_every_supported_harness_has_behavior_metadata(self) -> None:
-        expected = {"universal", "claude", "codex", "cursor", "opencode", "gemini", "grok", "pi", "factory", "kiro", "slate", "hermes"}
+        expected = {"universal", "claude", "codex", "cursor", "opencode", "gemini", "grok", "pi", "kimi", "factory", "kiro", "slate", "hermes"}
         self.assertEqual(expected, set(harness_adapters.ADAPTERS))
         for adapter in harness_adapters.ADAPTERS.values():
             self.assertTrue(adapter["invocation"])
@@ -32,6 +32,22 @@ class HarnessAdapterRegistry(unittest.TestCase):
             (Path(tmp) / "broken.json").write_text(json.dumps({"name": "broken"}), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "missing"):
                 harness_adapters.load_adapters(Path(tmp))
+
+    def test_runnable_adapters_are_advertised_only_after_executable_preflight(self) -> None:
+        for row in harness_adapters.compatibility_matrix():
+            if row["status"] == "verified-local":
+                self.assertTrue(row["available"])
+                self.assertTrue(row["version"])
+                self.assertEqual(row["version"], row["pinned_version"])
+            else:
+                self.assertFalse(row["advertised"])
+
+    def test_compatibility_matrix_is_generated_from_preflight_results(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = harness_adapters.write_compatibility_matrix(Path(tmp) / "matrix.md")
+            text = path.read_text(encoding="utf-8")
+            self.assertIn("| codex |", text)
+            self.assertIn("unsupported-local", text)
 
 
 if __name__ == "__main__":

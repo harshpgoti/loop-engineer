@@ -527,6 +527,21 @@ def cmd_agent_scaffold(args: argparse.Namespace) -> int:
     return run_script("agent_scaffold.py", extra)
 
 
+def cmd_worker(args: argparse.Namespace) -> int:
+    extra = _workspace_args(args) + [args.worker_cmd]
+    for name in ("task_id", "run_id", "message", "name", "action_id"):
+        value = getattr(args, name, None)
+        if value:
+            extra.append(value)
+    for flag in ("kind", "repository", "scope", "delivery_mode", "executor", "generation", "summary", "wedge_after", "validator", "verdict", "spec", "standards", "report", "citations_json", "decisions_json", "evidence_log", "pr", "target", "approval", "tasks", "gates", "output", "title", "acceptance_json", "priority", "depends_on_json"):
+        value = getattr(args, flag, None)
+        if value not in (None, ""):
+            extra.extend(["--" + flag.replace("_", "-"), str(value)])
+    if getattr(args, "command_json", None):
+        extra.extend(["--command-json", args.command_json])
+    return run_script("execution_cli.py", extra)
+
+
 def cmd_plan(args: argparse.Namespace) -> int:
     extra = _workspace_args(args)
     tokens: list[str] = getattr(args, "tokens", None) or []
@@ -1103,6 +1118,48 @@ def build_parser() -> argparse.ArgumentParser:
     scaffold = agent_sub.add_parser("scaffold", help="Scaffold agent/ skill+tool+eval structure in the workspace.")
     scaffold.add_argument("--force", action="store_true", help="Overwrite existing scaffold files.")
     scaffold.set_defaults(func=cmd_agent_scaffold)
+
+    worker = sub.add_parser("worker", help="Durable, worktree-isolated execution runs.")
+    worker_sub = worker.add_subparsers(dest="worker_cmd", required=True)
+    worker_spawn = worker_sub.add_parser("spawn", help="Compile a brief, allocate a worktree, and launch one local worker.")
+    worker_spawn.add_argument("task_id")
+    worker_spawn.add_argument("--kind", choices=("delivery", "research"), default="delivery")
+    worker_spawn.add_argument("--repository", required=True)
+    worker_spawn.add_argument("--scope", default="")
+    worker_spawn.add_argument("--delivery-mode", default="manual")
+    worker_spawn.add_argument("--executor", default="unassigned")
+    worker_spawn.add_argument("--command-json", required=True, help="JSON array containing the exact process argv.")
+    worker_spawn.add_argument("--workspace", default=argparse.SUPPRESS)
+    worker_spawn.set_defaults(func=cmd_worker)
+    worker_status = worker_sub.add_parser("status", help="Show one run or the registry.")
+    worker_status.add_argument("run_id", nargs="?")
+    worker_status.add_argument("--workspace", default=argparse.SUPPRESS)
+    worker_status.set_defaults(func=cmd_worker)
+    for name, helptext in (("events", "Read a run's durable events."), ("stop", "Stop a run and preserve its evidence."), ("teardown", "Release a safely stopped and landed run.")):
+        obj = worker_sub.add_parser(name, help=helptext)
+        obj.add_argument("run_id")
+        obj.add_argument("--workspace", default=argparse.SUPPRESS)
+        obj.set_defaults(func=cmd_worker)
+    worker_send = worker_sub.add_parser("send", help="Queue a durable steering message."); worker_send.add_argument("run_id"); worker_send.add_argument("message"); worker_send.add_argument("--generation", type=int); worker_send.add_argument("--workspace", default=argparse.SUPPRESS); worker_send.set_defaults(func=cmd_worker)
+    worker_ack = worker_sub.add_parser("ack", help="Acknowledge a handled steering message."); worker_ack.add_argument("run_id"); worker_ack.add_argument("name"); worker_ack.add_argument("--generation", type=int, required=True); worker_ack.add_argument("--workspace", default=argparse.SUPPRESS); worker_ack.set_defaults(func=cmd_worker)
+    worker_actions = worker_sub.add_parser("actions", help="List durable supervisor actions."); worker_actions.add_argument("--workspace", default=argparse.SUPPRESS); worker_actions.set_defaults(func=cmd_worker)
+    worker_ack_action = worker_sub.add_parser("ack-action"); worker_ack_action.add_argument("action_id"); worker_ack_action.add_argument("--workspace", default=argparse.SUPPRESS); worker_ack_action.set_defaults(func=cmd_worker)
+    worker_heartbeat = worker_sub.add_parser("heartbeat"); worker_heartbeat.add_argument("run_id"); worker_heartbeat.add_argument("--generation", type=int, required=True); worker_heartbeat.add_argument("--summary", default="alive"); worker_heartbeat.add_argument("--workspace", default=argparse.SUPPRESS); worker_heartbeat.set_defaults(func=cmd_worker)
+    worker_liveness = worker_sub.add_parser("liveness"); worker_liveness.add_argument("run_id"); worker_liveness.add_argument("--wedge-after", type=int, default=900); worker_liveness.add_argument("--workspace", default=argparse.SUPPRESS); worker_liveness.set_defaults(func=cmd_worker)
+    worker_relaunch = worker_sub.add_parser("relaunch"); worker_relaunch.add_argument("run_id"); worker_relaunch.add_argument("--workspace", default=argparse.SUPPRESS); worker_relaunch.set_defaults(func=cmd_worker)
+    validation_start = worker_sub.add_parser("validation-start"); validation_start.add_argument("run_id"); validation_start.add_argument("--validator", required=True); validation_start.add_argument("--workspace", default=argparse.SUPPRESS); validation_start.set_defaults(func=cmd_worker)
+    validation_submit = worker_sub.add_parser("validation-submit"); validation_submit.add_argument("run_id"); validation_submit.add_argument("--verdict", choices=("pass", "fail"), required=True); validation_submit.add_argument("--spec", required=True); validation_submit.add_argument("--standards", required=True); validation_submit.add_argument("--workspace", default=argparse.SUPPRESS); validation_submit.set_defaults(func=cmd_worker)
+    research_record = worker_sub.add_parser("research-record"); research_record.add_argument("run_id"); research_record.add_argument("--report", required=True); research_record.add_argument("--citations-json", required=True); research_record.add_argument("--decisions-json", default="[]"); research_record.add_argument("--workspace", default=argparse.SUPPRESS); research_record.set_defaults(func=cmd_worker)
+    research_reconcile = worker_sub.add_parser("research-reconcile"); research_reconcile.add_argument("run_id"); research_reconcile.add_argument("--evidence-log", required=True); research_reconcile.add_argument("--workspace", default=argparse.SUPPRESS); research_reconcile.set_defaults(func=cmd_worker)
+    github_evidence = worker_sub.add_parser("github-evidence"); github_evidence.add_argument("run_id"); github_evidence.add_argument("--pr", required=True); github_evidence.add_argument("--workspace", default=argparse.SUPPRESS); github_evidence.set_defaults(func=cmd_worker)
+    merge_ready = worker_sub.add_parser("merge-ready"); merge_ready.add_argument("run_id"); merge_ready.add_argument("--workspace", default=argparse.SUPPRESS); merge_ready.set_defaults(func=cmd_worker)
+    merge_local = worker_sub.add_parser("merge-local"); merge_local.add_argument("run_id"); merge_local.add_argument("--target", required=True); merge_local.add_argument("--approval", required=True); merge_local.add_argument("--workspace", default=argparse.SUPPRESS); merge_local.set_defaults(func=cmd_worker)
+    merge_github = worker_sub.add_parser("merge-github"); merge_github.add_argument("run_id"); merge_github.add_argument("--pr", required=True); merge_github.add_argument("--approval", required=True); merge_github.add_argument("--workspace", default=argparse.SUPPRESS); merge_github.set_defaults(func=cmd_worker)
+    reconcile_product = worker_sub.add_parser("reconcile-product"); reconcile_product.add_argument("run_id"); reconcile_product.add_argument("--tasks", required=True); reconcile_product.add_argument("--gates", required=True); reconcile_product.add_argument("--workspace", default=argparse.SUPPRESS); reconcile_product.set_defaults(func=cmd_worker)
+    compatibility = worker_sub.add_parser("compatibility"); compatibility.add_argument("--output", required=True); compatibility.add_argument("--workspace", default=argparse.SUPPRESS); compatibility.set_defaults(func=cmd_worker)
+    enqueue = worker_sub.add_parser("enqueue", help="Queue a compiled task for quota-aware dispatch."); enqueue.add_argument("task_id"); enqueue.add_argument("--repository", required=True); enqueue.add_argument("--command-json", required=True); enqueue.add_argument("--kind", choices=("delivery", "research"), default="delivery"); enqueue.add_argument("--title", default=""); enqueue.add_argument("--acceptance-json", default="[]"); enqueue.add_argument("--scope", default=""); enqueue.add_argument("--delivery-mode", default="local-only"); enqueue.add_argument("--executor", default="unassigned"); enqueue.add_argument("--priority", type=int, default=100); enqueue.add_argument("--depends-on-json", default="[]"); enqueue.add_argument("--workspace", default=argparse.SUPPRESS); enqueue.set_defaults(func=cmd_worker)
+    for name, helptext in (("queue", "Show durable queued dispatch requests."), ("dispatch", "Run one reconcile and dispatch tick."), ("supervisor-start", "Start the persistent local supervisor."), ("supervisor-status", "Show persistent supervisor state."), ("supervisor-stop", "Stop the persistent local supervisor."), ("supervisor-tick", "Run one supervisor tick without a daemon.")):
+        obj = worker_sub.add_parser(name, help=helptext); obj.add_argument("--workspace", default=argparse.SUPPRESS); obj.set_defaults(func=cmd_worker)
 
     return parser
 
