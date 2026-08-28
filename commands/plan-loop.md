@@ -174,7 +174,7 @@ Continue with standard step + deep **feature spec** (steps 15-17 below).
 
 ### B) `platform` - multiple sub-products / agents
 
-Already bootstrapped: `PRODUCT_MAP.md`, step stubs, `plan/steps/NN-slug/` folders. **Your job:**
+Already bootstrapped: `PRODUCT_MAP.md`, step stubs, and canonical owner folders. **Your job:**
 fully plan the step listed in `PLAN_BOOTSTRAP.md` through compiled tasks - one step per session.
 
 13. **Use the initializer when enough product inputs are known** (convenient scale only, or first platform step):
@@ -186,7 +186,7 @@ fully plan the step listed in `PLAN_BOOTSTRAP.md` through compiled tasks - one s
    - `templates/adr.template.md`
    - `templates/risks.template.md`
    - `templates/metrics.template.md`
-15. **Create or update `plan/step_XX_<name>.md`** - for platform scale, step file is an **index** only; deep content lives in `plan/steps/NN-slug/`. For convenient scale, use `templates/step_plan.template.md` with full PRD, flows, and acceptance criteria.
+15. **Create or update `plan/step_XX_<name>.md`** - for platform scale, the root step file is an **index** only. Deep content lives in `plan/products/<slug>/` for a sub-product and `plan/steps/NN-slug/` for root-owned work. For convenient scale, use `templates/step_plan.template.md` with full PRD, flows, and acceptance criteria.
 16. **Create or update active feature spec** (built-in spec-driven workflow):
    ```bash
    loop feature new "<module title>" --step plan/step_XX_<name>.md

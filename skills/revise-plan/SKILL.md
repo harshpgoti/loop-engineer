@@ -29,7 +29,7 @@ the...", "I forgot to mention...", "change X to Y", "add a note that...".
 
 1. `plan/main_plan.md`
 2. Every `plan/step_*.md`
-3. If platform scale (`plan/PLAN_SCALE.md` = platform): `plan/PRODUCT_MAP.md`, `plan/ULTRAPLAN_STATUS.md`, `plan/steps/*/`
+3. If platform scale: `plan/PRODUCT_MAP.md`, `plan/ULTRAPLAN_STATUS.md`, root-owned `plan/steps/*/`, and every scope-owned `plan/products/*/` pack plus its `steps/` and `features/`
 4. `.loop/active-feature.json` -> active feature's `spec.md`, `clarifications.md`, `feature-plan.md`, `tasks.md`
 5. `DECISIONS.md`, `DOUBTS.md`, `EVIDENCE_LOG.md`
 6. `TASKS.yml`, `GATES.yml`
@@ -48,7 +48,7 @@ context is exactly the failure mode this command exists to avoid.
 | Requirement or acceptance criterion for the active buildable feature | active feature `spec.md` (+ `clarifications.md` if it was previously an open question) |
 | Feature task breakdown | active feature `tasks.md`, synced into `TASKS.yml` |
 | Architecture, data model, integration, or build/buy choice | the owning step file's architecture section, plus a `DECISIONS.md` entry |
-| Platform-scale module/agent detail | `plan/PRODUCT_MAP.md` or the relevant `plan/steps/NN-slug/` file |
+| Platform-scale module/agent detail | `plan/PRODUCT_MAP.md` plus its canonical owner: `plan/products/<slug>/` for a sub-product, otherwise `plan/steps/NN-slug/` |
 | Reversal of a prior committed decision | `DECISIONS.md` (mark prior entry superseded) + wherever that decision is materialized |
 | Answer to an existing open question | `DOUBTS.md` (mark resolved) + `DECISIONS.md` + destination file above |
 | Gate criteria itself changing (not just what satisfies it) | `GATES.yml` |

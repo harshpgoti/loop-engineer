@@ -8,7 +8,7 @@ If the user says `/product-tree`, `product tree`, `show sub products`, `how do m
 
 ## Required Reads
 
-Read command/skill files from the tool app (`~/.loop-engineer/app/` or your clone). Read and write product-state files in the **active workspace** (local `.loop-engineer/` auto-detected from cwd). Sub-product workspaces are **read-only** from here.
+Read command/skill files from the tool app (`~/.loop-engineer/app/` or your clone). Read product-state files in the **active unified workspace** (local `.loop-engineer/` auto-detected from cwd).
 
 1. `AGENTS.md`
 2. `skills/product-tree/SKILL.md`
@@ -22,7 +22,7 @@ Read command/skill files from the tool app (`~/.loop-engineer/app/` or your clon
 ## Loop
 
 ```text
-SESSION-START -> REFRESH TREE -> READ ROLL-UP -> EXPLAIN DRIFT -> RECOMMEND NEXT COMMAND
+SESSION-START -> RESOLVE SCOPE -> LIST DEPENDENCIES -> CHECK CONTRACTS -> RECOMMEND NEXT COMMAND
 ```
 
 ## Scripts
@@ -36,15 +36,15 @@ loop workspace tree                 # this workspace and the scopes it holds
 ## Rules
 
 - **Read-only.** Reporting is this command's product; changes belong to `/scope` or `/revise-plan`.
-- Sub-products are discovered by scanning folders under the main product folder. Use
-- Every sub-product should bind to a `plan/PRODUCT_MAP.md` row. An unmapped sub-product
-  is work the master plan cannot account for - fix the map, not the report.
+- Sub-products are scopes discovered under `plan/products/` and bound by `scope.json.map_id`.
+- A legacy product folder with its own `.loop-engineer/` is only an absorb candidate;
+  do not report it as a second live plan workspace.
 
 ## Continuation
 
 **Read-only - deliberately does not cascade.** Reporting the tree and naming the next
 command *is* this command's product - it is read-only by design, so it reports rather
-than resolves. When drift needs resolving, hand off to
+than resolves. When a contract or binding needs resolving, hand off to
 `/scope` (to fix a contract or binding) or `/plan-loop` (to correct the master plan). See the
 read-only exemption in `docs/CONTINUATION.md`.
 
@@ -52,8 +52,8 @@ read-only exemption in `docs/CONTINUATION.md`.
 
 Return:
 
-1. Role of the current workspace (main / sub / standalone) and its parent, if any - plus any sub-products held as **scopes** in this workspace (`loop scope list`), which have no workspace of their own
-2. Sub-product table: map row, plan status, gate, tasks, open doubts, last session
-3. Drift findings by level, and what each one means for the master plan
-4. What was staged into which sub-product, and the command to apply it there
+1. Platform root and selected scope, if any
+2. Scope table: map row, plan/code folder, status, gate, task, and open doubts
+3. Dependency order and cycles
+4. Contract findings and their affected providers/consumers
 5. Next recommended command

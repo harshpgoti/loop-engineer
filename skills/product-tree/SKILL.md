@@ -1,113 +1,50 @@
 ---
 name: product-tree
-description: Shows how a main product workspace and its sub-product workspaces link together - each sub-product's plan state rolled up, and every place a sub-product's plan contradicts the master plan. Use when the user types /product-tree, asks about sub-products, splits a product into sub-products, or asks whether a sub-product's plan still matches the main plan.
+description: Shows the sub-product scopes in one product workspace, their plan/build state, dependency order, and unsatisfied contracts. Use for /product-tree or questions about how sub-products fit together.
 ---
 
 # Product Tree
 
 ## Purpose
 
-A product large enough to split gets split on disk: a main folder holding the master
-plan, sub-product folders under it that are planned and built on their own. Each folder
-has its own `.loop-engineer/` workspace, so by default neither end can see the other.
-
-This skill closes that gap in both directions:
-
-Every sub-product is a **scope** in this workspace, so there is nothing to roll up across a boundary - the plans are already in one tree.
-
-> **Two layouts.** This skill describes sub-products that own a **workspace** each. A
-> sub-product can instead be a **scope** inside this workspace (`plan/products/<slug>/`),
-> which has no boundary and needs no sync - see `skills/scope/SKILL.md` and
-> `docs/SCOPES.md`. `loop workspace tree` lists both. In a workspace where every
-> sub-product is a scope, the sync below is skipped and says so.
+Show the platform and every sub-product from the unified workspace. A sub-product's plan
+lives under `plan/products/<slug>/`; only its code may live in another directory or repo.
+There is no parent/child plan synchronization or second `.loop-engineer/` workspace.
 
 ## Read First
 
-- `commands/product-tree.md`
-- `plan/SESSION_MANIFEST.md` (the `## Hierarchy` block)
-- `plan/products/*/scope.json` and `plan/contracts/`
-- `plan/PRODUCT_MAP.md`
-- `plan/main_plan.md`, `DECISIONS.md`, `DOUBTS.md`
+1. `commands/product-tree.md`
+2. `plan/SESSION_MANIFEST.md`
+3. `plan/PRODUCT_MAP.md`
+4. `plan/products/*/scope.json`
+5. `plan/contracts/*`
+6. Root and scope-local `TASKS.yml`, `GATES.yml`, and `DOUBTS.md`
 
-## Roles
+## Run
 
-| Role | Meaning |
-|------|---------|
-| `main` | Holds the master plan and links sub-product workspaces. Also a normal workspace - it may plan **and** build its own shared code |
-| `sub` | A sub-product with its own plan, tasks, and gates; inherits the parent's decisions |
-| `standalone` | No parent and no sub-products - the default, and unchanged from single-product behavior |
+Use `loop scope list` for dependency order and scope state, then `loop scope check` for
+contract integrity. Use `loop scope show <slug>` when one scope needs detail. The shell
+commands are internal runtime operations; run them for the user.
 
-Roles are auto-detected: a workspace with discovered children becomes `main`, one whose
-parent lists it becomes `sub`. A workspace can be both (a middle node keeps both links).
+## What to report
 
-## Discovery
+- platform root;
+- each scope's map id, plan folder, code folder, status, and immediate task/gate;
+- dependency order and any cycles;
+- contracts provided and consumed;
+- contract findings: unprovided, unimplemented, breaking, or consumer-unnotified;
+- the next actionable scope or shared-platform task.
 
-Sub-product folders under the main folder are found by scan (depth 3, skipping
-`node_modules`, `.git`, build output). A discovered sub-product is **not** descended
-into - its own sub-products belong to it.
+## Rules
 
-For a sub-product in another repo or elsewhere on disk:
-
-```bash
-```
-
-## Scripts
-
-```bash
-loop workspace tree                 # role, parent, sub-products
-```
-
-```bash
-loop graph check                     # reference-graph rules: supersession, gates, citations
-loop graph orphans                  # records nothing references
-loop graph dangling                 # references to ids nothing defines
-```
-
-`loop session-start` already runs the refresh - run these only to re-check mid-session.
-
-## Drift checks (deterministic, not model-generated)
-
-| Kind | Level | Fires when |
-|------|-------|-----------|
-| `decision-conflict` | error | Same decision **topic** resolved differently in the parent's and the sub-product's `DECISIONS.md` |
-| `deployment-conflict` | error | Same row of **Deployment & Infrastructure** differs between main plan and sub plan |
-| `contract-gap` | error | Parent's `plan/steps/NN-slug/integrations.md` defines contracts with modules the sub-product's plan never mentions |
-| `unmapped-sub` | error | A sub-product workspace has no `plan/PRODUCT_MAP.md` row |
-| `missing-link` | error | A linked sub-product folder no longer exists |
-| `unbuilt-row` | warn | A row **typed `sub-product`** has no workspace (other types are built here) |
-| `uninitialized-sub` | warn | Sub-product exists but its `plan/main_plan.md` is UNINITIALIZED |
-| `dependency-gap` | warn | Map says this sub-product depends on another; its plan never references it |
-| `parent-added` | warn / error | Master plan gained a constraint this sub-product has never synced |
-| `parent-changed` | warn / error | A synced constraint now has a different value upstream (both values reported) |
-| `parent-removed` | warn / error | A constraint was dropped upstream and may still be honored here |
-| `stale-sub` | info | Main plan changed after the sub-product's last session |
-
-The three `parent-*` kinds answer "what changed upstream", which the conflict
-checks cannot: they compare current values, so a *new* platform constraint
-contradicts nothing. Each sub-product keeps a watermark of the parent surface it
-last synced (`.loop/parent-sync.json`), the parent diffs against it, and the
-sub-product advances it at its own `loop session-start`. Level rises to `error`
-when the sub-product has an in-progress task in `TASKS.yml`. See
-`docs/SCOPES.md`.
-
-## Write policy (do not violate)
-
-- **Metadata** (`.loop/workspace.json`) may be written into a sub-product directly.
-- **Product state** (`DOUBTS.md`, `HANDOFF.md`, `plan/*`) is **never** written across
-  workspaces. `error` findings and every `parent-*` update are staged into the
-  sub-product's `.loop/pending/`; the user decides there with `loop pending list`
-  then `loop pending approve <id>`.
-
-## Reading a finding
-
-A finding says the master plan and a sub-product's plan disagree - it does **not** say
-which one is wrong. Decide with the user:
-
-- The sub-product is wrong → the staged note in its `DOUBTS.md` is the correction.
-- The master plan is wrong → fix it here (`/revise-plan` or `/plan-loop`), then
-  `loop scope check`; the finding disappears once the declaration and the plan agree.
+- Resolve scope before any write.
+- Never infer a missing scope selection as shared-platform work.
+- Cross-scope interfaces live in `plan/contracts/`; do not infer them from prose.
+- A scope's deep product pack is its folder. Its internal steps and features live under
+  that folder's `steps/` and `features/`.
+- `loop scope absorb` is the one-way migration path for a legacy sub-product that still
+  has its own `.loop-engineer/`; it is not a second supported steady-state layout.
 
 ## Closeout
 
-Report the role, the sub-product table, findings by level, what was staged where, and
-the next command. Do not "fix" a sub-product by editing its files from here.
+Report the scope table, dependency order, contract findings, and one next action.

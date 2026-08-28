@@ -337,24 +337,36 @@ def _from_decisions(workspace: Path, nodes: dict, edges: list) -> None:
                 # a supersession edge to the references that follow it.
                 if re.match(r"nothing\b", target, re.I):
                     continue
+                relation = "amends" if re.match(r"amends?\b", target, re.I) else "supersedes"
                 for ref in _refs(target, exclude=node_id):
-                    edges.append([node_id, "supersedes", ref])
+                    edges.append([node_id, relation, ref])
         for ref in _refs(body, exclude=node_id):
             if kind_of(ref) == EVIDENCE:
                 edges.append([node_id, "cites", ref])
 
 
 def _from_architecture(workspace: Path, nodes: dict, edges: list) -> None:
-    """ADRs recorded inside a step's architecture doc, not in DECISIONS.md.
+    """ADRs recorded inside root or scope-owned architecture docs.
 
     A real workspace defines `### ADR-06-05 - Canada private ingests exports` there
     and cites it from tasks and doubts. Scanning only DECISIONS.md reported five of
     those citations as broken references.
     """
-    steps = workspace / "plan" / "steps"
-    if not steps.is_dir():
-        return
-    for folder in sorted((d for d in steps.iterdir() if d.is_dir()), key=lambda d: d.name):
+    folders: list[Path] = []
+    root_steps = workspace / "plan" / "steps"
+    if root_steps.is_dir():
+        folders.extend(d for d in root_steps.iterdir() if d.is_dir())
+    try:
+        from scope_paths import list_scopes
+
+        for scope in list_scopes(workspace):
+            folders.append(scope.path)
+            if scope.steps_dir.is_dir():
+                folders.extend(d for d in scope.steps_dir.iterdir() if d.is_dir())
+    except ImportError:
+        pass
+
+    for folder in sorted(set(folders), key=lambda d: d.as_posix()):
         for doc in ("architecture.md", "overview.md"):
             for node_id, body in _sections(_read(folder / doc, 60_000)):
                 if kind_of(node_id) != DECISION or node_id in nodes:
@@ -364,7 +376,7 @@ def _from_architecture(workspace: Path, nodes: dict, edges: list) -> None:
                     "label": (body.splitlines()[0] if body else "").strip(),
                     "status": "recorded",
                     "done": True,
-                    "source": f"plan/steps/{folder.name}/{doc}",
+                    "source": (folder / doc).relative_to(workspace).as_posix(),
                 }
                 for ref in _refs(body, exclude=node_id):
                     if kind_of(ref) == EVIDENCE:

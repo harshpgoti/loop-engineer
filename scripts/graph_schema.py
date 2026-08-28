@@ -30,6 +30,7 @@ ALLOWED = {
     "blocked_by": {(gi.TASK, gi.TASK), (gi.TASK, gi.GATE)},
     "gate": {(gi.TASK, gi.GATE)},
     "supersedes": {(gi.DECISION, gi.DOUBT), (gi.DECISION, gi.DECISION)},
+    "amends": {(gi.DECISION, gi.DECISION)},
     "depends": {(gi.MODULE, gi.MODULE)},
     # `cites` is the loose one by design: a doubt naming the task that will settle it,
     # or a decision naming the doubt it answers, are both things real workspaces do.

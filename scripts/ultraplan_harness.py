@@ -434,7 +434,7 @@ def update_ultraplan_status(workspace: Path, modules: list[dict] | None = None) 
         "",
         f"**Updated:** {date.today().isoformat()}",
         "",
-        "Platform-scale planning progress. Each step needs a full pack under `plan/steps/NN-slug/`.",
+        "Platform-scale planning progress. Each step needs a full pack at its canonical owner folder.",
         "",
         "| Step | Title | Ultraplan | Missing artifacts |",
         "|------|-------|-----------|-------------------|",

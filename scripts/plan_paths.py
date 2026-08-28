@@ -9,8 +9,6 @@ from pathlib import Path
 PLAN_SCALE_FILE = "plan/PLAN_SCALE.md"
 PRODUCT_MAP_FILE = "plan/PRODUCT_MAP.md"
 ULTRAPLAN_STATUS_FILE = "plan/ULTRAPLAN_STATUS.md"
-STEPS_DIR = "plan/steps"
-
 SCALE_CONVENIENT = "convenient"
 SCALE_PLATFORM = "platform"
 

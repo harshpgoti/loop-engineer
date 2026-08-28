@@ -90,6 +90,15 @@ class CleanWorkspace(Sandbox):
         """A rule nobody can satisfy trains people to ignore the checker."""
         self.assertNotIn("edge-type", self.rules())
 
+    def test_a_scoped_decision_amendment_is_a_known_non_superseding_edge(self) -> None:
+        (self.ws / "DECISIONS.md").write_text(
+            DECISIONS
+            + "\n### D-003: Narrow exception\n- **Supersedes:** amends D-001 for row 12 only.\n",
+            encoding="utf-8",
+        )
+        self.assertNotIn("unknown-edge", self.rules())
+        self.assertNotIn("cites-superseded", self.rules())
+
 
 class Supersession(Sandbox):
     def test_open_work_may_not_rest_on_a_superseded_decision(self) -> None:

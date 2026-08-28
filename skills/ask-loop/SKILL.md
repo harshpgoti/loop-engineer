@@ -44,7 +44,7 @@ Plan surface:
 
 1. `plan/main_plan.md`
 2. Every `plan/step_*.md`
-3. If platform scale (`plan/PLAN_SCALE.md` = platform): `plan/PRODUCT_MAP.md`, `plan/ULTRAPLAN_STATUS.md`, `plan/steps/*/`
+3. If platform scale: `plan/PRODUCT_MAP.md`, `plan/ULTRAPLAN_STATUS.md`, root-owned `plan/steps/*/`, and every scope-owned `plan/products/*/` pack plus its `steps/` and `features/`
 4. `.loop/active-feature.json` -> active feature's `spec.md`, `clarifications.md`, `feature-plan.md`, `tasks.md`, `converge-report.md`
 5. `DECISIONS.md`, `DOUBTS.md`, `EVIDENCE_LOG.md`
 6. `TASKS.yml`, `GATES.yml`

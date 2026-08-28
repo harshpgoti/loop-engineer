@@ -65,7 +65,7 @@ def render_bootstrap(
     if scale == SCALE_PLATFORM:
         if modules:
             lines.append(f"- Extracted {len(modules)} module(s) from idea text")
-            lines.append("- Wrote `plan/PRODUCT_MAP.md` + step stubs + ultraplan folders")
+            lines.append("- Wrote `plan/PRODUCT_MAP.md` + step stubs + canonical owner folders")
         else:
             lines.append("- Platform scale but modules not extracted - agent must propose `PRODUCT_MAP.md` rows")
         lines.append("- Refreshed `plan/ULTRAPLAN_STATUS.md`")
@@ -89,7 +89,7 @@ def render_bootstrap(
         if next_step:
             lines.append(
                 f"1. Run **`skills/plan-loop/phases/ultraplan.md`** on step **{next_step['id']} - {next_step['title']}** "
-                f"(fill all files under `plan/steps/`)."
+                "(use the canonical folder printed by `loop plan-loop ultraplan next`)."
             )
             lines.append("2. One step per session - do not shallow-plan every module at once.")
             lines.append("3. When that step's pack is complete → feature spec + task-compiler for that step only.")

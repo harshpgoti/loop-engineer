@@ -151,7 +151,7 @@ def render_scale_report(workspace: Path, result: dict) -> str:
             "| Scale | Planning depth |",
             "|-------|----------------|",
             "| `convenient` | `plan/step_XX.md` + feature spec (standard `/plan-loop`) |",
-            "| `platform` | `PRODUCT_MAP.md` + per-step `plan/steps/NN-slug/` ultraplan pack |",
+            "| `platform` | `PRODUCT_MAP.md` + canonical owner pack (`plan/products/<slug>/` for sub-products) |",
             "",
             "## Next",
             "",
@@ -161,7 +161,7 @@ def render_scale_report(workspace: Path, result: dict) -> str:
         lines.extend(
             [
                 "1. Fill or generate `plan/PRODUCT_MAP.md` (one row per sub-product/agent).",
-                "2. Run `loop plan-loop decompose` to create step stubs + ultraplan folders.",
+                "2. Run `loop plan-loop decompose` to create step stubs + canonical owner folders.",
                 "3. Run `loop plan-loop ultraplan next` and complete deep docs per step.",
                 "4. See `skills/plan-loop/phases/ultraplan.md`.",
             ]

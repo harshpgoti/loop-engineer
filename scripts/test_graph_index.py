@@ -116,6 +116,18 @@ class Structure(Sandbox):
 
         self.assertNotIn(["D-003", "supersedes", "D-001"], graph["edges"])
 
+    def test_scoped_amendment_does_not_globally_supersede_the_old_decision(self) -> None:
+        (self.ws / "DECISIONS.md").write_text(
+            DECISIONS
+            + "\n### D-004: Capture for one row\n- **Supersedes:** amends D-001 for row 12 only.\n",
+            encoding="utf-8",
+        )
+
+        graph = gi.build(self.ws)
+
+        self.assertIn(["D-004", "amends", "D-001"], graph["edges"])
+        self.assertNotIn(["D-004", "supersedes", "D-001"], graph["edges"])
+
     def test_every_record_becomes_a_node(self) -> None:
         nodes = self.graph()["nodes"]
         for node_id in ("TASK-001", "TASK-002", "G-PLATFORM-01", "G-MODULE-01",
@@ -152,6 +164,20 @@ class Structure(Sandbox):
         graph = self.graph()
         self.assertIn("ADR-06-05", graph["nodes"])
         self.assertIn(["ADR-06-05", "cites", "E-001"], graph["edges"])
+
+    def test_adrs_in_a_scope_owned_ultraplan_pack_are_indexed(self) -> None:
+        folder = self.ws / "plan" / "products" / "evidence-bank"
+        folder.mkdir(parents=True, exist_ok=True)
+        (folder / "scope.json").write_text('{"slug":"evidence-bank","map_id":"12"}', encoding="utf-8")
+        (folder / "architecture.md").write_text(
+            "# Architecture\n\n### ADR-12-01 - Tenant keys\n\nBased on E-001.\n", encoding="utf-8"
+        )
+
+        graph = self.graph()
+
+        self.assertIn("ADR-12-01", graph["nodes"])
+        self.assertEqual("plan/products/evidence-bank/architecture.md", graph["nodes"]["ADR-12-01"]["source"])
+        self.assertIn(["ADR-12-01", "cites", "E-001"], graph["edges"])
 
     def test_build_is_deterministic(self) -> None:
         self.assertEqual(self.graph(), self.graph())
