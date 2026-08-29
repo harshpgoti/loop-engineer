@@ -5,6 +5,8 @@ description: Apply a free-form correction or addition to a plan that already exi
 
 # Revise Plan
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Purpose
 
 `/plan-loop` builds a plan once, phase by phase, with progressive disclosure (load only the

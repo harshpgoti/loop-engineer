@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "supported_harnesses": ["codex", "claude", "cursor", "grok", "opencode", "pi"],
+  "capabilities": [
+    {
+      "id": "foundation",
+      "summary": "Install, inspect, synchronize, and preserve Loop state.",
+      "commands": ["compact-loop", "doctor", "memory-review", "session-end", "session-recall", "session-start", "setup-loop-engine", "status", "sync-loop-state", "upgrade-loop-engineer"],
+      "skills": ["compact-loop", "doctor", "memory-review", "session-lifecycle", "session-recall", "setup-loop-engine", "status", "sync-loop-state", "tool-orchestrator", "upgrade-loop-engineer"],
+      "requires": [],
+      "harnesses": ["codex", "claude", "cursor", "grok", "opencode", "pi"],
+      "context_cost": 10
+    },
+    {
+      "id": "planning",
+      "summary": "Turn product intent and evidence into scoped, decision-ready plans.",
+      "commands": ["ask-loop", "plan-loop", "product-tree", "resolve-doubts", "revise-plan", "scope", "ultraplan-loop"],
+      "skills": ["ask-loop", "plan-loop", "product-tree", "revise-plan", "scope"],
+      "requires": ["foundation"],
+      "harnesses": ["codex", "claude", "cursor", "grok", "opencode", "pi"],
+      "context_cost": 18
+    },
+    {
+      "id": "feature-workflow",
+      "summary": "Specify, clarify, validate, and converge individual features.",
+      "commands": ["feature-converge", "feature-new", "spec-checklist", "spec-clarify"],
+      "skills": ["feature-converge", "feature-workflow"],
+      "requires": ["planning"],
+      "harnesses": ["codex", "claude", "cursor", "grok", "opencode", "pi"],
+      "context_cost": 9
+    },
+    {
+      "id": "quality",
+      "summary": "Plan implementation seams, test behavior, review changes, and diagnose failures.",
+      "commands": ["diagnose-loop", "eval-loop", "research-search"],
+      "skills": ["codebase-design", "code-reviewer", "diagnose-loop", "eval-loop", "implementation-planner", "qa-validation", "research-search", "tdd"],
+      "requires": ["foundation"],
+      "harnesses": ["codex", "claude", "cursor", "grok", "opencode", "pi"],
+      "context_cost": 16
+    },
+    {
+      "id": "security",
+      "summary": "Apply deterministic security and compliance checks with reviewable findings.",
+      "commands": [],
+      "skills": ["security-compliance"],
+      "requires": ["quality"],
+      "harnesses": ["codex", "claude", "cursor", "grok", "opencode", "pi"],
+      "context_cost": 7
+    },
+    {
+      "id": "data-ml-operations",
+      "summary": "Engineer governed data, learned models, and reliable production operations.",
+      "commands": [],
+      "skills": ["data-engineering", "ml-engineering", "operations"],
+      "requires": ["quality", "security"],
+      "harnesses": ["codex", "claude", "cursor", "grok", "opencode", "pi"],
+      "context_cost": 12
+    },
+    {
+      "id": "delivery",
+      "summary": "Build, assess, release, and deploy a planned product.",
+      "commands": ["deploy", "deployment-plan", "develop-product", "loop-engine", "prod-gap", "release-check"],
+      "skills": ["cicd-release", "deploy", "deployment-plan", "develop-product", "docs", "loop-engine", "prod-gap", "release-check"],
+      "requires": ["feature-workflow", "quality", "security", "data-ml-operations"],
+      "harnesses": ["codex", "claude", "cursor", "grok", "opencode", "pi"],
+      "context_cost": 20
+    },
+    {
+      "id": "frontend",
+      "summary": "Route and validate frontend design, motion, and 3D work.",
+      "commands": ["frontend-animation"],
+      "skills": ["frontend-animation"],
+      "requires": ["quality"],
+      "harnesses": ["codex", "claude", "cursor", "grok", "opencode", "pi"],
+      "context_cost": 8
+    },
+    {
+      "id": "agent-systems",
+      "summary": "Design and scaffold agentic products and workflows.",
+      "commands": ["agent-builder"],
+      "skills": ["agent-builder"],
+      "requires": ["planning", "quality", "security"],
+      "harnesses": ["codex", "claude", "cursor", "grok", "opencode", "pi"],
+      "context_cost": 9
+    },
+    {
+      "id": "migration",
+      "summary": "Import external workspace knowledge into canonical Loop paths.",
+      "commands": ["migrate-import"],
+      "skills": ["migrate-import"],
+      "requires": ["foundation"],
+      "harnesses": ["codex", "claude", "cursor", "grok", "opencode", "pi"],
+      "context_cost": 5
+    }
+  ]
+}

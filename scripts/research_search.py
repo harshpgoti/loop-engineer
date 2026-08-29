@@ -27,6 +27,8 @@ RESEARCH_SQUARE_DOI_PREFIX = "10.21203"
 CROSSREF_PREFIX_API = f"https://api.crossref.org/prefixes/{RESEARCH_SQUARE_DOI_PREFIX}/works"
 SSRN_SEARCH_URL = "https://papers.ssrn.com/sol3/results.cfm"
 USER_AGENT = "loop-engineer-research-search/1.0 (https://github.com/; mailto:none@example.com)"
+ALLOWED_HTTP_HOSTS = {"export.arxiv.org", "api.crossref.org"}
+MAX_RESPONSE_BYTES = 5 * 1024 * 1024
 
 ATOM_NS = {"atom": "http://www.w3.org/2005/Atom"}
 
@@ -53,13 +55,29 @@ class Paper:
 
 
 def _http_get(url: str, timeout: int = 20) -> bytes:
+    parsed = urllib.parse.urlsplit(url)
+    if parsed.scheme not in {"http", "https"} or parsed.hostname not in ALLOWED_HTTP_HOSTS:
+        raise ValueError(f"research endpoint is not allowed: {parsed.scheme}://{parsed.hostname or ''}")
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        return resp.read()
+    # The scheme and host are allowlisted before this call and checked again after redirects.
+    with urllib.request.urlopen(req, timeout=timeout) as resp:  # nosec B310
+        final = urllib.parse.urlsplit(resp.geturl())
+        if final.scheme not in {"http", "https"} or final.hostname not in ALLOWED_HTTP_HOSTS:
+            raise ValueError("research endpoint redirected outside the allowlist")
+        body = resp.read(MAX_RESPONSE_BYTES + 1)
+        if len(body) > MAX_RESPONSE_BYTES:
+            raise ValueError("research response exceeds the size limit")
+        return body
 
 
 def parse_arxiv_atom(body: bytes) -> list[Paper]:
-    root = ET.fromstring(body)
+    if len(body) > MAX_RESPONSE_BYTES:
+        raise ET.ParseError("Atom response exceeds the size limit")
+    lowered = body.lower()
+    if b"<!doctype" in lowered or b"<!entity" in lowered:
+        raise ET.ParseError("DTD and entity declarations are not allowed")
+    # DTD/entity declarations and oversized input are rejected before parsing.
+    root = ET.fromstring(body)  # nosec B314
     papers: list[Paper] = []
     for entry in root.findall("atom:entry", ATOM_NS):
         title = (entry.findtext("atom:title", default="", namespaces=ATOM_NS) or "").strip()

@@ -5,6 +5,8 @@ description: Safely upgrades Loop Engineering OS while preserving product plans,
 
 # Upgrade Loop Engineer
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Purpose
 
 Update reusable loop-engineering files without overwriting user product state.

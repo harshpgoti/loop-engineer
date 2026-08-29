@@ -118,8 +118,6 @@ REQUIRED_PATHS = [
     "docs/PROCESS.md",
     "docs/UPGRADE.md",
     "docs/DATA_LAYOUT.md",
-    "docs/WORKSPACES.md",
-    "docs/FRONTEND_ANIMATION.md",
     "templates/feature_spec.template.md",
     "templates/feature_plan.template.md",
     "templates/feature_tasks.template.md",
@@ -133,6 +131,7 @@ REQUIRED_PATHS = [
     "scripts/scope_paths.py",
     "scripts/scope_absorb.py",
     "scripts/scope_readiness.py",
+    "scripts/scope_layout.py",
     "scripts/contracts.py",
     "scripts/cloud_inventory.py",
     "scripts/hierarchy_drift.py",
@@ -155,8 +154,6 @@ REQUIRED_PATHS = [
     "docs/ULTRAPLAN.md",
     "docs/SESSION_LIFECYCLE.md",
     "docs/INTERNAL_RUNTIME.md",
-    "migrations/README.md",
-    "migrations/008_organize_memory_layout.py",
     "evals/plan_quality_rubric.md",
     "evals/development_quality_rubric.md",
     "scripts/setup_loop_engine.py",
@@ -204,17 +201,33 @@ REQUIRED_PATHS = [
     "scripts/local_process_runner.py",
     "scripts/install_skills.py",
     "scripts/harness_adapters.py",
-    "schemas/execution/worker.schema.json",
-    "schemas/execution/event.schema.json",
-    "schemas/execution/review.schema.json",
-    "schemas/execution/research.schema.json",
-    "schemas/execution/dispatch.schema.json",
-    "schemas/execution/supervisor.schema.json",
-    "fixtures/execution/golden_cases.json",
+    "scripts/capabilities.py",
+    "scripts/test_capabilities.py",
+    "manifests/capabilities.json",
+    "manifests/install_profiles.json",
+    "docs/SKILL_CONTRACT.md",
+    "manifests/skill_policy.json",
+    "scripts/skill_audit.py",
+    "scripts/test_skill_audit.py",
+    "scripts/domain_skill_router.py",
+    "scripts/test_domain_skill_router.py",
+    "skills/data-engineering/SKILL.md",
+    "skills/ml-engineering/SKILL.md",
+    "skills/operations/SKILL.md",
+    "manifests/agents.json",
+    "scripts/agent_registry.py",
+    "scripts/test_agent_registry.py",
+    "scripts/agent_router.py",
+    "scripts/test_agent_router.py",
+    "manifests/events.json",
+    "scripts/assurance_findings.py",
+    "scripts/test_assurance_findings.py",
+    "scripts/event_store.py",
+    "scripts/test_event_store.py",
+    "scripts/learning_candidates.py",
+    "scripts/test_learning_candidates.py",
     "harnesses/worker_versions.json",
     "docs/LOOP_EXECUTION_ARCHITECTURE_PLAN.md",
-    "docs/WORKER_HARNESS_COMPATIBILITY.md",
-    "docs/decisions/0001-product-truth-and-execution-state.md",
     "scripts/auto_update.py",
     "scripts/team_init.py",
     "docs/DISTRIBUTION.md",
@@ -619,6 +632,27 @@ def check_main_loop_coverage(errors: list[str]) -> None:
             errors.append(f"main loop command missing cycle checklist: {rel}")
 
 
+def check_capability_registry(errors: list[str]) -> None:
+    try:
+        from capabilities import CapabilityRegistry
+
+        errors.extend(f"capability registry: {error}" for error in CapabilityRegistry.load(ROOT).validate())
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        errors.append(f"capability registry could not be loaded: {exc}")
+
+
+def check_skill_contracts(errors: list[str]) -> None:
+    try:
+        from skill_audit import SkillAudit, load_policy
+
+        for finding in SkillAudit(ROOT, load_policy(ROOT)).validate():
+            errors.append(
+                f"skill contract: {finding['rule_id']} {finding['location']}: {finding['evidence']}"
+            )
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        errors.append(f"skill contracts could not be audited: {exc}")
+
+
 def main() -> int:
     errors: list[str] = []
     check_required_paths(errors)
@@ -632,6 +666,8 @@ def main() -> int:
     check_readme_covers_commands(errors)
     check_continuation_handoffs(errors)
     check_flow_covers_phases(errors)
+    check_capability_registry(errors)
+    check_skill_contracts(errors)
 
     if errors:
         print("Template validation failed:\n")

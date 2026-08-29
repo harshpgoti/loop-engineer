@@ -5,6 +5,8 @@ description: Writes or refreshes DEPLOYMENT_PLAN.md at loop closeout, reusing pr
 
 # Deployment Plan
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Purpose
 
 Produce a durable deployment plan when planning or development loops complete. Reuse decisions already captured in `plan/main_plan.md` and planning files. Ask the user only for unresolved deployment choices.

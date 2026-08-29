@@ -5,6 +5,8 @@ description: Runs a focused pre-production release readiness check and writes RE
 
 # Release Check
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Purpose
 
 Provide a launch-focused gate review before production release or `G-RELEASE-01` approval.

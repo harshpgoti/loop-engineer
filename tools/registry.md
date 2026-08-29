@@ -58,7 +58,7 @@ Use these to extend Loop Engineer when the product plan needs more than the defa
 
 `skills/frontend-animation/` - a single core skill, nothing to install. Topic references inside cover the Motion library (React/Next UI motion), GSAP (tweens, timelines, ScrollTrigger, React, performance), Three.js/WebGL + React Three Fiber, and modern web design (a11y, Core Web Vitals), plus examples, starter scaffolds, and generator scripts.
 
-Router: `scripts/frontend_skill_router.py` writes `plan/AUTO_SKILLS.md` during `/develop-product` - agents read the selected topic references automatically; users never pick a library manually. See `docs/FRONTEND_ANIMATION.md`.
+Router: `scripts/frontend_skill_router.py` writes `plan/AUTO_SKILLS.md` during `/develop-product` - agents read the selected topic references automatically; users never pick a library manually. See `skills/frontend-animation/SKILL.md`.
 
 The router can discover and manage UI UX Pro Max or Taste skills, a project `DESIGN.md`, the
 Awesome DESIGN.md catalog, and the `@designcodeio/threeui` package. Before each selected use,
@@ -83,7 +83,7 @@ the generated exact-path chain remains harness-neutral.
 
 ## Research paper sources
 
-Queried live by `skills/research-search/SKILL.md` (`loop research "<query>"`) - see `docs/RESEARCH_SEARCH.md` for verified API details per source.
+Queried live by `skills/research-search/SKILL.md` (`loop research "<query>"`), which records the verified access method for each source.
 
 | Source | URL | Method |
 |--------|-----|--------|

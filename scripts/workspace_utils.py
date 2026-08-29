@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import date
 from pathlib import Path
 
 from loop_home import registry_path
@@ -10,6 +11,50 @@ from workspace_resolver import resolve_effective_workspace
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def read_text(path: Path, max_chars: int | None = None, *, strip: bool = True) -> str:
+    if not path.exists():
+        return ""
+    text = path.read_text(encoding="utf-8", errors="ignore")
+    text = text.strip() if strip else text
+    if max_chars is not None and len(text) > max_chars:
+        return text[:max_chars].rstrip() + "\n\n_...truncated_"
+    return text
+
+
+def extract_line(text: str, prefix: str, default: str = "TBD") -> str:
+    for line in text.splitlines():
+        if line.strip().lower().startswith(prefix.lower()):
+            return line.split(":", 1)[-1].strip().strip("* ")
+    return default
+
+
+def load_template(name: str, fallback: str | None = None) -> str:
+    path = ROOT / "templates" / name
+    if path.exists():
+        return path.read_text(encoding="utf-8")
+    if fallback is not None:
+        return fallback
+    raise FileNotFoundError(path)
+
+
+def render_template(template: str, values: dict[str, str]) -> str:
+    for key, value in values.items():
+        template = template.replace("{{" + key + "}}", value)
+    return template
+
+
+def bullet(items: list[str], empty: str = "- None.") -> str:
+    return "\n".join(f"- {item}" for item in items) if items else empty
+
+
+def append_session_log(workspace: Path, title: str, lines: list[str]) -> None:
+    log_path = workspace / ".ai" / "SESSION_LOG.md"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    body = "\n".join(f"- {line}" for line in lines)
+    with log_path.open("a", encoding="utf-8") as handle:
+        handle.write(f"\n## {date.today().isoformat()} - {title}\n\n{body}\n")
 
 
 def console_utf8() -> None:

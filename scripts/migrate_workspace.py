@@ -4,16 +4,18 @@
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import json
 from datetime import date
 from pathlib import Path
+from typing import Callable
 
 from workspace_utils import ROOT, resolve_workspace
 
 
 VERSION_FILE = ".loop-workspace-version"
-MIGRATIONS_DIR = ROOT / "migrations"
+CURRENT_WORKSPACE_VERSION = 8
+SeedFile = Callable[[Path, str, str], str | None]
+Migration = Callable[[Path, SeedFile], list[str]]
 
 
 def load_version(workspace: Path) -> int:
@@ -29,20 +31,83 @@ def save_version(workspace: Path, version: int) -> None:
     path.write_text(json.dumps({"version": version, "updated": date.today().isoformat()}, indent=2) + "\n", encoding="utf-8")
 
 
-def load_migration_modules() -> list[tuple[int, str, object]]:
-    modules: list[tuple[int, str, object]] = []
-    for path in sorted(MIGRATIONS_DIR.glob("*.py")):
-        if path.name.startswith("_"):
-            continue
-        spec = importlib.util.spec_from_file_location(path.stem, path)
-        if spec is None or spec.loader is None:
-            continue
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        migration_id = int(getattr(module, "MIGRATION_ID"))
-        name = str(getattr(module, "NAME"))
-        modules.append((migration_id, name, module))
-    return sorted(modules, key=lambda item: item[0])
+def apply_workspace_v8(
+    workspace: Path, seed: SeedFile
+) -> list[str]:
+    """Bring any workspace at versions 0-7 to the current canonical layout."""
+    results: list[str] = []
+    for rel, source in (
+        ("COMPACT.md", "templates/starter/COMPACT.md"),
+        ("plan/PROD-GAP.md", "templates/prod_gap.template.md"),
+        ("RELEASE_CHECK.md", "templates/release_check.template.md"),
+        ("STATUS.md", "templates/status.template.md"),
+        ("DOCTOR.md", "templates/doctor.template.md"),
+        ("SYNC_REPORT.md", "templates/sync_loop_state.template.md"),
+        ("DEPLOYMENT_PLAN.md", "templates/deployment_plan.template.md"),
+        ("plan/SESSION_RECALL.md", "templates/session_recall.template.md"),
+        ("plan/MEMORY_REVIEW.md", "templates/memory_review.template.md"),
+    ):
+        created = seed(workspace, rel, source)
+        if created:
+            results.append(created)
+
+    from memory_paths import ensure_memory_layout, state_db
+    from session_store import init_db
+
+    results.extend(f"{key}: {value}" for key, value in ensure_memory_layout(workspace).items())
+    database = state_db(workspace)
+    if not database.exists():
+        init_db(database)
+        results.append("initialized state.db")
+
+    pending = workspace / ".loop" / "pending"
+    (pending / "memory").mkdir(parents=True, exist_ok=True)
+    (pending / "skills").mkdir(parents=True, exist_ok=True)
+    results.append("pending write dirs: ensured")
+
+    main_src = workspace / "main_plan.md"
+    main_dest = workspace / "plan" / "main_plan.md"
+    if main_src.exists() and not main_dest.exists():
+        main_dest.parent.mkdir(parents=True, exist_ok=True)
+        main_src.rename(main_dest)
+        results.append("moved main_plan.md -> plan/main_plan.md")
+    elif main_src.exists():
+        results.append("both main_plan.md and plan/main_plan.md exist - review the root copy manually")
+
+    root_mem = workspace / "MEMORY.md"
+    canonical_mem = workspace / "memories" / "MEMORY.md"
+    if root_mem.exists():
+        if not canonical_mem.exists():
+            canonical_mem.parent.mkdir(parents=True, exist_ok=True)
+            root_mem.rename(canonical_mem)
+            results.append("moved root MEMORY.md -> memories/MEMORY.md")
+        elif root_mem.read_text(encoding="utf-8", errors="ignore").strip() == canonical_mem.read_text(
+            encoding="utf-8", errors="ignore"
+        ).strip():
+            root_mem.unlink()
+            results.append("removed root MEMORY.md (exact duplicate of memories/MEMORY.md)")
+        else:
+            backup = workspace / "memories" / "MEMORY.root-legacy.md"
+            if backup.exists():
+                results.append("root MEMORY.md differs from canonical and backup already exists - review manually")
+            else:
+                root_mem.rename(backup)
+                results.append("preserved divergent root MEMORY.md as memories/MEMORY.root-legacy.md")
+
+    startup = workspace / "STARTUP_MEMORY.md"
+    if startup.exists():
+        destination = workspace / "memories" / "STARTUP_MEMORY.md"
+        if destination.exists():
+            results.append("STARTUP_MEMORY.md exists in both places - review manually")
+        else:
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            startup.rename(destination)
+            results.append("moved legacy STARTUP_MEMORY.md -> memories/STARTUP_MEMORY.md")
+    return results
+
+
+def migrations() -> list[tuple[int, str, Migration]]:
+    return [(CURRENT_WORKSPACE_VERSION, "organize_memory_layout", apply_workspace_v8)]
 
 
 def seed_file_if_missing(workspace: Path, relative_path: str, source_relative: str) -> str | None:
@@ -64,15 +129,15 @@ def main() -> int:
     parser.add_argument("--list", action="store_true", help="List available migrations.")
     args = parser.parse_args()
 
-    migrations = load_migration_modules()
+    available = migrations()
     if args.list:
-        for migration_id, name, _ in migrations:
+        for migration_id, name, _ in available:
             print(f"{migration_id:03d} {name}")
         return 0
 
     workspace = resolve_workspace(args.workspace)
     current = load_version(workspace)
-    pending = [(mid, name, module) for mid, name, module in migrations if mid > current]
+    pending = [(mid, name, apply) for mid, name, apply in available if mid > current]
 
     if not pending:
         print(f"Workspace `{workspace}` is up to date (version {current}).")
@@ -81,12 +146,12 @@ def main() -> int:
     print(f"Workspace `{workspace}` version {current}; pending migrations: {len(pending)}")
     applied: list[str] = []
 
-    for migration_id, name, module in pending:
+    for migration_id, name, apply in pending:
         print(f"Applying {migration_id:03d} {name}...")
         if args.dry_run:
             applied.append(f"would apply {migration_id:03d} {name}")
             continue
-        results = module.apply(workspace, seed_file_if_missing)
+        results = apply(workspace, seed_file_if_missing)
         applied.extend(results)
         save_version(workspace, migration_id)
 

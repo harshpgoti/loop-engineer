@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "roles": [
+    {"id":"strategist","class":"planner","skills":["plan-loop"],"may_mutate":false,"independent_from":[]},
+    {"id":"researcher","class":"planner","skills":["research-search"],"may_mutate":false,"independent_from":[]},
+    {"id":"product-manager","class":"planner","skills":["plan-loop","feature-workflow"],"may_mutate":true,"independent_from":[]},
+    {"id":"architect","class":"planner","skills":["codebase-design","implementation-planner"],"may_mutate":false,"independent_from":[]},
+    {"id":"builder","class":"executor","skills":["develop-product","tdd"],"may_mutate":true,"independent_from":[]},
+    {"id":"build-repairer","class":"executor","skills":["diagnose-loop","tdd"],"may_mutate":true,"independent_from":[]},
+    {"id":"code-reviewer","class":"assurance","skills":["code-reviewer"],"may_mutate":false,"independent_from":["builder","build-repairer"]},
+    {"id":"security-reviewer","class":"assurance","skills":["security-compliance"],"may_mutate":false,"independent_from":["builder","build-repairer"]},
+    {"id":"qa-evaluator","class":"assurance","skills":["qa-validation","eval-loop"],"may_mutate":false,"independent_from":["builder","build-repairer"]},
+    {"id":"data-reviewer","class":"assurance","skills":["data-engineering"],"may_mutate":false,"independent_from":["builder"]},
+    {"id":"ml-reviewer","class":"assurance","skills":["ml-engineering","eval-loop"],"may_mutate":false,"independent_from":["builder"]},
+    {"id":"operations-reviewer","class":"assurance","skills":["operations","cicd-release"],"may_mutate":false,"independent_from":["builder"]},
+    {"id":"documentation-reviewer","class":"assurance","skills":["docs"],"may_mutate":false,"independent_from":["builder"]},
+    {"id":"accessibility-reviewer","class":"assurance","skills":["frontend-animation","qa-validation"],"may_mutate":false,"independent_from":["builder"]},
+    {"id":"release-manager","class":"controller","skills":["release-check","deployment-plan","cicd-release"],"may_mutate":true,"independent_from":["builder"]},
+    {"id":"loop-operator","class":"controller","skills":["loop-engine","tool-orchestrator"],"may_mutate":true,"independent_from":[]}
+  ]
+}

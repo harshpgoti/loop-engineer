@@ -4,15 +4,11 @@
 from __future__ import annotations
 
 import argparse
-from datetime import date
 from pathlib import Path
 
 from memory_paths import memory_file, state_db
 from session_store import init_db, log_session
-from workspace_utils import resolve_workspace
-
-
-ROOT = Path(__file__).resolve().parents[1]
+from workspace_utils import append_session_log, extract_line, load_template, render_template as render, resolve_workspace
 
 STATE_FILES = [
     "MEMORY.md",
@@ -69,26 +65,6 @@ def enforce_limit(content: str, limit: int = COMPACT_CHAR_LIMIT) -> str:
     )
 
 
-def extract_line(text: str, prefix: str, default: str = "TBD") -> str:
-    for line in text.splitlines():
-        if line.strip().lower().startswith(prefix.lower()):
-            return line.split(":", 1)[-1].strip().strip("* ")
-    return default
-
-
-def load_template() -> str:
-    template_path = ROOT / "templates" / "compact.template.md"
-    if template_path.exists():
-        return template_path.read_text(encoding="utf-8")
-    return "# Compact Context\n\n{{WHAT_NOW}}\n"
-
-
-def render(template: str, values: dict[str, str]) -> str:
-    for key, value in values.items():
-        template = template.replace("{{" + key + "}}", value)
-    return template
-
-
 def summarize_workspace(workspace: Path) -> str:
     from memory_paths import main_plan_file, memory_file
 
@@ -108,7 +84,7 @@ def summarize_workspace(workspace: Path) -> str:
 
     important_files = "\n".join(f"- `{name}`" for name in STATE_FILES)
 
-    template = load_template()
+    template = load_template("compact.template.md", "# Compact Context\n\n{{WHAT_NOW}}\n")
     return render(
         template,
         {
@@ -130,18 +106,6 @@ def summarize_workspace(workspace: Path) -> str:
     )
 
 
-def append_session_log(workspace: Path) -> None:
-    log_path = workspace / ".ai" / "SESSION_LOG.md"
-    log_path.parent.mkdir(parents=True, exist_ok=True)
-    with log_path.open("a", encoding="utf-8") as handle:
-        handle.write(
-            "\n"
-            f"## {date.today().isoformat()} - Context compacted\n\n"
-            "- Updated `COMPACT.md`.\n"
-            "- Next agent should read `COMPACT.md` and `HANDOFF.md` first.\n"
-        )
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(description="Create COMPACT.md for a product workspace.")
     parser.add_argument(
@@ -155,7 +119,11 @@ def main() -> int:
     content = enforce_limit(summarize_workspace(workspace))
     output = workspace / "COMPACT.md"
     output.write_text(content, encoding="utf-8")
-    append_session_log(workspace)
+    append_session_log(
+        workspace,
+        "Context compacted",
+        ["Updated `COMPACT.md`.", "Next agent should read `COMPACT.md` and `HANDOFF.md` first."],
+    )
 
     db = state_db(workspace)
     init_db(db)

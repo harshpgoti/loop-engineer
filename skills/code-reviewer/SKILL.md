@@ -5,6 +5,8 @@ description: Review changed product code on two separate axes - Spec (does it do
 
 # Code Reviewer
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 Two axes, reported separately.
 
 - **Spec** - does the change do what the task asked for?

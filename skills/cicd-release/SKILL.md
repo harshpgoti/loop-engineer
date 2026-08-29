@@ -5,6 +5,8 @@ description: Builds and validates CI/CD and release readiness: GitHub Actions, D
 
 # CI/CD Release
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Scope
 
 - GitHub Actions

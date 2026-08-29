@@ -5,6 +5,8 @@ description: Orchestrates product planning end to end - initialize a fresh produ
 
 # Plan (orchestrator)
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 Turn a product idea into a validated, buildable plan. This skill is a **thin orchestrator**: it holds the loop, the read order, and a phase router. Each planning phase lives in its own file under `phases/` and is **loaded only when its trigger fires** - never preload all phases.
 
 ## Command
@@ -35,7 +37,7 @@ phase file.
 | **spec-clarify** | active feature spec has open questions, `/spec-clarify`, or `PHASE: spec-clarify` | `phases/spec-clarify.md` |
 | **spec-checklist** | before locking `feature-plan.md`, `/spec-checklist`, or `PHASE: spec-checklist` | `phases/spec-checklist.md` |
 | **resolve-doubts** | planning otherwise complete but `DOUBTS.md` has open items, `/resolve-doubts`, or `PHASE: resolve-doubts` | `phases/resolve-doubts.md` |
-| **task-compiler** | spec checklist Ready and no open doubts â†’ compile tasks, or `PHASE: task-compiler` | `phases/task-compiler.md` |
+| **task-compiler** | spec checklist Ready and no open doubts → compile tasks, or `PHASE: task-compiler` | `phases/task-compiler.md` |
 
 ## Read First (orchestrator only - not the phase files)
 
@@ -43,6 +45,7 @@ phase file.
 2. `memories/SOUL.md`, `memories/USER.md`, `memories/MEMORY.md`
 3. `plan/PLAN_BOOTSTRAP.md` and `plan/SESSION_MANIFEST.md` - get the **`PHASE:`** line
    **and the skills it names**
+   plus the governed roles in `plan/AUTO_AGENTS.md`
 4. `plan/main_plan.md`, `HANDOFF.md`
 5. `DOUBTS.md`, `TASKS.yml`, `GATES.yml`
 
@@ -100,13 +103,15 @@ the active feature. Never return `loop scope check` or `/feature-converge` as us
    `plan/SESSION_MANIFEST.md`. Note the `PHASE:` line.
    This runtime call belongs to the coding agent; never ask the user to run it.
 1. `session-start` auto-detects agent-development signals - if `plan/AUTO_AGENT_SKILLS.md` was written, read it and `skills/agent-builder/SKILL.md` before drafting architecture.
-2. **If product is uninitialized**, ask for product name, target user, problem, first product step, constraints, sensitive data, preferred stack, and deployment targets. Capture deployment choices in `plan/main_plan.md` â†’ **Deployment & Infrastructure**:
+2. **If product is uninitialized**, ask for product name, target user, problem, first product step, constraints, sensitive data, preferred stack, and deployment targets. Capture deployment choices in `plan/main_plan.md` → **Deployment & Infrastructure**:
    - cloud provider; single-cloud vs multi-cloud; primary region(s); compute model; database hosting; LLM provider and model(s); embedding provider/model; agent runtime; CI/CD platform; secrets management.
    The stack itself is finalized in the grill phase and captured in `plan/main_plan.md` → **Tech Stack**; the datastore row must match **Database hosting**.
 3. **Reuse rule:** if a deployment answer already exists in `DECISIONS.md`, resolved `DOUBTS.md`, or `plan/main_plan.md`, reuse it, inform the user, and do not ask again unless they want to change it.
 4. If the user is unavailable, record missing inputs in `DOUBTS.md` and do not invent product-specific facts.
 5. Restate the product state from `memories/MEMORY.md` and `plan/main_plan.md`.
 6. **Run the current phase** (load its file from the router), then **immediately advance**: recompute the phase and load the next phase file, repeating until the planning terminus (**tasks compiled + go/no-go**) or a Stop Condition. Do not end the turn asking the user to run the next phase - see `docs/CONTINUATION.md`. Validate claims with sources before adding product decisions; for research-grounded claims use `skills/research-search/SKILL.md` (`loop research "<query>"`) and cite in `EVIDENCE_LOG.md`.
+   Read `plan/AUTO_DOMAIN_SKILLS.md` and load only the selected data, ML, or operations
+   skill when deterministic product signals require it.
 7. Update `plan/main_plan.md`, `plan/step_XX_<name>.md`, `GATES.yml`, `DECISIONS.md`, and `EVIDENCE_LOG.md` as phases produce them.
 8. Draft `DEPLOYMENT_PLAN.md` with `python scripts/deployment_plan.py --source plan`.
 9. Update `memories/MEMORY.md`, `DOUBTS.md`, `HANDOFF.md`, and `.ai/SESSION_LOG.md`.

@@ -5,6 +5,8 @@ description: Reconciles MEMORY, HANDOFF, TASKS, GATES, COMPACT, and PROD-GAP dri
 
 # Sync Loop State
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Purpose
 
 Keep durable loop state aligned so the next agent does not follow stale handoff or gate information.

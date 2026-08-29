@@ -17,7 +17,7 @@ from feature_paths import (
     set_active_feature,
     slugify,
 )
-from workspace_utils import ROOT, resolve_workspace
+from workspace_utils import load_template, render_template as render, resolve_workspace
 
 
 TEMPLATES = {
@@ -28,19 +28,6 @@ TEMPLATES = {
     "research": "feature_research.template.md",
     "checklist": "feature_spec_checklist.template.md",
 }
-
-
-def load_template(name: str) -> str:
-    path = ROOT / "templates" / name
-    if not path.exists():
-        return f"# {name}\n\n"
-    return path.read_text(encoding="utf-8")
-
-
-def render(template: str, values: dict[str, str]) -> str:
-    for key, value in values.items():
-        template = template.replace("{{" + key + "}}", value)
-    return template
 
 
 def create_feature(workspace: Path, title: str, feature_id: str | None, step: str, force: bool) -> Path:

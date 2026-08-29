@@ -138,6 +138,52 @@ def dependencies(tasks: list[dict], task: dict) -> list[dict]:
 # ---------------------------------------------------------------------------
 
 
+# Two shapes of `GATES.yml` are in the wild and both are valid YAML for the same data:
+# the starter's mapping form (`  G-INIT-01:` with fields beneath it) and the sequence
+# form (`  - id: G-INIT-01`). Reading only the mapping form is not a cosmetic gap - a
+# root file written in sequence form parsed to *zero* gates, so every platform gate was
+# invisible to the union loader, to `duplicate-gate` detection, and to the brief
+# compiler's "Required gate" section, silently and with no error anywhere.
+GATE_LINE = re.compile(r"^(?P<indent>\s{2,})(?P<id>G-[A-Za-z0-9][A-Za-z0-9-]*):\s*$")
+GATE_ROW = re.compile(r"^(?P<indent>\s*)-\s+id:\s*(?P<id>G-[A-Za-z0-9][A-Za-z0-9-]*)\s*$")
+GATE_FIELD = re.compile(r"^\s+(?P<key>name|phase|status):\s*(?P<value>.+?)\s*$")
+
+
+def gate_headers(lines: list[str]) -> list[tuple[int, int, str, str]]:
+    """`(line index, indent, gate id, form)` for every gate declared in `lines`.
+
+    `form` is `mapping` or `sequence`. One scanner so every reader agrees on where a
+    gate starts and where the next one begins - `task_context.gate_block` slices the
+    same headers this function reports.
+    """
+    out: list[tuple[int, int, str, str]] = []
+    for index, raw in enumerate(lines):
+        mapping = GATE_LINE.match(raw)
+        if mapping:
+            out.append((index, len(mapping.group("indent")), mapping.group("id"), "mapping"))
+            continue
+        row = GATE_ROW.match(raw)
+        if row:
+            out.append((index, len(row.group("indent")), row.group("id"), "sequence"))
+    return out
+
+
+def gate_field(line: str):
+    """One headline field of the gate currently being read, or None."""
+    return GATE_FIELD.match(line)
+
+
+def gate_forms(path: Path) -> set[str]:
+    """Which declaration forms one file uses - `{"mapping"}`, `{"sequence"}`, or both."""
+    if not Path(path).is_file():
+        return set()
+    try:
+        lines = Path(path).read_text(encoding="utf-8", errors="ignore").splitlines()
+    except OSError:
+        return set()
+    return {form for _index, _indent, _gid, form in gate_headers(lines)}
+
+
 def gate_block(workspace: Path, gate_id: str) -> str:
     """The one gate this task must satisfy, with its criteria - not all of them."""
     path = workspace / "GATES.yml"
@@ -148,28 +194,40 @@ def gate_block(workspace: Path, gate_id: str) -> str:
     except OSError:
         return ""
 
+    # Both declaration forms, through the one scanner - a sequence-form file used to
+    # match nothing here, so a brief for a task gated by it was compiled with its
+    # "Required gate" section simply absent rather than failing.
+    headers = gate_headers(lines)
     start = None
     indent = 0
-    for index, line in enumerate(lines):
-        stripped = line.strip()
-        if stripped.startswith(f"{gate_id}:"):
-            start = index
-            indent = len(line) - len(line.lstrip())
+    form = "mapping"
+    for index, gate_indent, gid, gate_form in headers:
+        if gid == gate_id:
+            start, indent, form = index, gate_indent, gate_form
             break
     if start is None:
         return ""
 
+    nxt = min(
+        (index for index, _i, _g, _f in headers if index > start),
+        default=len(lines),
+    )
+
     out = [lines[start]]
-    for line in lines[start + 1 :]:
+    for line in lines[start + 1 : nxt]:
         stripped = line.strip()
         if not stripped:
             out.append(line)
             continue
         if stripped.startswith("```"):
             break
-        # Anything back at the gate's own indent starts the next gate - including a
-        # section comment, which would otherwise be pulled in as part of this one.
-        if (len(line) - len(line.lstrip())) <= indent and (stripped.endswith(":") or stripped.startswith("#")):
+        # Anything back at the gate's own indent starts the next section - including a
+        # comment, which would otherwise be pulled in as part of this gate. A sequence
+        # row's fields are indented past the `-`, so its own indent is not a boundary.
+        line_indent = len(line) - len(line.lstrip())
+        if form == "mapping" and line_indent <= indent and (stripped.endswith(":") or stripped.startswith("#")):
+            break
+        if form == "sequence" and line_indent <= indent and stripped.startswith("#"):
             break
         out.append(line)
 

@@ -26,8 +26,8 @@ This repo is designed to work across Cursor, Claude Code, Codex, OpenCode, Grok 
 
 ## Use
 
-In any agent, type any command from **`AGENTS.md`'s Portable Commands table** (or
-`LOOP_COMMANDS.md` for the plain list) - not duplicated here, since a second copy
+In any agent, type any command from **`AGENTS.md`'s Portable Commands table** - not
+duplicated here, since a second copy
 drifts stale every time a command is added.
 
 If slash commands are not supported, type the same text as a normal message. The agent should route it via `AGENTS.md`.

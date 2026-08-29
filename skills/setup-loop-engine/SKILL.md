@@ -5,6 +5,8 @@ description: First-time setup with global (~/.loop-engineer/data/) or local (<pr
 
 # Setup Loop Engine
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Memory modes
 
 | Mode | Path | Command |

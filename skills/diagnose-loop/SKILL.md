@@ -5,6 +5,8 @@ description: Diagnose a hard bug or performance regression by building a feedbac
 
 # Diagnose Loop
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 A discipline for bugs that did not fall to the first read of the code. Skip a phase only with
 a stated reason.
 

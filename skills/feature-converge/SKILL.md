@@ -5,6 +5,8 @@ description: Compares active feature spec/plan/tasks against TASKS.yml and imple
 
 # Feature Converge
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Purpose
 
 Post-build drift check: spec, feature-plan, tasks.md, and `TASKS.yml` stay aligned.

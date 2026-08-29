@@ -5,6 +5,8 @@ description: Selects supporting capabilities for the current loop phase in Loop 
 
 # Tool Orchestrator
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Purpose
 
 Select supporting capabilities for the current loop phase without hard-coding one vendor or agent runtime. Describe what the loop needs functionally; implement it however fits the product's stack. Named external tools/repos for each capability live in `tools/registry.md` - link there, don't re-list names here.

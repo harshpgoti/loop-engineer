@@ -5,6 +5,8 @@ description: Runs product QA and auto-validation: unit tests, integration tests,
 
 # QA Validation
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Required Checks
 
 - Unit tests
@@ -24,6 +26,11 @@ description: Runs product QA and auto-validation: unit tests, integration tests,
 3. Add missing tests when behavior changes.
 4. Do not mark work complete without validation.
 5. Record failures and gaps in `memories/MEMORY.md` and `HANDOFF.md`.
+6. Bind results to the exact code/configuration under test; stale green output is not evidence.
+7. Run the smallest deterministic checks first, then integration/E2E and expensive suites.
+8. For every failure, record expected/actual behavior, reproduction command, environment,
+   artifact identity, and whether it is new, baseline, flaky, or blocked.
+9. Quarantine requires owner, reason, expiry, and a replacement signal; retrying until green is not validation.
 
 ## Output
 
@@ -31,3 +38,4 @@ description: Runs product QA and auto-validation: unit tests, integration tests,
 - Failures fixed
 - Remaining failures
 - Gate status for `G-QA-01`
+- Structured findings, baseline delta, residual gaps, and exact artifact tested

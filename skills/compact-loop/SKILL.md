@@ -5,6 +5,8 @@ description: Compacts long-running product-loop context into COMPACT.md, preserv
 
 # Compact Loop
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Purpose
 
 Prevent context-window loss by creating a durable, human-readable context summary.

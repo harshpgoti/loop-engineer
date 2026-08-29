@@ -5,6 +5,8 @@ description: Shows current workspace, product, gate, task, human blockers, and n
 
 # Status
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Purpose
 
 Provide a fast operational snapshot without running a full planning or development loop.

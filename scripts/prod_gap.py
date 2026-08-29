@@ -4,11 +4,18 @@
 from __future__ import annotations
 
 import argparse
-from datetime import date
 from pathlib import Path
 
 from source_tree_scan import scan_source_tree
-from workspace_utils import ROOT, resolve_workspace
+from workspace_utils import (
+    append_session_log,
+    bullet as render_bullets,
+    extract_line,
+    load_template,
+    read_text,
+    render_template as render,
+    resolve_workspace,
+)
 
 
 STATE_FILES = [
@@ -32,37 +39,8 @@ STATE_FILES = [
 # was invisible so blocked-task and blocked-gate findings came from 6% of the file.
 FULL_FILE = 2_000_000
 
-def read_text(path: Path, max_chars: int = 2500) -> str:
-    if not path.exists():
-        return ""
-    text = path.read_text(encoding="utf-8", errors="ignore").strip()
-    if len(text) <= max_chars:
-        return text
-    return text[:max_chars].rstrip() + "\n\n_...truncated_"
-
-
-def extract_line(text: str, prefix: str, default: str = "TBD") -> str:
-    for line in text.splitlines():
-        if line.strip().lower().startswith(prefix.lower()):
-            return line.split(":", 1)[-1].strip().strip("* ")
-    return default
-
-
-def load_template() -> str:
-    path = ROOT / "templates" / "prod_gap.template.md"
-    return path.read_text(encoding="utf-8")
-
-
-def render(template: str, values: dict[str, str]) -> str:
-    for key, value in values.items():
-        template = template.replace("{{" + key + "}}", value)
-    return template
-
-
 def bullet(items: list[str]) -> str:
-    if not items:
-        return "- None identified yet."
-    return "\n".join(f"- {item}" for item in items)
+    return render_bullets(items, "- None identified yet.")
 
 
 def has_initialized_product(main_plan: str) -> bool:
@@ -206,7 +184,7 @@ def analyze(workspace: Path) -> str:
     if hierarchy["children"]:
         source_files += f"\n- Sub-products: {hierarchy['children']} (see `plan/SUBPRODUCTS.md`)"
 
-    template = load_template()
+    template = load_template("prod_gap.template.md")
     return render(
         template,
         {
@@ -230,17 +208,6 @@ def analyze(workspace: Path) -> str:
             "SOURCE_FILES": source_files,
         },
     )
-
-
-def append_session_log(workspace: Path, output: Path) -> None:
-    log_path = workspace / ".ai" / "SESSION_LOG.md"
-    log_path.parent.mkdir(parents=True, exist_ok=True)
-    with log_path.open("a", encoding="utf-8") as handle:
-        handle.write(
-            "\n"
-            f"## {date.today().isoformat()} - Product gap analysis\n\n"
-            f"- Updated `{output.relative_to(workspace)}`.\n"
-        )
 
 
 def _blocking_doubts(workspace: Path) -> list:
@@ -287,7 +254,11 @@ def main() -> int:
     output = workspace / "plan" / "PROD-GAP.md"
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(analyze(workspace), encoding="utf-8")
-    append_session_log(workspace, output)
+    append_session_log(
+        workspace,
+        "Product gap analysis",
+        [f"Updated `{output.relative_to(workspace)}`."],
+    )
     append_human_blockers(workspace)
     print(f"Wrote {output}")
     return 0

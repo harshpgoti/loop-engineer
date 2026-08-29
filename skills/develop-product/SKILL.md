@@ -5,6 +5,8 @@ description: Runs product engineering from the approved plan: frontend, backend,
 
 # Product Develop
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Isolated execution runs
 
 When a compiled task is deliberately delegated to a separate local coding-agent
@@ -39,7 +41,7 @@ Always:
 4. `memories/SOUL.md`, `memories/USER.md`, `memories/MEMORY.md`
 5. `plan/main_plan.md`, `HANDOFF.md`
 6. Active feature: `.loop/active-feature.json` → `spec.md`, `feature-plan.md`, `tasks.md`
-7. `plan/AUTO_SKILLS.md` / `plan/AUTO_AGENT_SKILLS.md` (only when the manifest lists them)
+7. `plan/AUTO_SKILLS.md` / `plan/AUTO_AGENT_SKILLS.md` / `plan/AUTO_DOMAIN_SKILLS.md` / `plan/AUTO_AGENTS.md` (only when the manifest lists them)
 
 Then load **one** phase file from the router below, and only the skills it names.
 
@@ -65,6 +67,12 @@ includes an AI agent), `skills/frontend-animation/SKILL.md` (when `AUTO_SKILLS.m
 lists it), `skills/docs/SKILL.md`, `skills/plan-loop/phases/spec-clarify.md` (when
 requirements are blocked), `skills/session-lifecycle/SKILL.md`, and the product repo's
 own instructions.
+
+Domain work is selected deterministically at session start: database, schema, migration,
+pipeline, or lineage signals load `skills/data-engineering/SKILL.md`; training, inference,
+dataset, or drift signals load `skills/ml-engineering/SKILL.md`; SLO, incident, backup,
+capacity, or runbook signals load `skills/operations/SKILL.md`. The selections and matched
+signals are recorded in `plan/AUTO_DOMAIN_SKILLS.md`.
 
 ## Needs a decision
 

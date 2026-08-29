@@ -169,6 +169,10 @@ Use conservative defaults unless `plan/main_plan.md` or `DECISIONS.md` says othe
 
 ## Agent roles (use explicitly in prompts)
 
+`manifests/agents.json` is the machine-checkable source for role classes, canonical skills,
+mutation authority, and builder/reviewer independence. Session start selects the minimum
+roles deterministically and records them in `plan/AUTO_AGENTS.md`; do not preload every role.
+
 | Role | Responsibility |
 |------|----------------|
 | Founder Strategist | Wedge, positioning, kill/keep |

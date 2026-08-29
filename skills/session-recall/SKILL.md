@@ -5,6 +5,8 @@ description: Recalls relevant past loop sessions from state.db into plan/SESSION
 
 # Session Recall
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Purpose
 
 Search `state.db` and inject top hits before planning or building.

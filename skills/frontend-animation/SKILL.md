@@ -5,6 +5,8 @@ description: Auto-route frontend design, motion, animation, and 3D work through 
 
 # Frontend Design, Animation & 3D (Auto)
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 One core skill with optional external layers. Loop Engineer **automatically** selects the
 right built-in references and compatible available external packs from `TASKS.yml`, `plan/`,
 `HANDOFF.md`, `DECISIONS.md`, installed skill locations, project `DESIGN.md`, and package

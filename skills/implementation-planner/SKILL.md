@@ -5,6 +5,8 @@ description: Plans implementation like a senior engineer before coding: reads th
 
 # Implementation Planner
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Purpose
 
 Prevent sloppy implementation by planning the smallest safe diff.

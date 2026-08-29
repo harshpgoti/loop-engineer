@@ -4,11 +4,18 @@
 from __future__ import annotations
 
 import argparse
-from datetime import date
 from pathlib import Path
 
 from deployment_topics import TOPICS, find_topic_value, template_values
-from workspace_utils import ROOT, resolve_workspace
+from workspace_utils import (
+    append_session_log,
+    bullet,
+    extract_line,
+    load_template,
+    read_text,
+    render_template as render,
+    resolve_workspace,
+)
 
 
 STATE_FILES = [
@@ -23,15 +30,6 @@ STATE_FILES = [
 
 
 FULL_FILE = 2_000_000
-
-
-def read_text(path: Path, max_chars: int = 8000) -> str:
-    if not path.exists():
-        return ""
-    text = path.read_text(encoding="utf-8", errors="ignore").strip()
-    if len(text) <= max_chars:
-        return text
-    return text[:max_chars].rstrip() + "\n\n_...truncated_"
 
 
 def collect_corpus(workspace: Path) -> dict[str, str]:
@@ -49,13 +47,6 @@ def collect_corpus(workspace: Path) -> dict[str, str]:
             step_text.append(read_text(step, 4000))
     corpus["plan/step_*.md"] = "\n\n".join(step_text)
     return corpus
-
-
-def extract_line(text: str, prefix: str, default: str = "") -> str:
-    for line in text.splitlines():
-        if line.strip().lower().startswith(prefix.lower()):
-            return line.split(":", 1)[-1].strip().strip("* ")
-    return default
 
 
 def doubt_exists(doubt_id: str, doubts_text: str) -> bool:
@@ -107,22 +98,6 @@ def append_handoff_note(workspace: Path, open_count: int, confirmed_count: int, 
         handle.write(note)
 
 
-def bullet(items: list[str]) -> str:
-    if not items:
-        return "- None."
-    return "\n".join(f"- {item}" for item in items)
-
-
-def load_template() -> str:
-    return (ROOT / "templates" / "deployment_plan.template.md").read_text(encoding="utf-8")
-
-
-def render(template: str, values: dict[str, str]) -> str:
-    for key, value in values.items():
-        template = template.replace("{{" + key + "}}", value)
-    return template
-
-
 def analyze(workspace: Path, source: str = "loop") -> str:
     corpus = collect_corpus(workspace)
     main_plan = corpus.get("main_plan.md", "")
@@ -163,7 +138,7 @@ def analyze(workspace: Path, source: str = "loop") -> str:
         )
 
     content = render(
-        load_template(),
+        load_template("deployment_plan.template.md"),
         {
             "UPDATED_DATE": date.today().isoformat(),
             "PRODUCT_NAME": product_name,
@@ -241,17 +216,6 @@ def analyze(workspace: Path, source: str = "loop") -> str:
     return content
 
 
-def append_session_log(workspace: Path, source: str) -> None:
-    log_path = workspace / ".ai" / "SESSION_LOG.md"
-    log_path.parent.mkdir(parents=True, exist_ok=True)
-    with log_path.open("a", encoding="utf-8") as handle:
-        handle.write(
-            "\n"
-            f"## {date.today().isoformat()} - Deployment plan updated ({source})\n\n"
-            "- Updated `DEPLOYMENT_PLAN.md`.\n"
-        )
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(description="Write DEPLOYMENT_PLAN.md for a product workspace.")
     parser.add_argument("--workspace", default=None, help="Product workspace path.")
@@ -261,7 +225,11 @@ def main() -> int:
     workspace = resolve_workspace(args.workspace)
     output = workspace / "DEPLOYMENT_PLAN.md"
     output.write_text(analyze(workspace, source=args.source), encoding="utf-8")
-    append_session_log(workspace, args.source)
+    append_session_log(
+        workspace,
+        f"Deployment plan updated ({args.source})",
+        ["Updated `DEPLOYMENT_PLAN.md`."],
+    )
     print(f"Wrote {output}")
     return 0
 

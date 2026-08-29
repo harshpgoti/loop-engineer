@@ -5,6 +5,8 @@ description: Runs the all-in-one product loop. It chooses planning or developmen
 
 # Loop Engine
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Purpose
 
 Self-drive the product loop from planning to development without manual context transfer. **Primary entry point** - must wire every built-in capability.

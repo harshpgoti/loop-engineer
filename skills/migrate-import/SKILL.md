@@ -5,6 +5,8 @@ description: Imports memory and skills from an external agent workspace into the
 
 # Migrate Import
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Purpose
 
 Copy durable memory and skills from another tool's workspace folder into Loop Engineer paths.

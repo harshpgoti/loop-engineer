@@ -5,6 +5,8 @@ description: Runs the evals loop for an AI product - score the golden cases, rec
 
 # Eval Loop
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Purpose
 
 An AI product's output is not predictable, so you cannot plan its development in

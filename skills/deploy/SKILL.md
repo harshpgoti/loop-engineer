@@ -5,6 +5,8 @@ description: Deploy the product to its chosen cloud and keep a record of every r
 
 # Deploy
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Purpose
 
 Two jobs, and the second is what makes the first safe to repeat:

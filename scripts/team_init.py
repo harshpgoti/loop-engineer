@@ -91,7 +91,7 @@ def bootstrap_skill(mode: str, url: str) -> str:
         "## Using it\n\n"
         "Type a Loop command (`/plan-loop`, `/develop-product`, `/loop-engine`, "
         "...) or describe the task; your agent routes it to the installed app per "
-        "its `AGENTS.md`. Full list: the app's `LOOP_COMMANDS.md`.\n\n"
+        "its `AGENTS.md`. The full command list is in that file.\n\n"
         "## Policy\n\n"
         f"{policy}\n"
     )

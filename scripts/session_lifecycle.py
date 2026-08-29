@@ -9,6 +9,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from agent_skill_router import run_router as run_agent_router
+from agent_router import run_router as run_role_router
+from domain_skill_router import run_router as run_domain_router
 from frontend_skill_router import run_router
 from feature_paths import read_active_feature
 from memory_curator import apply_report, propose_updates, render_report
@@ -292,11 +294,15 @@ def render_manifest(
     hits: int,
     auto_skills: list[str],
     auto_agent_skills: list[str] | None = None,
+    auto_domain_skills: list[str] | None = None,
+    auto_agents: list[str] | None = None,
     update_status: dict | None = None,
     hierarchy: dict | None = None,
     findings: dict | None = None,
 ) -> str:
     auto_agent_skills = auto_agent_skills or []
+    auto_domain_skills = auto_domain_skills or []
+    auto_agents = auto_agents or []
     lines = [
         "# Session Manifest",
         "",
@@ -347,6 +353,16 @@ def render_manifest(
         lines.extend(["", "## Auto agent-development skills", ""])
         for name in auto_agent_skills:
             lines.append(f"- `{name}` - see `plan/AUTO_AGENT_SKILLS.md`")
+
+    if auto_domain_skills:
+        lines.extend(["", "## Auto domain skills", ""])
+        for name in auto_domain_skills:
+            lines.append(f"- `{name}` - see `plan/AUTO_DOMAIN_SKILLS.md`")
+
+    if auto_agents:
+        lines.extend(["", "## Auto agent roles", ""])
+        for name in auto_agents:
+            lines.append(f"- `{name}` - see `plan/AUTO_AGENTS.md`")
 
     try:
         from eval_suite import manifest_block as evals_block
@@ -577,6 +593,10 @@ def session_start(
     agent_picks = run_agent_router(workspace, extra=text, write=True)
     auto_agent_names = [name for name, _ in agent_picks]
 
+    domain_picks = run_domain_router(workspace, extra=text, write=True)
+    auto_domain_names = [name for name, _ in domain_picks]
+    auto_agents = run_role_router(workspace, command=command or "", text=text, domain_skills=auto_domain_names, write=True)
+
     hierarchy = _hierarchy(workspace)
     findings = _parent_findings(workspace)
     maintenance = _auto_maintenance(workspace)
@@ -600,6 +620,8 @@ def session_start(
             hits=hits,
             auto_skills=auto_names,
             auto_agent_skills=auto_agent_names,
+            auto_domain_skills=auto_domain_names,
+            auto_agents=auto_agents,
             update_status=update_status,
             hierarchy=hierarchy,
             findings=findings,
@@ -617,6 +639,8 @@ def session_start(
             "recall_hits": hits,
             "auto_skills": auto_names,
             "auto_agent_skills": auto_agent_names,
+            "auto_domain_skills": auto_domain_names,
+            "auto_agents": auto_agents,
             "manifest": MANIFEST,
             "role": hierarchy.get("role"),
             "sub_products": hierarchy.get("children", 0),
@@ -629,6 +653,19 @@ def session_start(
     )
     write_meta(workspace, meta)
 
+    try:
+        from event_store import append as append_event
+
+        append_event(
+            workspace, "session.started",
+            {"command": command, "tool": tool, "auto_agents": auto_agents,
+             "auto_domain_skills": auto_domain_names},
+            idempotency_key=f"{meta['started_at']}:start",
+        )
+    except Exception as exc:  # lifecycle remains usable; doctor can report store damage
+        meta["event_store_error"] = str(exc)
+        write_meta(workspace, meta)
+
     db = state_db(workspace)
     init_db(db)
     log_session(
@@ -638,7 +675,7 @@ def session_start(
         title="Session started",
         body=(
             f"manifest={MANIFEST}; recall_hits={hits}; auto_skills={auto_names}; "
-            f"auto_agent_skills={auto_agent_names}; role={hierarchy.get('role')}; "
+            f"auto_agent_skills={auto_agent_names}; auto_domain_skills={auto_domain_names}; auto_agents={auto_agents}; role={hierarchy.get('role')}; "
             f"sub_products={hierarchy.get('children', 0)}; drift={hierarchy.get('counts')}"
         ),
         tags="lifecycle start hierarchy",
@@ -648,6 +685,8 @@ def session_start(
         "hits": hits,
         "auto_skills": auto_names,
         "auto_agent_skills": auto_agent_names,
+        "auto_domain_skills": auto_domain_names,
+        "auto_agents": auto_agents,
         "manifest": str(manifest_path),
         "hierarchy": hierarchy,
         "maintenance": maintenance,
@@ -814,6 +853,17 @@ def session_end(
     meta["pending_writes"] = pending
     write_meta(workspace, meta)
 
+    try:
+        from event_store import append as append_event
+
+        append_event(
+            workspace, "session.ended",
+            {"command": command, "summary": body[:500], "pending_writes": pending},
+            idempotency_key=f"{meta.get('started_at') or meta['ended_at']}:end",
+        )
+    except Exception as exc:
+        actions.append(f"event store skipped: {exc}")
+
     return {
         "review": str(review_path),
         "closeout": str(closeout_path),
@@ -875,6 +925,10 @@ def main() -> int:
             print(f"  auto skills: {', '.join(result['auto_skills'])}")
         if result["auto_agent_skills"]:
             print(f"  auto agent skills: {', '.join(result['auto_agent_skills'])}")
+        if result["auto_domain_skills"]:
+            print(f"  auto domain skills: {', '.join(result['auto_domain_skills'])}")
+        if result["auto_agents"]:
+            print(f"  auto agent roles: {', '.join(result['auto_agents'])}")
         for action in result.get("maintenance", []):
             print(f"  auto: {action}")
         # Sub-products are scopes in this workspace, so there is no hierarchy to report

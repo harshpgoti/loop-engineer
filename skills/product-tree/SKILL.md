@@ -5,6 +5,8 @@ description: Shows the sub-product scopes in one product workspace, their plan/b
 
 # Product Tree
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Purpose
 
 Show the platform and every sub-product from the unified workspace. A sub-product's plan

@@ -5,6 +5,13 @@ description: Curates bounded memory at loop closeout with size limits, dedupe, d
 
 # Memory Review
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
+Repeated observations do not rewrite memory, rules, or skills automatically. Record them
+through `scripts/learning_candidates.py`; promotion requires three distinct sessions,
+confidence at or above the policy threshold, and an explicit approver, and still produces a
+pending review artifact rather than mutating canonical instructions.
+
 ## Purpose
 
 Keep `memories/MEMORY.md` and `memories/USER.md` within bounded char limits, deduplicated, and aligned with product-state files.
@@ -26,7 +33,7 @@ Keep `memories/MEMORY.md` and `memories/USER.md` within bounded char limits, ded
 
 - `memories/MEMORY.md`: ~2,200 chars
 - `memories/USER.md`: ~1,375 chars
-- Entries separated by `Â§`
+- Entries separated by `§`
 
 ## Script
 

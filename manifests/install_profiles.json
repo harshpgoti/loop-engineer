@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "profiles": [
+    {"id": "minimal", "summary": "Core state and planning tools.", "capabilities": ["planning"], "context_budget": 35},
+    {"id": "product", "summary": "End-to-end product planning and delivery.", "capabilities": ["delivery", "frontend", "migration"], "context_budget": 140},
+    {"id": "full", "summary": "Every registered capability.", "capabilities": ["foundation", "planning", "feature-workflow", "quality", "security", "data-ml-operations", "delivery", "frontend", "agent-systems", "migration"], "context_budget": 155}
+  ]
+}

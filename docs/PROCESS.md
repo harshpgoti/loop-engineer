@@ -218,7 +218,7 @@ detect workspace version
 -> update .loop-workspace-version
 ```
 
-See `migrations/README.md`.
+The cumulative, idempotent upgrade lives behind `scripts/migrate_workspace.py`.
 
 ## Quality Rubrics
 

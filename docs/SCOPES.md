@@ -114,6 +114,35 @@ Shared means anything two sub-products must not disagree about.
 Tasks and gates load as a union with the scope attached. A scope always sees platform
 tasks too - platform work gates scope work, and hiding it would report a false "ready".
 
+**One layout, the same for every scope.** Root holds platform rows; each scope holds its
+own, in `plan/products/<slug>/`. A workspace that keeps one sub-product's rows in its own
+file and another's in the root file is not a style choice - every consequence of it is
+silent. A scope whose rows sit at the root reports `0/0 done`, so `/status` and the
+readiness counters describe a sub-product that is not the one on disk; a `blocked_by`
+between those rows looks intra-scope, so nothing reports it as cross-scope work to
+sequence; and a root file written in a different YAML shape than the scopes parses to
+zero gates, so platform gates stop being enforced with no error anywhere.
+
+So the layout is a checked invariant. `loop scope check` reports it, from declarations on
+disk only - a slug, a `scope:` field, a file's shape - never by guessing which sub-product
+a row is "really" about:
+
+| Kind | Level | Fires when |
+|---|---|---|
+| `scope-rows-in-root` | error | A root row carries `scope: <slug>`; its home is that scope's file |
+| `scope-file-stub` | error | A scope's `TASKS.yml` declares nothing while root rows claim to be its |
+| `gate-undeclared` | error | A task names a gate id no file in the workspace declares |
+| `scope-unknown` | error | A row declares a `scope:` no folder here provides |
+| `scope-unplanned` | warn | No row anywhere claims a scope - its work is unattributed |
+| `scope-file-missing` | warn | A scope has no `TASKS.yml` or `GATES.yml`, not even an empty one |
+| `scope-steps-in-root` | warn | `plan/steps/NN-<slug>/` holds a scope's ultraplan pack (the master plan's `plan/step_NN_<slug>.md` row summary is not drift) |
+| `gate-form-split` | warn | `GATES.yml` files disagree on declaration shape across the workspace |
+
+A row that names its scope is read as that scope's wherever it is written, so fixing the
+layout is a move, never a re-count. Both `GATES.yml` shapes parse - the starter's mapping
+form (`  G-INIT-01:`) and the sequence form (`  - id: G-INIT-01`) - but a workspace should
+settle on one, and `gate-form-split` says when it has not.
+
 ```yaml
 # plan/products/portal/TASKS.yml
 - id: PORTAL-TASK-002

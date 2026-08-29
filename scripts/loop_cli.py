@@ -69,6 +69,13 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     return run_script("doctor.py", _workspace_args(args))
 
 
+def cmd_capabilities(args: argparse.Namespace) -> int:
+    extra = [args.capability_action]
+    if getattr(args, "name", None):
+        extra.append(args.name)
+    return run_script("capabilities.py", extra)
+
+
 def cmd_status(args: argparse.Namespace) -> int:
     return run_script("status.py", _workspace_args(args))
 
@@ -689,6 +696,18 @@ def build_parser() -> argparse.ArgumentParser:
     doctor_p = sub.add_parser("doctor", help="Health-check runtime and product workspace.")
     doctor_p.add_argument("--workspace", default=argparse.SUPPRESS)
     doctor_p.set_defaults(func=cmd_doctor)
+    capabilities = sub.add_parser("capabilities", help="Inspect and validate the internal capability registry.")
+    capabilities_sub = capabilities.add_subparsers(dest="capability_action", required=True)
+    capabilities_sub.add_parser("list", help="List registered capabilities.").set_defaults(func=cmd_capabilities)
+    capability_explain = capabilities_sub.add_parser("explain", help="Explain a capability, command, or skill.")
+    capability_explain.add_argument("name")
+    capability_explain.set_defaults(func=cmd_capabilities)
+    capability_plan = capabilities_sub.add_parser("plan", help="Resolve an install profile.")
+    capability_plan.add_argument("name", choices=("minimal", "product", "full"))
+    capability_plan.set_defaults(func=cmd_capabilities)
+    capabilities_sub.add_parser("map", help="Render the ownership map.").set_defaults(func=cmd_capabilities)
+    capabilities_sub.add_parser("agents", help="List governed canonical agent roles.").set_defaults(func=cmd_capabilities)
+    capabilities_sub.add_parser("doctor", help="Validate registry invariants.").set_defaults(func=cmd_capabilities)
     status_p = sub.add_parser("status", help="Quick workspace snapshot.")
     status_p.add_argument("--workspace", default=argparse.SUPPRESS)
     status_p.set_defaults(func=cmd_status)

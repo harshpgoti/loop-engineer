@@ -5,6 +5,8 @@ description: Answer a free-form question about a plan or build that already exis
 
 # Ask Loop
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Purpose
 
 After `/plan-loop` or `/develop-product` finishes, a user who wants to *understand* what

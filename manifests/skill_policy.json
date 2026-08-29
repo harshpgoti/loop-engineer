@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "contract_marker": "docs/SKILL_CONTRACT.md",
+  "classes": {
+    "read-only": {"required_terms": ["evidence", "output"], "requires_rollback": false},
+    "stateful": {"required_terms": ["validation", "output", "closeout"], "requires_rollback": false},
+    "mutating": {"required_terms": ["validation", "output", "approval"], "requires_rollback": true},
+    "assurance": {"required_terms": ["finding", "severity", "evidence"], "requires_rollback": false}
+  },
+  "assignments": {
+    "agent-builder": "mutating", "ask-loop": "read-only", "cicd-release": "mutating",
+    "codebase-design": "read-only", "code-reviewer": "assurance", "compact-loop": "stateful", "data-engineering": "mutating",
+    "deploy": "mutating", "deployment-plan": "stateful", "develop-product": "mutating",
+    "diagnose-loop": "assurance", "docs": "mutating", "doctor": "assurance",
+    "eval-loop": "assurance", "feature-converge": "assurance", "feature-workflow": "stateful",
+    "frontend-animation": "mutating", "implementation-planner": "read-only", "loop-engine": "mutating",
+    "memory-review": "stateful", "migrate-import": "mutating", "ml-engineering": "mutating", "operations": "mutating", "plan-loop": "stateful",
+    "prod-gap": "assurance", "product-tree": "read-only", "qa-validation": "assurance",
+    "release-check": "assurance", "research-search": "read-only", "revise-plan": "stateful",
+    "scope": "stateful", "security-compliance": "assurance", "session-lifecycle": "stateful",
+    "session-recall": "read-only", "setup-loop-engine": "mutating", "status": "read-only",
+    "sync-loop-state": "stateful", "tdd": "assurance", "tool-orchestrator": "mutating",
+    "upgrade-loop-engineer": "mutating"
+  }
+}

@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import scope_paths as sp
-from task_context import parse_tasks_file
+from task_context import gate_field, gate_forms, gate_headers, parse_tasks_file
 
 
 DONE_STATUSES = {"done", "complete", "completed", "shipped"}
@@ -40,9 +40,17 @@ def load_tasks(workspace: Path, *, scope: str | None = None) -> list[dict]:
     scope work - a scope build that could not see `G-PLATFORM-01` would report itself
     unblocked when it is not.
     """
+    known = {record.slug for record in sp.list_scopes(workspace)}
     tasks: list[dict] = []
     for task in parse_tasks_file(Path(workspace) / "TASKS.yml"):
-        task["scope"] = sp.PLATFORM
+        # A root row may name the scope it belongs to. Overwriting that with
+        # `platform` is how two scopes whose rows were written into the root file
+        # reported `0/0 done` while carrying real work: their tasks were loaded, then
+        # attributed to the platform, so `scope == slug` matched nothing. A declared
+        # scope wins; an unknown one stays platform and is reported by `layout_findings`
+        # rather than silently creating a scope that does not exist.
+        declared = str(task.get("scope") or "").strip()
+        task["scope"] = declared if declared in known else sp.PLATFORM
         task["source"] = "TASKS.yml"
         tasks.append(task)
 
@@ -131,10 +139,6 @@ def ready_tasks(tasks: list[dict]) -> list[dict]:
 # ---------------------------------------------------------------------------
 
 
-GATE_LINE = re.compile(r"^\s{2,}(?P<id>G-[A-Za-z0-9][A-Za-z0-9-]*):\s*$")
-GATE_FIELD = re.compile(r"^\s+(?P<key>name|phase|status):\s*(?P<value>.+?)\s*$")
-
-
 def parse_gates_file(path: Path) -> list[dict]:
     """Gate ids and their headline fields, parsed the same yaml-free way as tasks."""
     if not Path(path).is_file():
@@ -144,17 +148,17 @@ def parse_gates_file(path: Path) -> list[dict]:
     except OSError:
         return []
 
+    starts = {index: gid for index, _indent, gid, _form in gate_headers(lines)}
     gates: list[dict] = []
     current: dict | None = None
-    for raw in lines:
-        header = GATE_LINE.match(raw)
-        if header:
-            current = {"id": header.group("id")}
+    for index, raw in enumerate(lines):
+        if index in starts:
+            current = {"id": starts[index]}
             gates.append(current)
             continue
         if current is None:
             continue
-        field_match = GATE_FIELD.match(raw)
+        field_match = gate_field(raw)
         if field_match:
             current[field_match.group("key")] = field_match.group("value").strip().strip("\"'")
     return gates
@@ -162,8 +166,10 @@ def parse_gates_file(path: Path) -> list[dict]:
 
 def load_gates(workspace: Path, *, scope: str | None = None) -> list[dict]:
     gates: list[dict] = []
+    known = {record.slug for record in sp.list_scopes(workspace)}
     for gate in parse_gates_file(Path(workspace) / "GATES.yml"):
-        gate["scope"] = sp.PLATFORM
+        declared = str(gate.get("scope") or "").strip()
+        gate["scope"] = declared if declared in known else sp.PLATFORM
         gates.append(gate)
     for record in sp.list_scopes(workspace):
         if scope is not None and record.slug != scope:

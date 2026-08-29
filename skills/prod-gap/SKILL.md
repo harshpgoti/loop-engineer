@@ -5,6 +5,8 @@ description: Analyzes product requirements, current progress, implementation, ga
 
 # Product Gap Analysis
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Purpose
 
 Create a clear production-readiness gap report between:

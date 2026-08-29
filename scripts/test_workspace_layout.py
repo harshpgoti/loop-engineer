@@ -57,8 +57,31 @@ class TestLoopHome(LoopHomeSandbox):
 
 class TestLocalDataDir(unittest.TestCase):
     def test_appends_dot_loop_engineer(self) -> None:
-        product = Path("/tmp/my-product")
+        product = Path("example-product")
         self.assertEqual(wr.local_data_dir(product), product / ".loop-engineer")
+
+
+class TestSharedReportHelpers(unittest.TestCase):
+    def test_bounded_read_and_rendering_have_one_contract(self) -> None:
+        import workspace_utils as wu
+
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "source.md"
+            source.write_text("  abcdef  ", encoding="utf-8")
+            self.assertEqual("abcd\n\n_...truncated_", wu.read_text(source, 4))
+        self.assertEqual("Hello Loop", wu.render_template("Hello {{NAME}}", {"NAME": "Loop"}))
+        self.assertEqual("- None.", wu.bullet([]))
+        self.assertEqual("- a\n- b", wu.bullet(["a", "b"]))
+
+    def test_session_log_append_is_structured(self) -> None:
+        import workspace_utils as wu
+
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            wu.append_session_log(workspace, "Status snapshot", ["Updated `STATUS.md`."])
+            text = (workspace / ".ai" / "SESSION_LOG.md").read_text(encoding="utf-8")
+            self.assertIn(" - Status snapshot", text)
+            self.assertIn("- Updated `STATUS.md`.", text)
 
 
 class TestFindLocalWorkspace(LoopHomeSandbox):
@@ -259,16 +282,12 @@ class TestMainPlanResolver(unittest.TestCase):
         self.assertEqual(main_plan_file(self.tmp), self.tmp / "plan" / "main_plan.md")
 
 
-class TestMigration008(unittest.TestCase):
+class TestWorkspaceMigration(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = Path(tempfile.mkdtemp(prefix="loop-mig008-test-"))
-        import importlib.util
+        import migrate_workspace
 
-        spec = importlib.util.spec_from_file_location(
-            "mig008", Path(__file__).resolve().parents[1] / "migrations" / "008_organize_memory_layout.py"
-        )
-        self.mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(self.mod)
+        self.apply = migrate_workspace.apply_workspace_v8
 
     def tearDown(self) -> None:
         shutil.rmtree(self.tmp, ignore_errors=True)
@@ -278,7 +297,7 @@ class TestMigration008(unittest.TestCase):
 
     def test_moves_main_plan_into_plan_dir(self) -> None:
         (self.tmp / "main_plan.md").write_text("# Plan", encoding="utf-8")
-        self.mod.apply(self.tmp, self._seed)
+        self.apply(self.tmp, self._seed)
         self.assertFalse((self.tmp / "main_plan.md").exists())
         self.assertEqual((self.tmp / "plan" / "main_plan.md").read_text(encoding="utf-8"), "# Plan")
 
@@ -286,7 +305,7 @@ class TestMigration008(unittest.TestCase):
         (self.tmp / "memories").mkdir()
         (self.tmp / "memories" / "MEMORY.md").write_text("# Mem\n", encoding="utf-8")
         (self.tmp / "MEMORY.md").write_text("# Mem\n", encoding="utf-8")
-        self.mod.apply(self.tmp, self._seed)
+        self.apply(self.tmp, self._seed)
         self.assertFalse((self.tmp / "MEMORY.md").exists())
         self.assertTrue((self.tmp / "memories" / "MEMORY.md").exists())
 
@@ -294,7 +313,7 @@ class TestMigration008(unittest.TestCase):
         (self.tmp / "memories").mkdir()
         (self.tmp / "memories" / "MEMORY.md").write_text("# canonical", encoding="utf-8")
         (self.tmp / "MEMORY.md").write_text("# diverged edits", encoding="utf-8")
-        self.mod.apply(self.tmp, self._seed)
+        self.apply(self.tmp, self._seed)
         self.assertFalse((self.tmp / "MEMORY.md").exists())
         backup = self.tmp / "memories" / "MEMORY.root-legacy.md"
         self.assertEqual(backup.read_text(encoding="utf-8"), "# diverged edits")
@@ -302,19 +321,19 @@ class TestMigration008(unittest.TestCase):
 
     def test_moves_root_memory_when_no_canonical(self) -> None:
         (self.tmp / "MEMORY.md").write_text("# only copy", encoding="utf-8")
-        self.mod.apply(self.tmp, self._seed)
+        self.apply(self.tmp, self._seed)
         self.assertEqual((self.tmp / "memories" / "MEMORY.md").read_text(encoding="utf-8"), "# only copy")
 
     def test_moves_startup_memory(self) -> None:
         (self.tmp / "STARTUP_MEMORY.md").write_text("legacy", encoding="utf-8")
-        self.mod.apply(self.tmp, self._seed)
+        self.apply(self.tmp, self._seed)
         self.assertFalse((self.tmp / "STARTUP_MEMORY.md").exists())
         self.assertTrue((self.tmp / "memories" / "STARTUP_MEMORY.md").exists())
 
     def test_idempotent_on_organized_workspace(self) -> None:
         (self.tmp / "plan").mkdir()
         (self.tmp / "plan" / "main_plan.md").write_text("# Plan", encoding="utf-8")
-        results = self.mod.apply(self.tmp, self._seed)
+        results = self.apply(self.tmp, self._seed)
         self.assertIn("pending write dirs: ensured", results)
 
     def test_cumulative_migration_requests_every_current_scaffold(self) -> None:
@@ -324,7 +343,7 @@ class TestMigration008(unittest.TestCase):
             requested.append((rel, src))
             return None
 
-        self.mod.apply(self.tmp, record_seed)
+        self.apply(self.tmp, record_seed)
         self.assertEqual(
             {
                 "COMPACT.md",

@@ -5,6 +5,8 @@ description: Routes feature spec folders under plan/features - create, clarify, 
 
 # Feature Workflow
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Purpose
 
 Build one feature at a time with a durable spec folder. This is Loop Engineer's built-in spec-driven path - not a vendored external tool.

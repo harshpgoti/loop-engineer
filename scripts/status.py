@@ -4,11 +4,19 @@
 from __future__ import annotations
 
 import argparse
-from datetime import date
 from pathlib import Path
 
-from workspace_utils import ROOT, load_config, resolve_workspace
-from workspace_utils import console_utf8
+from workspace_utils import (
+    append_session_log,
+    bullet,
+    console_utf8,
+    extract_line,
+    load_config,
+    load_template,
+    read_text,
+    render_template as render,
+    resolve_workspace,
+)
 
 
 STATE_FILES = [
@@ -22,22 +30,6 @@ STATE_FILES = [
     "COMPACT.md",
     "plan/PROD-GAP.md",
 ]
-
-
-def read_text(path: Path, max_chars: int = 3000) -> str:
-    if not path.exists():
-        return ""
-    text = path.read_text(encoding="utf-8", errors="ignore").strip()
-    if len(text) <= max_chars:
-        return text
-    return text[:max_chars].rstrip() + "\n\n_...truncated_"
-
-
-def extract_line(text: str, prefix: str, default: str = "TBD") -> str:
-    for line in text.splitlines():
-        if line.strip().lower().startswith(prefix.lower()):
-            return line.split(":", 1)[-1].strip().strip("* ")
-    return default
 
 
 def find_active_task(tasks_text: str) -> str:
@@ -91,23 +83,6 @@ def recommend_next_command(main_plan: str, current_state: str, gates: str, tasks
     return "/loop-engine"
 
 
-def load_template() -> str:
-    path = ROOT / "templates" / "status.template.md"
-    return path.read_text(encoding="utf-8")
-
-
-def render(template: str, values: dict[str, str]) -> str:
-    for key, value in values.items():
-        template = template.replace("{{" + key + "}}", value)
-    return template
-
-
-def bullet(items: list[str]) -> str:
-    if not items:
-        return "- None."
-    return "\n".join(f"- {item}" for item in items)
-
-
 def _hierarchy(workspace: Path) -> dict:
     """Sub-product roll-up for the snapshot. Failure-safe - never blocks /status."""
     try:
@@ -153,7 +128,7 @@ def summarize(workspace: Path) -> str:
     hierarchy = _hierarchy(workspace)
     human_blockers.extend(hierarchy["blockers"])
 
-    template = load_template()
+    template = load_template("status.template.md")
     return render(
         template,
         {
@@ -175,17 +150,6 @@ def summarize(workspace: Path) -> str:
     )
 
 
-def append_session_log(workspace: Path) -> None:
-    log_path = workspace / ".ai" / "SESSION_LOG.md"
-    log_path.parent.mkdir(parents=True, exist_ok=True)
-    with log_path.open("a", encoding="utf-8") as handle:
-        handle.write(
-            "\n"
-            f"## {date.today().isoformat()} - Status snapshot\n\n"
-            "- Updated `STATUS.md`.\n"
-        )
-
-
 def main() -> int:
     console_utf8()
     parser = argparse.ArgumentParser(description="Write STATUS.md for a product workspace.")
@@ -195,7 +159,7 @@ def main() -> int:
     workspace = resolve_workspace(args.workspace)
     output = workspace / "STATUS.md"
     output.write_text(summarize(workspace), encoding="utf-8")
-    append_session_log(workspace)
+    append_session_log(workspace, "Status snapshot", ["Updated `STATUS.md`."])
     print(f"Wrote {output}")
     return 0
 

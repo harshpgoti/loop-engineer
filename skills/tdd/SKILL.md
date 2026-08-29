@@ -5,6 +5,8 @@ description: Test-first discipline and the quality bar for tests - which seam to
 
 # Test-Driven Development
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 `AGENTS.md` #10 requires tests. This is the bar they have to clear.
 
 The loop is red -> green: write the failing test, then only enough code to pass it. Everything

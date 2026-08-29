@@ -5,6 +5,8 @@ description: Sub-products planned and built inside one workspace as scopes under
 
 # Scopes
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Purpose
 
 A platform is one product with several sub-products. The federated layout gave each
@@ -108,6 +110,22 @@ queue a note. In the same run:
 
 The old rule was "authored state never crosses a workspace boundary". Here the protection
 is the question, not the boundary.
+
+## One layout for every sub-product
+
+Root holds platform rows; each scope holds its own under `plan/products/<slug>/`. Keeping
+one sub-product's tasks in its own `TASKS.yml` and another's in the root file is the drift
+this checks for, and it is invisible without the check: a scope whose rows sit at the root
+reports `0/0 done`, so the status you read describes a sub-product that is not the one on
+disk. `loop scope check` reports it - `scope-rows-in-root`, `scope-file-stub`,
+`gate-undeclared`, `scope-unknown`, `scope-unplanned`, `scope-file-missing`,
+`scope-steps-in-root`, `gate-form-split`. See `docs/SCOPES.md` for what each one means.
+
+Fixing one is a **move**, not a rewrite: a row that carries `scope: <slug>` is already read
+as that scope's, so relocating it to `plan/products/<slug>/TASKS.yml` changes no count and
+no id. Do that when the user asks to tidy the layout, one scope at a time, and say which
+rows moved. Rows nothing claims (`scope-unplanned`) need the user to say where they belong -
+never infer it from a title.
 
 ## Contracts
 

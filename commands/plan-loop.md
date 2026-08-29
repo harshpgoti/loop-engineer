@@ -4,7 +4,7 @@ Run Step 1: initialize product planning, validation, grilling, evidence, PRD, ar
 
 ## How To Interpret
 
-If the user says `/plan-loop`, `/plan-loop <idea>`, `/startup-discovery-loop`, `plan`, or describes a product idea, execute this file directly. Do not ask for `AGENT_BOOT_SEQUENCE.md`.
+If the user says `/plan-loop`, `/plan-loop <idea>`, `/startup-discovery-loop`, `plan`, or describes a product idea, execute this file directly.
 
 **User types only the idea.** Loop Engineer auto-detects scale, decomposes modules, and routes ultraplan - no manual scale/decompose commands.
 

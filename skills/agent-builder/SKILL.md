@@ -5,6 +5,8 @@ description: Design and scaffold an AI agent (or agentic/dynamic workflow) as th
 
 # Agent builder
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 Loop Engineer helps build **any product**; this skill activates when that product is, or includes, an AI agent - a chatbot, autonomous workflow, tool-using assistant, multi-agent system, or dynamic/branching automation. It is not about Loop Engineer's own operational skills (`skills/` at repo root) - it is about the agent **the user is building**.
 
 ## When this activates

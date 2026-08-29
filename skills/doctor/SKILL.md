@@ -5,6 +5,8 @@ description: Health-checks the Loop Engineering OS runtime and active product wo
 
 # Doctor
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 ## Purpose
 
 Detect broken setup, missing files, validator failures, and product/tool separation issues before long loops fail mid-run.
@@ -28,6 +30,7 @@ Detect broken setup, missing files, validator failures, and product/tool separat
 - tool repo is not storing initialized product data
 - scripts import correctly
 - template validation passes
+- `loop capabilities doctor` reports complete ownership, valid dependency closure, supported harnesses, profiles within budget, and all canonical skills conforming to `docs/SKILL_CONTRACT.md`
 - product output validation passes when possible
 - memory size vs limits and drift
 - FTS5 health on `state.db`

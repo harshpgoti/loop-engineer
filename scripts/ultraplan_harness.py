@@ -25,21 +25,8 @@ from plan_paths import (
     steps_dir,
     ultraplan_status_file,
 )
-from workspace_utils import ROOT, resolve_workspace
+from workspace_utils import load_template, render_template as render, resolve_workspace
 from scope_paths import list_scopes
-
-
-def load_template(name: str) -> str:
-    path = ROOT / "templates" / name
-    if path.exists():
-        return path.read_text(encoding="utf-8")
-    return f"# {name}\n\n"
-
-
-def render(template: str, values: dict[str, str]) -> str:
-    for key, value in values.items():
-        template = template.replace("{{" + key + "}}", value)
-    return template
 
 
 def read_scale(workspace: Path) -> str:

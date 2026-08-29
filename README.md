@@ -65,10 +65,10 @@ Agents should interpret these commands by reading `commands/` and `skills/`. On 
 
 In central-tool setup, those product files are written to the registered product workspace, not into `loop-engineer/`.
 
-`AGENT_BOOT_SEQUENCE.md` is now only a fallback for tools that do not auto-read repo instructions.
+Tools that do not auto-read repository instructions use `AGENTS.md` directly.
 
 For install/copy instructions, see [`INSTALL.md`](INSTALL.md).
-For central-tool vs embedded setup, see [`docs/WORKSPACES.md`](docs/WORKSPACES.md).
+For central-tool vs embedded setup, see [`docs/DATA_LAYOUT.md`](docs/DATA_LAYOUT.md).
 For data layout and auto-detection, see [`docs/DATA_LAYOUT.md`](docs/DATA_LAYOUT.md).
 
 ## Memory layer
@@ -361,7 +361,7 @@ Details: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)
 /memory-review        # memory curation only (normally inside session-end)
 ```
 
-Full, current list: [`AGENTS.md`](AGENTS.md)'s Portable Commands table, or the plain list in [`LOOP_COMMANDS.md`](LOOP_COMMANDS.md).
+Full, current list: [`AGENTS.md`](AGENTS.md)'s Portable Commands table.
 
 For recurring Cursor work:
 
@@ -409,7 +409,7 @@ python scripts/validate_template.py
 
 ## Full playbook
 
-See [`STARTUP_LOOP_ENGINEERING_PLAYBOOK.md`](STARTUP_LOOP_ENGINEERING_PLAYBOOK.md) for architecture, stack, CI gates, and compliance baseline.
+See [`docs/PROCESS.md`](docs/PROCESS.md) for architecture, CI gates, and the product loop.
 
 See [`docs/PROCESS.md`](docs/PROCESS.md) for the `/plan-loop`, `/develop-product`, and `/loop-engine` process architecture.
 

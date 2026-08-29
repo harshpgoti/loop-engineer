@@ -5,6 +5,11 @@ description: Always-on session start/end for any tool. Run loop session-start be
 
 # Session Lifecycle (Always-on)
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
+Lifecycle transitions are also appended idempotently to `.loop/events.jsonl` through
+`scripts/event_store.py`; payload keys associated with credentials are redacted before write.
+
 ## Purpose
 
 Persistent memory that works in **Cursor, Claude Code, Codex, OpenCode, Grok, or any LLM with filesystem access** - not tied to one IDE.

@@ -8,7 +8,7 @@ from datetime import date
 from pathlib import Path
 
 from source_tree_scan import scan_source_tree
-from workspace_utils import ROOT, resolve_workspace
+from workspace_utils import bullet, extract_line, load_template, read_text, render_template as render, resolve_workspace
 
 
 # A reader that *decides* on a file gets all of it. These budgets exist for text
@@ -16,38 +16,6 @@ from workspace_utils import ROOT, resolve_workspace
 # from a fraction of the file. On a real workspace that meant 78% of GATES.yml of GATES.yml
 # was invisible so the release verdict rested on a fifth of the gates.
 FULL_FILE = 2_000_000
-
-def read_text(path: Path, max_chars: int = 4000) -> str:
-    if not path.exists():
-        return ""
-    text = path.read_text(encoding="utf-8", errors="ignore").strip()
-    if len(text) <= max_chars:
-        return text
-    return text[:max_chars].rstrip() + "\n\n_...truncated_"
-
-
-def extract_line(text: str, prefix: str, default: str = "TBD") -> str:
-    for line in text.splitlines():
-        if line.strip().lower().startswith(prefix.lower()):
-            return line.split(":", 1)[-1].strip().strip("* ")
-    return default
-
-
-def bullet(items: list[str]) -> str:
-    if not items:
-        return "- None."
-    return "\n".join(f"- {item}" for item in items)
-
-
-def load_template() -> str:
-    return (ROOT / "templates" / "release_check.template.md").read_text(encoding="utf-8")
-
-
-def render(template: str, values: dict[str, str]) -> str:
-    for key, value in values.items():
-        template = template.replace("{{" + key + "}}", value)
-    return template
-
 
 def _hierarchy(workspace: Path) -> dict:
     """Sub-product readiness. Failure-safe - never blocks the release check."""
@@ -153,7 +121,7 @@ def analyze(workspace: Path) -> str:
     main_plan, current_state = state["main_plan"], state["current_state"]
 
     return render(
-        load_template(),
+        load_template("release_check.template.md"),
         {
             "UPDATED_DATE": date.today().isoformat(),
             "PRODUCT_NAME": extract_line(main_plan, "- **Name", "Uninitialized"),

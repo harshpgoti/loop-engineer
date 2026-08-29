@@ -179,14 +179,35 @@ def parse_internal_apis(path: Path, by_id: dict, by_title: dict) -> list[dict]:
     return out
 
 
-def _step_integrations(workspace: Path, by_id: dict, by_title: dict) -> list[dict]:
+def _integration_folders(workspace: Path) -> list[Path]:
+    """Every folder that can hold an `integrations.md`.
+
+    A sub-product's ultraplan pack lives in its scope folder, not only under
+    `plan/steps/`. Scanning the root alone meant a scope that kept its pack where the
+    scope model puts it contributed nothing to the ledger - so its declared contracts
+    simply were not there to be missing, and `contract-gap` could not fire.
+    """
+    folders: list[Path] = []
     steps = workspace / "plan" / "steps"
-    if not steps.is_dir():
-        return []
-    entries: list[dict] = []
+    if steps.is_dir():
+        folders.extend(d for d in steps.iterdir() if d.is_dir())
+    try:
+        from scope_paths import list_scopes
+
+        for scope in list_scopes(workspace):
+            folders.append(scope.path)
+            if scope.steps_dir.is_dir():
+                folders.extend(d for d in scope.steps_dir.iterdir() if d.is_dir())
+    except ImportError:  # standalone use without the scope model
+        pass
     # Sort on a plain string, not a Path: `Path.__lt__` case-folds on Windows and
     # does not on POSIX, which made the old corpus - and its findings - OS-dependent.
-    for folder in sorted((d for d in steps.iterdir() if d.is_dir()), key=lambda d: d.name):
+    return sorted(set(folders), key=lambda d: d.as_posix())
+
+
+def _step_integrations(workspace: Path, by_id: dict, by_title: dict) -> list[dict]:
+    entries: list[dict] = []
+    for folder in _integration_folders(workspace):
         entries.extend(parse_internal_apis(folder / "integrations.md", by_id, by_title))
     return entries
 

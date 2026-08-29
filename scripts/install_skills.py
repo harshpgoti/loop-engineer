@@ -73,7 +73,7 @@ HOSTS: dict[str, dict[str, str]] = path_table("skill_paths")
 LEGACY_COMMAND_DIRS: dict[str, dict[str, str]] = path_table("legacy_command_paths")
 
 
-# Documented aliases (LOOP_COMMANDS.md / AGENTS.md). Each gets its own router so
+# Documented aliases from AGENTS.md. Each gets its own router so
 # skills-only tools resolve the alias too, not just the canonical command.
 ALIASES: dict[str, str] = {
     "startup-discovery-loop": "plan-loop",

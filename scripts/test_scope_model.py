@@ -12,8 +12,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import scope_layout as sl  # noqa: E402
 import scope_paths as sp  # noqa: E402
 import scope_state as st  # noqa: E402
+import task_context as tc  # noqa: E402
 
 
 MAP = """# Product Map
@@ -344,6 +346,141 @@ class UnionedState(Sandbox):
         rows = st.summarize(self.ws)
         self.assertEqual([r.slug for r in rows], ["auth", "portal"])
         self.assertIn("blocked on auth", rows[1].line())
+
+
+#: The other shape a `GATES.yml` is written in - valid YAML for the same data, and the
+#: shape a real root file had while every scope used the mapping form above.
+ROOT_GATES_SEQUENCE = """gates:
+
+  - id: G-PLATFORM-01
+    name: Platform foundation
+    status: blocked
+    criteria:
+      - CI runs on every push
+      - schema migrations are reversible
+
+  # ---- next section ----
+  - id: G-PLATFORM-02
+    name: Deploy pipeline
+    status: todo
+"""
+
+PORTAL_ROW_AT_ROOT = "  - id: TASK-003\n    title: portal billing screen\n    scope: portal\n    status: todo\n"
+
+
+def row(task_id: str, **fields: str) -> str:
+    body = "".join(f"    {key}: {value}\n" for key, value in fields.items())
+    return f"  - id: {task_id}\n" + body
+
+
+class GateFileShapes(Sandbox):
+    """Both declaration shapes read alike, or platform gates vanish without an error."""
+
+    def test_sequence_form_gates_are_parsed(self) -> None:
+        (self.ws / "GATES.yml").write_text(ROOT_GATES_SEQUENCE, encoding="utf-8")
+        gates = st.parse_gates_file(self.ws / "GATES.yml")
+        self.assertEqual([g["id"] for g in gates], ["G-PLATFORM-01", "G-PLATFORM-02"])
+        self.assertEqual(gates[0]["name"], "Platform foundation")
+        self.assertEqual(gates[0]["status"], "blocked")
+
+    def test_a_sequence_form_root_file_still_joins_the_union(self) -> None:
+        (self.ws / "GATES.yml").write_text(ROOT_GATES_SEQUENCE, encoding="utf-8")
+        ids = {g["id"] for g in st.load_gates(self.ws)}
+        self.assertEqual(ids, {"G-PLATFORM-01", "G-PLATFORM-02", "G-AUTH-01"})
+
+    def test_a_brief_carries_the_required_gate_in_either_shape(self) -> None:
+        """`gate_block` returning '' is how a brief lost its gate section silently."""
+        (self.ws / "GATES.yml").write_text(ROOT_GATES_SEQUENCE, encoding="utf-8")
+        block = tc.gate_block(self.ws, "G-PLATFORM-01")
+        self.assertIn("G-PLATFORM-01", block)
+        self.assertIn("CI runs on every push", block)
+        self.assertNotIn("G-PLATFORM-02", block)
+        self.assertNotIn("next section", block)
+        self.assertIn("name: Auth usable", tc.gate_block(self.auth.path, "G-AUTH-01"))
+
+    def test_mixed_shapes_across_the_workspace_are_reported(self) -> None:
+        (self.ws / "GATES.yml").write_text(ROOT_GATES_SEQUENCE, encoding="utf-8")
+        self.assertIn("gate-form-split", [f.kind for f in sl.findings(self.ws)])
+
+
+class RowsInTheWrongFile(Sandbox):
+    """A row that names its scope belongs to that scope, wherever it is written."""
+
+    def _put_portal_row_in_root(self) -> None:
+        (self.ws / "TASKS.yml").write_text(ROOT_TASKS + PORTAL_ROW_AT_ROOT, encoding="utf-8")
+
+    def test_a_declared_scope_is_not_overwritten_with_platform(self) -> None:
+        self._put_portal_row_in_root()
+        by_id = {t["id"]: t for t in st.load_tasks(self.ws)}
+        self.assertEqual(by_id["TASK-003"]["scope"], "portal")
+        self.assertEqual(by_id["TASK-001"]["scope"], sp.PLATFORM)
+
+    def test_the_scope_counter_sees_a_row_written_at_the_root(self) -> None:
+        self._put_portal_row_in_root()
+        rows = {r.slug: r for r in st.summarize(self.ws)}
+        self.assertEqual(rows["portal"].tasks_total, 3)
+
+    def test_a_scope_that_is_not_declared_stays_platform(self) -> None:
+        (self.ws / "TASKS.yml").write_text(
+            ROOT_TASKS + row("TASK-004", title="unknown", scope="payments", status="todo"),
+            encoding="utf-8",
+        )
+        by_id = {t["id"]: t for t in st.load_tasks(self.ws)}
+        self.assertEqual(by_id["TASK-004"]["scope"], sp.PLATFORM)
+        self.assertIn("scope-unknown", [f.kind for f in sl.findings(self.ws)])
+
+
+class LayoutInvariant(Sandbox):
+    """The layout every sub-product shares, checked rather than assumed."""
+
+    def test_a_clean_workspace_has_no_layout_findings(self) -> None:
+        self.portal.gates_file.write_text("gates: []\n", encoding="utf-8")
+        self.assertEqual([f.kind for f in sl.findings(self.ws)], [])
+
+    def test_rows_at_the_root_and_a_stub_scope_file_are_both_reported(self) -> None:
+        self.portal.tasks_file.write_text("tasks: []\n", encoding="utf-8")
+        (self.ws / "TASKS.yml").write_text(ROOT_TASKS + PORTAL_ROW_AT_ROOT, encoding="utf-8")
+        kinds = {f.kind for f in sl.findings(self.ws)}
+        self.assertIn("scope-rows-in-root", kinds)
+        self.assertIn("scope-file-stub", kinds)
+
+    def test_a_scope_no_row_claims_is_reported_not_guessed_at(self) -> None:
+        self.portal.tasks_file.write_text("tasks: []\n", encoding="utf-8")
+        found = [f for f in sl.findings(self.ws) if f.kind == "scope-unplanned"]
+        self.assertEqual([f.scope for f in found], ["portal"])
+
+    def test_a_missing_scope_file_is_reported(self) -> None:
+        self.portal.tasks_file.unlink()
+        found = [f for f in sl.findings(self.ws) if f.kind == "scope-file-missing"]
+        self.assertTrue(any("TASKS.yml" in f.message for f in found))
+
+    def test_a_scope_ultraplan_pack_left_at_the_root_is_reported(self) -> None:
+        (self.ws / "plan" / "steps" / "02-portal").mkdir(parents=True)
+        found = [f for f in sl.findings(self.ws) if f.kind == "scope-steps-in-root"]
+        self.assertEqual([f.scope for f in found], ["portal"])
+
+    def test_the_master_plans_row_summary_at_the_root_is_not_drift(self) -> None:
+        """`plan/step_NN_<slug>.md` is where the master plan keeps its row summary."""
+        (self.ws / "plan" / "step_02_portal.md").write_text("# Portal\n", encoding="utf-8")
+        self.assertEqual([f for f in sl.findings(self.ws) if f.kind == "scope-steps-in-root"], [])
+
+    def test_a_gate_no_file_declares_is_reported(self) -> None:
+        self.portal.tasks_file.write_text(
+            PORTAL_TASKS + row("PORTAL-TASK-006", title="checkout", gate="G-NOWHERE-01", status="todo"),
+            encoding="utf-8",
+        )
+        found = [f for f in sl.findings(self.ws) if f.kind == "gate-undeclared"]
+        self.assertEqual([f.scope for f in found], ["portal"])
+        self.assertIn("G-NOWHERE-01", found[0].message)
+
+    def test_a_scope_task_gated_by_a_platform_gate_is_not_a_finding(self) -> None:
+        """Platform work gates scope work - that is the model, not drift."""
+        self.portal.gates_file.write_text("gates: []\n", encoding="utf-8")
+        self.portal.tasks_file.write_text(
+            PORTAL_TASKS + row("PORTAL-TASK-007", title="deploy", gate="G-PLATFORM-01", status="todo"),
+            encoding="utf-8",
+        )
+        self.assertEqual([f for f in sl.findings(self.ws) if f.kind == "gate-undeclared"], [])
 
 
 if __name__ == "__main__":

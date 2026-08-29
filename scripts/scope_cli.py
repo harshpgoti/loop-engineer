@@ -229,8 +229,10 @@ def cmd_rename(workspace: Path, args: argparse.Namespace) -> int:
 
 def cmd_check(workspace: Path, args: argparse.Namespace) -> int:
     """Every deterministic cross-scope check, in one place."""
+    import scope_layout as sl
+
     tasks = st.load_tasks(workspace)
-    findings = ct.check(workspace, tasks=tasks)
+    findings = sl.findings(workspace) + ct.check(workspace, tasks=tasks)
     dangling = st.unresolved_blockers(tasks)
     clashes = st.duplicate_gate_ids(st.load_gates(workspace))
     _ordered, cycles = sp.dependency_order(workspace)

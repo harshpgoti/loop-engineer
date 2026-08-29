@@ -5,6 +5,8 @@ description: Shared vocabulary for designing deep modules - module, interface, d
 
 # Codebase Design
 
+Inherits `docs/SKILL_CONTRACT.md`.
+
 Design **deep** modules: a lot of behaviour behind a small interface, at a clean seam,
 testable through that interface. Use these words exactly. Consistent language is the point -
 substituting "component", "service", "API", or "boundary" costs the shared meaning.

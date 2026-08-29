@@ -16,8 +16,8 @@ Read `plan/SESSION_MANIFEST.md` first. See `docs/SESSION_LIFECYCLE.md`.
 ## Commands
 
 Every command routes to `commands/<name>.md` + the matching `skills/<name>/SKILL.md`.
-See the full, current list in **`AGENTS.md`'s Portable Commands table** (or
-`LOOP_COMMANDS.md`) - not duplicated here, since a second copy drifts stale every
+See the full, current list in **`AGENTS.md`'s Portable Commands table** - not
+duplicated here, since a second copy drifts stale every
 time a command is added. Read `AGENTS.md`, find the row for what the user typed,
 and open the two files it names.
 

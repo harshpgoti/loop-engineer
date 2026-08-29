@@ -8,7 +8,7 @@ import re
 from datetime import date
 from pathlib import Path
 
-from workspace_utils import ROOT, resolve_workspace
+from workspace_utils import bullet, load_template, read_text, render_template as render, resolve_workspace
 
 
 TARGET_FILES = [
@@ -20,12 +20,6 @@ TARGET_FILES = [
     "DEPLOYMENT_PLAN.md",
     "plan/PROD-GAP.md",
 ]
-
-
-def read_text(path: Path) -> str:
-    if not path.exists():
-        return ""
-    return path.read_text(encoding="utf-8", errors="ignore")
 
 
 def extract_next_command(text: str) -> str | None:
@@ -122,22 +116,6 @@ def detect_drift(workspace: Path) -> tuple[list[str], list[str]]:
     return drift, fixes
 
 
-def load_template() -> str:
-    return (ROOT / "templates" / "sync_loop_state.template.md").read_text(encoding="utf-8")
-
-
-def render(template: str, values: dict[str, str]) -> str:
-    for key, value in values.items():
-        template = template.replace("{{" + key + "}}", value)
-    return template
-
-
-def bullet(items: list[str]) -> str:
-    if not items:
-        return "- None."
-    return "\n".join(f"- {item}" for item in items)
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(description="Reconcile loop state files in a product workspace.")
     parser.add_argument("--workspace", default=None, help="Product workspace path.")
@@ -147,7 +125,7 @@ def main() -> int:
     drift, fixes = detect_drift(workspace)
 
     report = render(
-        load_template(),
+        load_template("sync_loop_state.template.md"),
         {
             "UPDATED_DATE": date.today().isoformat(),
             "WORKSPACE_PATH": str(workspace),

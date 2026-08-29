@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "events": ["session.started", "session.ended", "task.started", "task.completed", "validation.completed", "finding.recorded", "deployment.requested", "deployment.completed", "memory.reviewed", "learning.observed", "learning.promoted"],
+  "sensitive_keys": ["secret", "password", "token", "credential", "api_key", "authorization"]
+}

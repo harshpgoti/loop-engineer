@@ -1,5 +1,6 @@
 # Local config (never commit)
 loop.local.yml
+.claude/settings.local.json
 
 # Legacy local workspace registry, new installs use ~/.loop-engineer/data/registry/
 .loop-workspaces.json
@@ -27,7 +28,6 @@ state.db
 /.legacy_*/
 /.fa_ws/
 /.rn_ws/
-/.final_check/
 
 # Python
 __pycache__/

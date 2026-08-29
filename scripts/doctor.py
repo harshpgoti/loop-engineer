@@ -10,7 +10,7 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from workspace_utils import ROOT, load_config, resolve_workspace
+from workspace_utils import ROOT, bullet, load_config, load_template, render_template as render, resolve_workspace
 
 
 REQUIRED_TOOL_PATHS = [
@@ -117,22 +117,6 @@ def check_template_repo_clean(errors: list[str], warnings: list[str]) -> None:
     step_files = list((ROOT / "plan").glob("step_*.md"))
     if step_files:
         warnings.append("Tool repo contains product step files; keep step plans in the product workspace.")
-
-
-def load_template() -> str:
-    return (ROOT / "templates" / "doctor.template.md").read_text(encoding="utf-8")
-
-
-def render(template: str, values: dict[str, str]) -> str:
-    for key, value in values.items():
-        template = template.replace("{{" + key + "}}", value)
-    return template
-
-
-def bullet(items: list[str]) -> str:
-    if not items:
-        return "- None."
-    return "\n".join(f"- {item}" for item in items)
 
 
 def check_memory_health(workspace: Path, errors: list[str], warnings: list[str], passes: list[str]) -> None:
@@ -360,7 +344,7 @@ def diagnose(workspace: Path | None) -> tuple[str, int]:
     if healthy and warnings:
         status = "HEALTHY WITH WARNINGS"
 
-    template = load_template()
+    template = load_template("doctor.template.md")
     content = render(
         template,
         {

@@ -57,6 +57,21 @@ class TestParseArxivAtom(unittest.TestCase):
         empty = b'<?xml version="1.0"?><feed xmlns="http://www.w3.org/2005/Atom"></feed>'
         self.assertEqual(rs.parse_arxiv_atom(empty), [])
 
+    def test_rejects_entity_declarations(self) -> None:
+        malicious = b'<!DOCTYPE feed [<!ENTITY x "expanded">]><feed>&x;</feed>'
+        with self.assertRaisesRegex(rs.ET.ParseError, "DTD and entity"):
+            rs.parse_arxiv_atom(malicious)
+
+
+class TestHttpBoundary(unittest.TestCase):
+    def test_rejects_non_http_and_unapproved_hosts_before_opening(self) -> None:
+        with patch.object(rs.urllib.request, "urlopen") as opener:
+            with self.assertRaisesRegex(ValueError, "not allowed"):
+                rs._http_get("file:///etc/passwd")
+            with self.assertRaisesRegex(ValueError, "not allowed"):
+                rs._http_get("https://example.test/papers")
+        opener.assert_not_called()
+
 
 class TestParseCrossrefItems(unittest.TestCase):
     def test_parses_research_square_item(self) -> None:
