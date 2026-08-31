@@ -52,9 +52,12 @@ def find_human_blockers(workspace: Path, prod_gap_text: str) -> list[str]:
     """
     blockers: list[str] = []
     try:
-        from doubts import blocking_doubts
+        from doubts import blocking_doubts, selected_scope
 
-        blockers.extend(f"`{d.id}` {d.question or d.title}" for d in blocking_doubts(workspace))
+        blockers.extend(
+            f"`{d.id}` {d.question or d.title}"
+            for d in blocking_doubts(workspace, scope=selected_scope(workspace))
+        )
     except Exception:
         pass
 
@@ -119,9 +122,9 @@ def summarize(workspace: Path) -> str:
     # One parser, whole file. The old regex ran over a 3,000-char excerpt and
     # matched any bullet containing "open" - it reported 3 for a file with 13.
     try:
-        from doubts import counts as doubt_counts
+        from doubts import counts as doubt_counts, selected_scope
 
-        open_doubt_count = doubt_counts(workspace)["open"]
+        open_doubt_count = doubt_counts(workspace, scope=selected_scope(workspace))["open"]
     except Exception:
         open_doubt_count = 0
 

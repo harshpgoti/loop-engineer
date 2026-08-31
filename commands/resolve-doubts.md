@@ -19,7 +19,7 @@ Runs two ways:
 
 ## Required Reads
 
-`DOUBTS.md`, `DECISIONS.md`, `EVIDENCE_LOG.md`, `GATES.yml`, `TASKS.yml`,
+root and `plan/products/*/DOUBTS.md`, `DECISIONS.md`, `EVIDENCE_LOG.md`, `GATES.yml`, `TASKS.yml`,
 `plan/main_plan.md`, active feature `spec.md` / `clarifications.md`,
 `plan/PROD-GAP.md` when present. See `skills/plan-loop/phases/resolve-doubts.md`.
 
@@ -32,7 +32,7 @@ Runs two ways:
 ## Loop
 
 ```text
-GATHER OPEN ITEMS (DOUBTS.md + spec questions + blocked gates + weak evidence)
+GATHER OPEN ITEMS (`loop doubts ask --all-scopes` + specs + blocked gates + weak evidence)
 -> CLASSIFY blocking vs deferrable -> WALK blocking items with the user
 -> RECORD resolutions (DOUBTS.md/DECISIONS.md/spec/EVIDENCE) -> RE-CHECK gates
 -> GO / NO-GO

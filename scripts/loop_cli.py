@@ -462,6 +462,11 @@ def cmd_doubts(args: argparse.Namespace) -> int:
     # `--workspace` is a top-level option on doubts.py, so it has to precede the
     # subcommand. Appending it produced "unrecognized arguments: --workspace" for every
     # doubts call that named a workspace - the same ordering bug `loop graph` had.
+    view: list[str] = []
+    if getattr(args, "scope", None):
+        view += ["--scope", args.scope]
+    if getattr(args, "all_scopes", False):
+        view.append("--all-scopes")
     tail: list[str] = [cmd]
     if cmd == "resolve":
         tail += [args.doubt_id, args.answer] + (["--decision", args.decision] if args.decision else [])
@@ -483,7 +488,7 @@ def cmd_doubts(args: argparse.Namespace) -> int:
             tail.append("--non-blocking")
     elif cmd == "questionnaire":
         tail += [args.recipient] if getattr(args, "recipient", "") else []
-    return run_script("doubts.py", _workspace_args(args) + tail)
+    return run_script("doubts.py", _workspace_args(args) + view + tail)
 
 
 def cmd_workspace(args: argparse.Namespace) -> int:
@@ -1049,7 +1054,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     doubts_p = sub.add_parser("doubts", help="Read and update DOUBTS.md deterministically.")
     doubts_sub = doubts_p.add_subparsers(dest="doubts_cmd")
+
+    def doubt_view(parser_obj: argparse.ArgumentParser) -> None:
+        parser_obj.add_argument("--scope", default=None, help="Platform plus one sub-product scope.")
+        parser_obj.add_argument(
+            "--all-scopes", action="store_true", help="Platform plus every sub-product scope."
+        )
+
     d_list = doubts_sub.add_parser("list", help="Open doubts, blocking first.")
+    doubt_view(d_list)
     d_list.add_argument("--verbose", action="store_true")
     d_list.add_argument("--workspace", default=argparse.SUPPRESS)
     d_list.set_defaults(func=cmd_doubts)
@@ -1059,23 +1072,27 @@ def build_parser() -> argparse.ArgumentParser:
         ("counts", "One authoritative count for every command to use."),
     ):
         parser_obj = doubts_sub.add_parser(name, help=helptext)
+        doubt_view(parser_obj)
         parser_obj.add_argument("--workspace", default=argparse.SUPPRESS)
         parser_obj.set_defaults(func=cmd_doubts)
     d_quest = doubts_sub.add_parser(
         "questionnaire", help="Write out questions somebody other than the user must answer."
     )
     d_quest.add_argument("recipient", nargs="?", default="")
+    doubt_view(d_quest)
     d_quest.add_argument("--workspace", default=argparse.SUPPRESS)
     d_quest.set_defaults(func=cmd_doubts)
     d_resolve = doubts_sub.add_parser("resolve", help="Mark a doubt resolved, recording the answer.")
     d_resolve.add_argument("doubt_id")
     d_resolve.add_argument("answer")
+    doubt_view(d_resolve)
     d_resolve.add_argument("--decision", default="", help="DECISIONS.md id to cross-link, e.g. D-014")
     d_resolve.add_argument("--workspace", default=argparse.SUPPRESS)
     d_resolve.set_defaults(func=cmd_doubts)
     d_add = doubts_sub.add_parser("add", help="Record a new question so the next session inherits it.")
     d_add.add_argument("title")
     d_add.add_argument("question")
+    doubt_view(d_add)
     d_add.add_argument("--why", default="")
     d_add.add_argument("--default", dest="default_answer", default="")
     d_add.add_argument("--depends-on", default="")
@@ -1086,6 +1103,7 @@ def build_parser() -> argparse.ArgumentParser:
     d_defer = doubts_sub.add_parser("defer", help="Mark a doubt deferred, recording why.")
     d_defer.add_argument("doubt_id")
     d_defer.add_argument("reason")
+    doubt_view(d_defer)
     d_defer.add_argument("--workspace", default=argparse.SUPPRESS)
     d_defer.set_defaults(func=cmd_doubts)
 

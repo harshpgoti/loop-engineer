@@ -247,9 +247,9 @@ def _task_yaml(task: dict) -> str:
 
 def _blocking_doubts(workspace: Path) -> list:
     try:
-        from doubts import blocking_doubts
+        from doubts import blocking_doubts, selected_scope
 
-        return blocking_doubts(workspace)
+        return blocking_doubts(workspace, scope=selected_scope(workspace))
     except Exception:
         return []
 

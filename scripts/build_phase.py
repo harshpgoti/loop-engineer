@@ -266,7 +266,10 @@ def _blocking_doubts(workspace: Path) -> list[str]:
     try:
         import doubts
 
-        return [d.id for d in doubts.frontier(workspace)]
+        return [
+            d.id
+            for d in doubts.frontier(workspace, scope=doubts.selected_scope(workspace))
+        ]
     except Exception:  # noqa: BLE001 - a malformed DOUBTS.md must not stop a build
         return []
 

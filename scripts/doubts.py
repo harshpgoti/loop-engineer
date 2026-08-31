@@ -31,7 +31,7 @@ RESOLVED = "resolved"
 DEFERRED = "deferred"
 STATUSES = (OPEN, RESOLVED, DEFERRED)
 
-HEADING = re.compile(r"^#{2,4}\s+(?P<id>[A-Z][A-Z0-9-]*\d+)\s*[:.]\s*(?P<title>.+?)\s*$")
+HEADING = re.compile(r"^#{2,4}\s+(?P<id>DQ[A-Z0-9-]*\d+)\s*[:.]\s*(?P<title>.+?)\s*$")
 FIELD = re.compile(r"^[-*]\s+\*\*(?P<key>[^:*]+):?\*\*:?\s*(?P<value>.*)$")
 SECTION = re.compile(r"^##\s+(?P<name>.+?)\s*$")
 
@@ -70,6 +70,8 @@ class Doubt:
     depends_on: list[str] = field(default_factory=list)
     ask: str = ""
     issues: list[str] = field(default_factory=list)
+    scope: str = "platform"
+    source: Path | None = None
 
     @property
     def owner(self) -> str:
@@ -200,9 +202,38 @@ def _blocking_from(text: str, status: str) -> bool:
     return status == OPEN
 
 
-def parse(workspace: Path) -> list[Doubt]:
-    """Every entry in DOUBTS.md. Reads the whole file - never truncates."""
-    path = doubts_file(workspace)
+def _sources(workspace: Path, *, scope: str | None = None, all_scopes: bool = False) -> list[tuple[str, Path]]:
+    """Canonical doubt files for one operation.
+
+    The default preserves the single-product interface. A named scope includes the
+    platform file plus that scope, matching tasks and gates. ``all_scopes`` is the
+    explicit plan-wide readiness view used by /resolve-doubts.
+    """
+    if not all_scopes and scope is None:
+        return [("platform", doubts_file(workspace))]
+    try:
+        from scope_state import doubt_files
+
+        return doubt_files(workspace, scope=None if all_scopes else scope)
+    except Exception:  # noqa: BLE001 - plain workspaces keep their old behavior
+        return [("platform", doubts_file(workspace))]
+
+
+def selected_scope(workspace: Path) -> str | None:
+    """The explicitly/validly resolved scope, or platform when none is selected."""
+    try:
+        import scope_paths as sp
+
+        result = sp.resolve(workspace)
+        if result.scope is None or result.needs_confirm:
+            return None
+        return result.scope.slug
+    except Exception:  # noqa: BLE001 - single-product workspaces have no scope model
+        return None
+
+
+def _parse_file(workspace: Path, path: Path, source_scope: str) -> list[Doubt]:
+    """Every entry in one canonical DOUBTS.md file."""
     if not path.is_file():
         return []
     try:
@@ -250,6 +281,8 @@ def parse(workspace: Path) -> list[Doubt]:
                 blocking=False,
                 section=section,
                 line=number,
+                scope=source_scope,
+                source=path,
             )
             current.status_raw = ""  # type: ignore[attr-defined]
             current.blocking_raw = ""  # type: ignore[attr-defined]
@@ -284,8 +317,40 @@ def parse(workspace: Path) -> list[Doubt]:
             current.note = value
 
     close()
-    _apply_supersessions(workspace, entries)
+    # Scope-local decisions apply at their source. Platform decisions are then
+    # applied as the shared parent policy for every scope in this one workspace.
+    _apply_supersessions(path.parent, entries)
+    if path.parent != workspace:
+        try:
+            retired = _supersessions_in(workspace / "DECISIONS.md")
+            for entry in entries:
+                decision = retired.get(entry.id.upper())
+                if decision and entry.status != RESOLVED:
+                    entry.superseded_by = f"{decision} (platform)"
+                    entry.status = RESOLVED
+                    entry.blocking = False
+        except Exception:
+            pass
+    return entries
+
+
+def parse(
+    workspace: Path, *, scope: str | None = None, all_scopes: bool = False
+) -> list[Doubt]:
+    """Every canonical doubt in the requested view, with its owning source."""
+    entries: list[Doubt] = []
+    for source_scope, path in _sources(Path(workspace), scope=scope, all_scopes=all_scopes):
+        entries.extend(_parse_file(Path(workspace), path, source_scope))
     _check_dependencies(entries)
+    by_id: dict[str, list[Doubt]] = {}
+    for entry in entries:
+        by_id.setdefault(entry.id.upper(), []).append(entry)
+    for duplicate_id, matches in by_id.items():
+        if len(matches) < 2:
+            continue
+        owners = ", ".join(sorted({item.scope for item in matches}))
+        for item in matches:
+            item.issues.append(f"duplicate id {duplicate_id} across scopes: {owners}")
     return entries
 
 
@@ -363,12 +428,16 @@ def _finalize(doubt: Doubt, blob: str) -> None:
         doubt.issues.append("marked resolved with no recorded answer")
 
 
-def open_doubts(workspace: Path) -> list[Doubt]:
-    return [d for d in parse(workspace) if d.is_open]
+def open_doubts(
+    workspace: Path, *, scope: str | None = None, all_scopes: bool = False
+) -> list[Doubt]:
+    return [d for d in parse(workspace, scope=scope, all_scopes=all_scopes) if d.is_open]
 
 
-def blocking_doubts(workspace: Path) -> list[Doubt]:
-    return [d for d in open_doubts(workspace) if d.blocking]
+def blocking_doubts(
+    workspace: Path, *, scope: str | None = None, all_scopes: bool = False
+) -> list[Doubt]:
+    return [d for d in open_doubts(workspace, scope=scope, all_scopes=all_scopes) if d.blocking]
 
 
 # ---------------------------------------------------------------------------
@@ -429,12 +498,14 @@ def waiting_on(doubt: Doubt, entries: list[Doubt]) -> list[str]:
     return [ref for ref in doubt.depends_on if ref in known and ref not in settled and ref != doubt.id]
 
 
-def frontier(workspace: Path) -> list[Doubt]:
+def frontier(
+    workspace: Path, *, scope: str | None = None, all_scopes: bool = False
+) -> list[Doubt]:
     """The blocking questions whose prerequisites are settled and whose answer is the user's.
 
     Ask this whole list in one round. Nothing else can be answered honestly yet.
     """
-    entries = parse(workspace)
+    entries = parse(workspace, scope=scope, all_scopes=all_scopes)
     in_a_cycle = {node for cycle in _cycles(entries) for node in cycle}
     ready = []
     for item in entries:
@@ -446,9 +517,11 @@ def frontier(workspace: Path) -> list[Doubt]:
     return ready
 
 
-def blocked_behind(workspace: Path) -> list[tuple[Doubt, list[str]]]:
+def blocked_behind(
+    workspace: Path, *, scope: str | None = None, all_scopes: bool = False
+) -> list[tuple[Doubt, list[str]]]:
     """Blocking questions held back this round, and the doubts each is waiting on."""
-    entries = parse(workspace)
+    entries = parse(workspace, scope=scope, all_scopes=all_scopes)
     in_a_cycle = {node for cycle in _cycles(entries) for node in cycle}
     held = []
     for item in entries:
@@ -460,16 +533,21 @@ def blocked_behind(workspace: Path) -> list[tuple[Doubt, list[str]]]:
     return held
 
 
-def delegated_doubts(workspace: Path) -> list[Doubt]:
+def delegated_doubts(
+    workspace: Path, *, scope: str | None = None, all_scopes: bool = False
+) -> list[Doubt]:
     """Open questions somebody other than the user has to answer."""
-    return [d for d in open_doubts(workspace) if d.delegated]
+    return [d for d in open_doubts(workspace, scope=scope, all_scopes=all_scopes) if d.delegated]
 
 
-def rounds(workspace: Path) -> list[list[str]]:
+def rounds(
+    workspace: Path, *, scope: str | None = None, all_scopes: bool = False
+) -> list[list[str]]:
     """Every remaining round, so a plan can say how many exchanges are left."""
-    entries = [d for d in parse(workspace) if d.is_open and d.blocking and not d.delegated]
-    known = {d.id for d in parse(workspace)}
-    settled = _settled_ids(parse(workspace))
+    parsed = parse(workspace, scope=scope, all_scopes=all_scopes)
+    entries = [d for d in parsed if d.is_open and d.blocking and not d.delegated]
+    known = {d.id for d in parsed}
+    settled = _settled_ids(parsed)
     remaining = {d.id: [r for r in d.depends_on if r in known and r not in settled and r != d.id] for d in entries}
     result: list[list[str]] = []
     while remaining:
@@ -483,8 +561,10 @@ def rounds(workspace: Path) -> list[list[str]]:
     return result
 
 
-def counts(workspace: Path) -> dict[str, int]:
-    entries = parse(workspace)
+def counts(
+    workspace: Path, *, scope: str | None = None, all_scopes: bool = False
+) -> dict[str, int]:
+    entries = parse(workspace, scope=scope, all_scopes=all_scopes)
     result = {status: 0 for status in STATUSES}
     for item in entries:
         result[item.status] = result.get(item.status, 0) + 1
@@ -495,13 +575,15 @@ def counts(workspace: Path) -> dict[str, int]:
     return result
 
 
-def has_blocking(workspace: Path) -> bool:
+def has_blocking(
+    workspace: Path, *, scope: str | None = None, all_scopes: bool = False
+) -> bool:
     """The routing signal: only a *blocking* open doubt should hold up task compile.
 
     The old test fired on any open item, so one non-blocking commercial question
     pinned a workspace before `task-compiler` indefinitely.
     """
-    return bool(blocking_doubts(workspace))
+    return bool(blocking_doubts(workspace, scope=scope, all_scopes=all_scopes))
 
 
 # ---------------------------------------------------------------------------
@@ -516,6 +598,8 @@ def set_status(
     *,
     answer: str = "",
     decision_ref: str = "",
+    scope: str | None = None,
+    all_scopes: bool = False,
 ) -> bool:
     """Rewrite one entry's status in place, recording the answer with it.
 
@@ -525,7 +609,16 @@ def set_status(
     if status not in STATUSES:
         raise ValueError(f"unknown status: {status} (expected one of {', '.join(STATUSES)})")
 
-    path = doubts_file(workspace)
+    matches = [
+        item for item in parse(workspace, scope=scope, all_scopes=all_scopes)
+        if item.id.lower() == doubt_id.lower()
+    ]
+    if len(matches) > 1:
+        owners = ", ".join(f"{item.scope}:{item.source}" for item in matches)
+        raise ValueError(f"{doubt_id} exists in more than one doubt source: {owners}")
+    if not matches:
+        return False
+    path = matches[0].source or doubts_file(workspace)
     if not path.is_file():
         return False
     lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
@@ -568,21 +661,37 @@ def set_status(
     return True
 
 
-def resolve(workspace: Path, doubt_id: str, answer: str, *, decision_ref: str = "") -> bool:
-    return set_status(workspace, doubt_id, RESOLVED, answer=answer, decision_ref=decision_ref)
+def resolve(
+    workspace: Path,
+    doubt_id: str,
+    answer: str,
+    *,
+    decision_ref: str = "",
+    scope: str | None = None,
+    all_scopes: bool = False,
+) -> bool:
+    return set_status(
+        workspace,
+        doubt_id,
+        RESOLVED,
+        answer=answer,
+        decision_ref=decision_ref,
+        scope=scope,
+        all_scopes=all_scopes,
+    )
 
 
-def defer(workspace: Path, doubt_id: str, reason: str) -> bool:
-    return set_status(workspace, doubt_id, DEFERRED, answer=reason)
-
-
-def next_id(workspace: Path, prefix: str = "DQ") -> str:
-    numbers = [
-        int(match.group(1))
-        for d in parse(workspace)
-        if (match := re.search(r"(\d+)$", d.id)) and d.id.upper().startswith(prefix.upper())
-    ]
-    return f"{prefix}-{max(numbers, default=0) + 1:03d}"
+def defer(
+    workspace: Path,
+    doubt_id: str,
+    reason: str,
+    *,
+    scope: str | None = None,
+    all_scopes: bool = False,
+) -> bool:
+    return set_status(
+        workspace, doubt_id, DEFERRED, answer=reason, scope=scope, all_scopes=all_scopes
+    )
 
 
 def add(
@@ -597,16 +706,23 @@ def add(
     ask: str = "",
     doubt_id: str | None = None,
     prefix: str = "DQ",
+    scope: str | None = None,
 ) -> str | None:
     """Append a schema-shaped doubt. Returns None when an identical one exists."""
-    existing = parse(workspace)
+    existing = parse(workspace, scope=scope)
     for item in existing:
         if item.question and item.question.strip().lower() == question.strip().lower():
             return None
         if doubt_id and item.id.lower() == doubt_id.lower():
             return None
 
-    identifier = doubt_id or next_id(workspace, prefix)
+    numbers = [
+        int(match.group(1))
+        for item in existing
+        if (match := re.search(r"(\d+)$", item.id))
+        and item.id.upper().startswith(prefix.upper())
+    ]
+    identifier = doubt_id or f"{prefix}-{max(numbers, default=0) + 1:03d}"
     entry = [
         "",
         f"### {identifier}: {title}",
@@ -624,6 +740,11 @@ def add(
         entry.append(f"- **Ask:** {ask}")
 
     path = doubts_file(workspace)
+    if scope:
+        targets = [source for owner, source in _sources(workspace, scope=scope) if owner == scope]
+        if not targets:
+            raise ValueError(f"unknown doubt scope: {scope}")
+        path = targets[0]
     path.parent.mkdir(parents=True, exist_ok=True)
     existing_text = path.read_text(encoding="utf-8", errors="ignore") if path.exists() else "# Doubts\n"
     path.write_text(existing_text.rstrip() + "\n" + "\n".join(entry) + "\n", encoding="utf-8")
@@ -660,10 +781,12 @@ def _slug(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", text.strip().lower()).strip("-") or "questionnaire"
 
 
-def recipients(workspace: Path) -> dict[str, list[Doubt]]:
+def recipients(
+    workspace: Path, *, scope: str | None = None, all_scopes: bool = False
+) -> dict[str, list[Doubt]]:
     """Open questions grouped by who has to answer them, blocking ones first."""
     grouped: dict[str, list[Doubt]] = {}
-    for item in delegated_doubts(workspace):
+    for item in delegated_doubts(workspace, scope=scope, all_scopes=all_scopes):
         grouped.setdefault(item.owner, []).append(item)
     for items in grouped.values():
         items.sort(key=lambda d: (not d.blocking, d.id))
@@ -731,11 +854,17 @@ def write_questionnaire(workspace: Path, recipient: str) -> Path:
     return path
 
 
-def describe(workspace: Path, *, verbose: bool = False) -> str:
-    entries = parse(workspace)
+def describe(
+    workspace: Path,
+    *,
+    verbose: bool = False,
+    scope: str | None = None,
+    all_scopes: bool = False,
+) -> str:
+    entries = parse(workspace, scope=scope, all_scopes=all_scopes)
     if not entries:
         return "No doubts recorded."
-    tally = counts(workspace)
+    tally = counts(workspace, scope=scope, all_scopes=all_scopes)
     lines = [
         f"{tally['total']} doubt(s): {tally[OPEN]} open ({tally['blocking']} blocking), "
         f"{tally[RESOLVED]} resolved, {tally[DEFERRED]} deferred",
@@ -745,7 +874,8 @@ def describe(workspace: Path, *, verbose: bool = False) -> str:
         if item.status != OPEN and not (verbose or item.superseded_by):
             continue
         flag = "BLOCKING" if item.blocking else "non-blocking"
-        lines.append(f"  [{item.status}/{flag}] {item.id}: {item.title}")
+        owner = f"{item.scope}:" if all_scopes else ""
+        lines.append(f"  [{owner}{item.status}/{flag}] {item.id}: {item.title}")
         if item.superseded_by:
             lines.append(f"      superseded by {item.superseded_by} - not asked")
         if verbose and item.question:
@@ -765,6 +895,10 @@ def main() -> int:
 
     parser = argparse.ArgumentParser(description="Read and update DOUBTS.md deterministically.")
     parser.add_argument("--workspace", default=None)
+    parser.add_argument("--scope", default=None, help="Platform plus one sub-product scope.")
+    parser.add_argument(
+        "--all-scopes", action="store_true", help="Platform plus every sub-product scope."
+    )
     sub = parser.add_subparsers(dest="cmd")
 
     listing = sub.add_parser("list", help="Open doubts and their status.")
@@ -797,18 +931,27 @@ def main() -> int:
     args = parser.parse_args()
     workspace = resolve_workspace(args.workspace)
     cmd = args.cmd or "list"
+    effective_scope = args.scope
+    if effective_scope is None and not args.all_scopes:
+        effective_scope = selected_scope(workspace)
+    view = {"scope": effective_scope, "all_scopes": args.all_scopes}
 
     if cmd == "resolve":
-        ok = resolve(workspace, args.doubt_id, args.answer, decision_ref=args.decision)
+        ok = resolve(
+            workspace, args.doubt_id, args.answer, decision_ref=args.decision, **view
+        )
         print(f"{args.doubt_id}: resolved" if ok else f"No doubt with id {args.doubt_id!r}")
         return 0 if ok else 1
 
     if cmd == "defer":
-        ok = defer(workspace, args.doubt_id, args.reason)
+        ok = defer(workspace, args.doubt_id, args.reason, **view)
         print(f"{args.doubt_id}: deferred" if ok else f"No doubt with id {args.doubt_id!r}")
         return 0 if ok else 1
 
     if cmd == "add":
+        if args.all_scopes:
+            print("`doubts add --all-scopes` has no unique owner; select one scope instead.")
+            return 2
         new_id = add(
             workspace,
             title=args.title,
@@ -818,6 +961,7 @@ def main() -> int:
             blocking=not args.non_blocking,
             depends_on=[p.strip().upper() for p in args.depends_on.split(",") if p.strip()],
             ask=args.ask,
+            scope=effective_scope,
         )
         if new_id is None:
             print("A doubt with that question is already recorded - nothing added.")
@@ -826,23 +970,24 @@ def main() -> int:
         return 0
 
     if cmd == "counts":
-        for key, value in counts(workspace).items():
+        for key, value in counts(workspace, **view).items():
             print(f"{key}\t{value}")
         return 0
 
     if cmd == "lint":
-        bad = [d for d in parse(workspace) if d.issues]
+        bad = [d for d in parse(workspace, **view) if d.issues]
         if not bad:
             print("Every entry's status matches its content.")
             return 0
         for item in bad:
-            print(f"{item.id} (line {item.line}): {item.title}")
+            owner = f"{item.scope}:" if args.all_scopes else ""
+            print(f"{owner}{item.id} ({item.source}, line {item.line}): {item.title}")
             for issue in item.issues:
                 print(f"  - {issue}")
         return 0
 
     if cmd == "questionnaire":
-        grouped = recipients(workspace)
+        grouped = recipients(workspace, **view)
         if not grouped:
             print("No open doubt names anybody but the user - nothing to send out.")
             print("Mark one with `- **Ask:** <who>` to move it off the build's critical path.")
@@ -860,10 +1005,10 @@ def main() -> int:
         return 0
 
     if cmd == "ask":
-        ready = frontier(workspace)
-        held = blocked_behind(workspace)
-        away = delegated_doubts(workspace)
-        blocking = blocking_doubts(workspace)
+        ready = frontier(workspace, **view)
+        held = blocked_behind(workspace, **view)
+        away = delegated_doubts(workspace, **view)
+        blocking = blocking_doubts(workspace, **view)
 
         if not blocking:
             print("No blocking doubts. Development is not held up by open questions.")
@@ -880,14 +1025,15 @@ def main() -> int:
             print("Run `loop doubts questionnaire` to send them out.")
             return 0
 
-        rounds_left = len(rounds(workspace))
+        rounds_left = len(rounds(workspace, **view))
         print(f"ROUND 1 of {rounds_left} - {len(ready)} question(s) answerable now.")
         if held:
             print(f"{len(held)} more open once these land. {len(away)} are out with someone else.")
         print()
         for index, item in enumerate(ready, start=1):
             q = question(item)
-            print(f"Q{index}. {q['id']} - {q['question']}")
+            owner = f" [{item.scope}]" if args.all_scopes else ""
+            print(f"Q{index}. {q['id']}{owner} - {q['question']}")
             if q["why"]:
                 print(f"  Why it matters: {q['why']}")
             if q["recommended"]:
@@ -903,7 +1049,7 @@ def main() -> int:
             print()
         return 0
 
-    print(describe(workspace, verbose=getattr(args, "verbose", False)))
+    print(describe(workspace, verbose=getattr(args, "verbose", False), **view))
     return 0
 
 

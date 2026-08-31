@@ -114,7 +114,8 @@ def attention_block(workspace: Path) -> list[str]:
     try:
         import doubts as _doubts
 
-        askable = _doubts.frontier(workspace)
+        scope = _doubts.selected_scope(workspace)
+        askable = _doubts.frontier(workspace, scope=scope)
         if askable:
             head = ", ".join(d.id for d in askable[:3])
             items.append(
@@ -122,12 +123,12 @@ def attention_block(workspace: Path) -> list[str]:
                  f"{', ...' if len(askable) > 3 else ''})",
                  "`loop doubts ask` - one round, each with its recorded default as the "
                  "recommendation; `loop doubts resolve <id> \"<answer>\"` or `loop doubts defer <id> \"<reason>\"`"))
-        waiting = _doubts.blocked_behind(workspace)
+        waiting = _doubts.blocked_behind(workspace, scope=scope)
         if waiting:
             items.append(
                 (f"{len(waiting)} doubt(s) wait on an earlier answer, so they are not asked yet",
                  "answer the frontier first - they become askable on their own"))
-        delegated = _doubts.delegated_doubts(workspace)
+        delegated = _doubts.delegated_doubts(workspace, scope=scope)
         if delegated:
             items.append(
                 (f"{len(delegated)} doubt(s) are addressed to someone who is not here",

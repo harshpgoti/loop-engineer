@@ -214,7 +214,7 @@ def _blocking_doubts(workspace: Path) -> list:
     try:
         from doubts import blocking_doubts
 
-        return blocking_doubts(workspace)
+        return blocking_doubts(workspace, all_scopes=True)
     except Exception:
         return []
 

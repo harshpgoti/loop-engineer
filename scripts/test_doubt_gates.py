@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import build_phase  # noqa: E402
 import plan_phase  # noqa: E402
 import session_lifecycle as sl  # noqa: E402
+import scope_paths as sp  # noqa: E402
 
 TWO_BLOCKING = """# Doubts
 
@@ -121,6 +122,33 @@ class PlanChain(Workspace):
     def test_deferred_doubts_do_not_pin_the_plan_phase(self) -> None:
         self.doubts(ANSWERED_AND_DEFERRED)
         self.assertEqual(self.plan(), "council")
+
+
+class ScopedChains(Workspace):
+    def setUp(self) -> None:
+        super().setUp()
+        self.doubts("# Doubts\n")
+        self.auth = sp.create_scope(self.ws, "auth", name="Auth", code_dir="src")
+        self.auth.doubts_file.write_text(TWO_BLOCKING, encoding="utf-8")
+        sp.set_active(self.ws, "auth", session="test")
+
+    def test_selected_scope_doubts_stop_planning(self) -> None:
+        self.assertEqual("resolve-doubts", self.plan())
+
+    def test_selected_scope_doubts_stop_development(self) -> None:
+        self.assertEqual("clarify", self.build())
+
+    def test_session_manifest_surfaces_selected_scope_doubts(self) -> None:
+        text = "\n".join(sl.attention_block(self.ws))
+        self.assertIn("DQ-001", text)
+        self.assertIn("blocking doubt(s) can be answered now", text)
+
+    def test_unselected_sibling_doubts_do_not_block_this_scope(self) -> None:
+        portal = sp.create_scope(self.ws, "portal", name="Portal")
+        portal.doubts_file.write_text(TWO_BLOCKING.replace("DQ-", "DQ-P-"), encoding="utf-8")
+        self.auth.doubts_file.write_text(ANSWERED_AND_DEFERRED, encoding="utf-8")
+        self.assertNotEqual("resolve-doubts", self.plan())
+        self.assertNotEqual("clarify", self.build())
 
 
 class Manifest(Workspace):

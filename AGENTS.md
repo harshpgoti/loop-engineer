@@ -60,6 +60,9 @@ Never tell the user to go run these - run them, ask the question, act on the ans
 settled, each numbered with its recommended answer. A doubt's `Depends on:` puts it in a
 later round; its `Ask:` sends it to somebody who is not here, via
 `loop doubts questionnaire`. See `skills/plan-loop/phases/grill.md`.
+In a scoped workspace, ordinary doubt commands read the shared platform plus the selected
+scope. `/resolve-doubts` is the plan-wide exception and uses `--all-scopes`; every resolution
+is written back to the canonical file that owns its id.
 
 Two more channels report themselves into `plan/SESSION_MANIFEST.md`, so nobody has to
 remember a command:

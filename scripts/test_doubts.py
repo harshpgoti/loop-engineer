@@ -11,6 +11,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import doubts  # noqa: E402
+import scope_paths as sp  # noqa: E402
 
 CLEAN = """# Doubts
 
@@ -100,6 +101,14 @@ class Parsing(Sandbox):
         self.assertEqual([], doubts.parse(self.ws))
         self.assertFalse(doubts.has_blocking(self.ws))
 
+    def test_decision_headings_are_not_parsed_as_doubts(self) -> None:
+        self.seed(
+            "# Doubts\n\n### DQ-001: Real question\n- **Status:** open\n"
+            "\n## Decision references\n\n### D-014: Pricing is flat\n"
+            "- **Decision:** Flat subscription.\n"
+        )
+        self.assertEqual(["DQ-001"], [item.id for item in doubts.parse(self.ws)])
+
 
 class RealWorldMess(Sandbox):
     def test_heading_resolved_without_a_status_field(self) -> None:
@@ -162,6 +171,60 @@ class Writing(Sandbox):
         entry = next(d for d in doubts.parse(self.ws) if d.id == new_id)
         self.assertEqual(doubts.OPEN, entry.status)
         self.assertFalse(entry.blocking)
+
+
+class ScopedWorkspace(Sandbox):
+    def setUp(self) -> None:
+        super().setUp()
+        (self.ws / "plan").mkdir()
+        self.auth = sp.create_scope(self.ws, "auth", name="Auth")
+        self.portal = sp.create_scope(self.ws, "portal", name="Portal")
+        self.seed(CLEAN)
+        self.auth.doubts_file.write_text(
+            "# Doubts\n\n### DQ-AUTH-001: Session lifetime\n"
+            "- **Status:** open\n- **Blocking:** yes\n"
+            "- **Question:** How long should sessions live?\n",
+            encoding="utf-8",
+        )
+        self.portal.doubts_file.write_text(
+            "# Doubts\n\n### DQ-PORTAL-001: Theme\n"
+            "- **Status:** open\n- **Blocking:** no\n"
+            "- **Question:** Which theme ships first?\n",
+            encoding="utf-8",
+        )
+
+    def test_all_scopes_counts_each_canonical_entry_once(self) -> None:
+        tally = doubts.counts(self.ws, all_scopes=True)
+        self.assertEqual(5, tally["total"])
+        self.assertEqual(4, tally["open"])
+        self.assertEqual(2, tally["blocking"])
+
+    def test_selected_scope_includes_platform_and_that_scope_only(self) -> None:
+        entries = doubts.parse(self.ws, scope="auth")
+        self.assertEqual({"DQ-001", "DQ-002", "DQ-003", "DQ-AUTH-001"}, {d.id for d in entries})
+        self.assertEqual({"platform", "auth"}, {d.scope for d in entries})
+
+    def test_all_scopes_resolution_updates_the_owning_file(self) -> None:
+        self.assertTrue(
+            doubts.resolve(self.ws, "DQ-AUTH-001", "Eight hours", all_scopes=True)
+        )
+        self.assertIn("Eight hours", self.auth.doubts_file.read_text(encoding="utf-8"))
+        self.assertNotIn("Eight hours", (self.ws / "DOUBTS.md").read_text(encoding="utf-8"))
+
+    def test_selected_scope_addition_writes_the_scope_file(self) -> None:
+        new_id = doubts.add(
+            self.ws, title="MFA", question="Which MFA factors?", scope="auth"
+        )
+        self.assertIsNotNone(new_id)
+        self.assertIn("Which MFA factors?", self.auth.doubts_file.read_text(encoding="utf-8"))
+        self.assertNotIn("Which MFA factors?", (self.ws / "DOUBTS.md").read_text(encoding="utf-8"))
+
+    def test_duplicate_ids_across_scopes_are_rejected_before_writing(self) -> None:
+        self.portal.doubts_file.write_text(
+            self.auth.doubts_file.read_text(encoding="utf-8"), encoding="utf-8"
+        )
+        with self.assertRaisesRegex(ValueError, "more than one"):
+            doubts.resolve(self.ws, "DQ-AUTH-001", "Eight hours", all_scopes=True)
 
 
 class Supersession(Sandbox):

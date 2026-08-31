@@ -110,9 +110,9 @@ def _has_open_doubts(workspace: Path) -> bool:
     phase: deferring is the documented way to proceed without an answer.
     """
     try:
-        from doubts import frontier
+        from doubts import frontier, selected_scope
 
-        return bool(frontier(workspace))
+        return bool(frontier(workspace, scope=selected_scope(workspace)))
     except Exception:
         return False
 

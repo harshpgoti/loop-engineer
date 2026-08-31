@@ -18,27 +18,20 @@ Where each fits:
 - `/ask-loop` - talk to **understand** (read-only)
 - `/resolve-doubts` - talk to **resolve** open blockers to green before build
 
-## Two channels, not one
+## One workspace, canonical sources
 
-A workspace has **two** places a blocking question can live, and clearing one while
-ignoring the other produces a green go/no-go that is simply wrong:
+Questions can be owned by the shared platform or by any folder under
+`plan/products/<slug>/DOUBTS.md`. The parser discovers those canonical files, tags every
+entry with its owning scope, and rejects duplicate ids before a write. Tables and references
+to a doubt elsewhere are not new entries and are deliberately not counted.
 
-| Channel | What it holds | Command |
-|---------|---------------|---------|
-| `DOUBTS.md` | Questions this workspace raised | `loop doubts ask` |
-
-Findings go **first**. A parent finding can create a doubt, retire one, or change the
-answer to one - resolving doubts before findings means answering questions the platform
-was about to settle for you. On a real sub-product the parent had decided Postgres with
-row-level security; the sub-product's own doubts said nothing about a datastore, so a
-doubts-only sweep would have returned GO while the build sat on SQLite.
-
-A workspace with no parent has no findings, and this whole section collapses to the
-doubts channel.
+`/resolve-doubts` is plan-wide, so every command in this phase uses `--all-scopes`.
+Planning and development routing use the selected scope plus the shared platform instead,
+so an unrelated sibling cannot stop the current build.
 
 ## Read First
 
-1. `DOUBTS.md` (the open-doubt tracker)
+1. Root `DOUBTS.md` plus `plan/products/*/DOUBTS.md` (canonical trackers)
 2. `plan/contracts/` and `loop scope check`, when the doubt crosses sub-products
 2. `DECISIONS.md`, `EVIDENCE_LOG.md`
 3. `GATES.yml` (pre-development gates and their unmet criteria)
@@ -48,21 +41,22 @@ doubts channel.
 
 ## Steps
 
-0. **Clear the parent's findings first**, if this workspace has a parent:
+0. **Check cross-scope contracts and dependencies first:**
 
    ```bash
+   loop scope check
    ```
 
-   `skills/scope/SKILL.md` holds the full treatment. Accepting one
-   usually means an edit here; make it now, not later.
+   Fix or record any finding that creates, retires, or changes a doubt before asking
+   questions. `skills/scope/SKILL.md` holds the full treatment.
 
 1. **Gather every open item** into one list. Do not re-read and re-interpret
    `DOUBTS.md` by eye - one parser owns it, and every command shares its answer:
 
    ```bash
-   loop doubts ask      # this round's questions, each with a recommended answer
-   loop doubts list     # everything open, blocking flagged
-   loop doubts lint     # bad prerequisites, and status that contradicts content
+   loop doubts ask --all-scopes      # this round, with recorded recommendations
+   loop doubts list --all-scopes     # every canonical open item, owning scope shown
+   loop doubts lint --all-scopes     # bad prerequisites and contradictory status
    ```
 
    Then add, from the same pass:
@@ -104,8 +98,8 @@ doubts channel.
 5. **Record every resolution at its source - with the command, not by hand:**
 
    ```bash
-   loop doubts resolve DQ-007 "Flat per-claim fee" --decision D-014
-   loop doubts defer DQ-020 "Decide after the first pilot"
+   loop doubts resolve DQ-007 "Flat per-claim fee" --decision D-014 --all-scopes
+   loop doubts defer DQ-020 "Decide after the first pilot" --all-scopes
    ```
 
    That rewrites the status *and* records the answer beside it, so the count every
@@ -116,25 +110,26 @@ doubts channel.
 6. **Re-check gates.** For any `GATES.yml` gate whose criteria are now met, set
    its `status` to `pass` (or `ready`) with a one-line `note:` of what satisfied
    it. Never mark a gate passed whose criteria are still unmet.
-7. **User unavailable / undecidable:** `loop doubts defer <id> "<risk note>"`, naming
+7. **User unavailable / undecidable:**
+   `loop doubts defer <id> "<risk note>" --all-scopes`, naming
    what it blocks. Do **not** loop or invent an answer - report it as a remaining
    blocker in the go/no-go.
 8. **Verify before claiming GO.** Both channels, both from the harness:
-   `loop doubts counts` is the number the go/no-go must quote, `loop doubts lint` must
-   be clean - an entry marked resolved with no recorded answer, or filed under Resolved
-   open. An unanswered finding is a blocker even when every doubt is closed.
+   `loop doubts counts --all-scopes` is the number the go/no-go must quote and
+   `loop doubts lint --all-scopes` must be clean. An entry marked resolved with no
+   recorded answer, or filed under Resolved while open, prevents GO.
 
 ## Go / No-Go output (always end with this)
 
 1. **Resolved this session** - items and where each was recorded
 2. **Gates moved to pass** - and what satisfied them
-3. **Parent findings answered** - each one, and what changed here as a result (omit
-   the section entirely when this workspace has no parent)
+3. **Cross-scope findings answered** - each one, and what changed as a result
 4. **Remaining blockers** - open/deferred items that still block development (empty
    if none)
 5. **Verdict** - the counts come from the harness, never from your own tally:
    - **GO** - "No blocking doubts remain, no findings open. Clear to run
-     `/develop-product`." (only when `loop doubts counts` reports `blocking` 0,
+     `/develop-product`." (only when `loop doubts counts --all-scopes` reports
+     `blocking` 0 and `loop doubts lint --all-scopes` is clean)
    - **NO-GO** - "N blocker(s) remain: <list>. Resolve these before development."
 6. Next command (`/develop-product` on GO; otherwise what to do about each blocker)
 
