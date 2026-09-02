@@ -18,6 +18,210 @@ do not operate the product through a terminal CLI. See
 
 Everything else in this repo (AI-agent-development scaffolding, research search, feature specs, frontend animation, deployment, release checks, ...) is auto-detected and wired into these three - see [`docs/PROCESS.md`](docs/PROCESS.md) and the full command table in [`AGENTS.md`](AGENTS.md).
 
+## The four master chains, step by step
+
+A **chain of skills** is the set of skills a master command actually loads, in execution
+order - directly or through another skill it already reached. Four commands are masters:
+`/plan-loop`, `/develop-product`, `/loop-engine`, `/revise-plan`. Everything in the diagrams
+below is a real skill in `skills/`; a skill marked **(on demand)** loads only when its
+stated trigger fires, never preloaded. Every chain opens and closes with the session
+lifecycle, which is what makes memory durable across tools.
+
+### 1. `/plan-loop` - planning (76 skills reachable)
+
+Initialize the product, grill assumptions, run the council, lock architecture, compile buildable tasks.
+
+```text
+0. SESSION-START          session-lifecycle
+        ↓
+1. MANIFEST + RECALL      SESSION_MANIFEST.md, SESSION_RECALL.md, session-recall
+        ↓
+2. SCOPE RESOLVE          scope (on demand: plan/products/ exists), product-tree
+        ↓
+3. ONBOARD EXISTING REPO  codebase-onboarding, inherit-legacy-style (both on demand:
+        ↓                 planning targets an existing repo)
+4. DETECT INIT            ask-loop (UNINITIALIZED? ask product inputs)
+        ↓
+5. GRILL                  phases/grill.md
+                          market-research, competitive-platform-analysis, (on demand:
+                          positioning evidence), iterative-retrieval (on demand:
+                          multi-faceted question), research-search → EVIDENCE_LOG
+        ↓
+6. COUNCIL                phases/council.md, council, council-multi-model, dev-team,
+                          safeguard
+        ↓
+7. ARCHITECTURE / ADRs    architecture-decision-records
+                          api-design, error-handling, contract-first,
+                          network-architect (all on demand: surface being designed)
+        ↓
+8. AGENT PRODUCT          agent-builder → agent-development (+ its 25-skill library;
+                          on demand: agent signals match)
+                          loop-design-check (on demand: a closed loop is being locked)
+        ↓
+9. SCALE BRANCH           convenient: step + feature spec
+                          platform:    phases/ultraplan.md, plan-orchestrate (on demand:
+                          several plans advance together)
+        ↓
+10. FEATURE SPEC          feature-workflow → feature-new → spec-clarify → spec-checklist
+        ↓
+11. TASKS                 phases/task-compiler.md
+                          parallel-execution-optimizer (on demand: work decomposes)
+        ↓
+12. DEPLOYMENT DRAFT      deployment-plan
+        ↓
+13. CLOSEOUT              validate_outputs, memory-review, compact-loop
+                          handoff, conversation-analyzer, learn-curator
+        ↓
+SESSION-END              (tree sync + feature converge run automatically)
+```
+
+### 2. `/develop-product` - build and release (92 skills reachable)
+
+Build from the approved plan one task at a time, then take the slice through review, QA, security, and the release phase.
+
+```text
+0. SESSION-START          session-lifecycle
+        ↓
+1. MANIFEST + RECALL      SESSION_MANIFEST.md, SESSION_RECALL.md, session-recall
+                          frontend-animation (on demand: motion/3D signals),
+                          agent-development (on demand: AUTO_AGENT_SKILLS.md)
+        ↓
+2. SCOPE + GATE CHECK     scope, product-tree, loop doubts ask
+        ↓
+3. SELECT TASK            feature-workflow (tasks.md / TASKS.yml),
+                          spec-clarify (on demand: requirements ambiguous)
+        ↓
+4. IMPLEMENTATION PLAN    implementation-planner
+                          ├─ codebase-design (seam / interface / depth)
+                          ├─ tdd (the bar the tests clear)
+                          └─ parallel-execution-optimizer (on demand: multi-step)
+        ↓
+5. BUILD                  smallest safe diff
+                          dev-tooling (lint / format / test / commit),
+                          latency-critical-systems (on demand: hot path touched)
+        ↓
+6. DIAGNOSE (if red)      diagnose-loop - build a loop that goes red first
+                          network-troubleshooter (on demand: network-layer symptom)
+        ↓
+7. CODE REVIEW            code-reviewer - Spec and Standards, reported separately
+                          follow-ups, each on demand when the diff shows the signal:
+                          ├─ code-simplifier        (complexity, dead branches)
+                          ├─ comment-analyzer       (stale / inaccurate comments)
+                          ├─ performance-optimizer  (algorithmic / Web Vitals)
+                          ├─ refactor-cleaner       (unused exports / dependencies)
+                          ├─ type-design-analyzer  (invariant not expressed)
+                          └─ pr-test-analyzer       (trivial assertions, isolation)
+        ↓
+8. QA + SECURITY          qa-validation, safeguard, security-compliance,
+                          network-config-reviewer (on demand: managed infra)
+        ↓
+9. CONVERGE               feature-converge
+                          living-docs-governance (on demand: product docs exist)
+        ↓
+10. EVAL (on demand)      eval-loop (product has cases / agent behaviour changed)
+                          harness-optimizer (on demand: regression is in the harness)
+        ↓
+11. RELEASE PHASE         phases/release.md loads, in order:
+                          ├─ security-compliance
+                          ├─ prod-gap
+                          ├─ deployment-plan
+                          ├─ cicd-release
+                          ├─ release-check
+                          └─ on demand: codehealth-mcp (health snapshot),
+                             config-gc (config audit), gateguard (gate enforcement),
+                             dashboard-builder (release dashboard)
+        ↓
+12. CLOSEOUT              memory-review, compact-loop, handoff,
+                          conversation-analyzer, learn-curator
+        ↓
+SESSION-END              (converge + tree sync run automatically)
+```
+
+### 3. `/loop-engine` - all-in-one, the primary entry point (93 skills reachable)
+
+Routes between the two branches from state, then cascades plan into develop when gates allow.
+
+```text
+0. SESSION-START          session-lifecycle
+        ↓
+1. MANIFEST + RECALL      SESSION_MANIFEST.md, SESSION_RECALL.md, session-recall,
+                          loop-engine (the router), auto-skills (frontend / agent)
+        ↓
+2. SCOPE + DOUBTS         scope, product-tree, loop doubts ask
+        ↓
+3. PLAN BRANCH            executes the FULL /plan-loop flow above
+   (plan gates blocked)   end-to-end - grill, council, architecture,
+                          ultraplan, feature spec, task-compiler
+        ↓                    then keep cascading into the develop branch
+4. DEVELOP BRANCH         executes the FULL /develop-product flow above
+   (build gates clear)    end-to-end - build, review, QA, converge,
+                          release phase
+        ↓
+5. RECOVERY               doctor (health check), release-check (gate verdict),
+   (router-only)          sync-loop-state (memory / handoff / task drift)
+        ↓
+6. CLOSEOUT               memory-review, compact-loop, handoff,
+                          conversation-analyzer, learn-curator
+        ↓
+SESSION-END
+```
+
+### 4. `/revise-plan` - correct an existing plan (71 skills reachable)
+
+The user talks; the agent loads the full plan surface and routes each fact to the file that owns it. Runs instead of re-grilling an initialized plan.
+
+```text
+0. SESSION-START          session-lifecycle
+        ↓
+1. READ FULL PLAN         main_plan.md, every step_*.md, active feature folder,
+   (no progressive        DECISIONS.md, DOUBTS.md, TASKS.yml, GATES.yml,
+    disclosure)           DEPLOYMENT_PLAN.md, CURRENT_STATE.md, HANDOFF.md,
+                          session-recall, SESSION_MANIFEST.md
+        ↓
+2. SCOPE + PARENT         scope, product-tree,
+                          codebase-onboarding, inherit-legacy-style (on demand)
+        ↓
+3. PARSE FACTS            ask-loop (one round, if needed),
+                          iterative-retrieval (on demand), research-search
+        ↓
+4. ROUTE EACH FACT        plan-loop structure; architecture-decision-records,
+                          api-design, contract-first, error-handling,
+                          network-architect; market-research,
+                          competitive-platform-analysis (on demand: positioning);
+                          council / dev-team (on demand: adversarial review);
+                          loop-design-check (on demand: loop design changed)
+        ↓
+5. GATE / BUILD LOCK      implementation-planner, tdd, codebase-design,
+                          plan-orchestrate (on demand: several plans affected)
+        ↓
+6. APPLY EDITS            one file per fact; agent-development (on demand:
+                          an agent capability changed), eval-loop (on demand:
+                          behaviour changed), conversation-analyzer (logs the
+                          correction as a pattern)
+        ↓
+7. RECONCILE              DECISIONS.md, TASKS.yml (gates back to blocked),
+                          DOUBTS.md resolved, feature-converge re-check
+        ↓
+8. CLOSEOUT               memory-review, compact-loop, handoff, learn-curator
+        ↓
+SESSION-END
+```
+
+### Chain coverage
+
+| Master chain | Skills reachable | Notes |
+|---|---|---|
+| `/plan-loop` | 76 | Planning, design, architecture, market evidence |
+| `/develop-product` | 92 | Superset of plan-loop (it routes through it) + build, review, release |
+| `/loop-engine` | 93 | The union; primary entry point |
+| `/revise-plan` | 71 | Full plan surface, edit routing, reconciliation |
+
+The remaining ~13 skills are deliberately standalone: tool infrastructure
+(`/setup-loop-engine`, `/migrate-import`, `/upgrade-loop-engineer`), chain maintenance
+(`/chain-bench`, `/bench-history`, `/chain-catalog`, `/harness-catalog`, `/skill-scout`,
+`/hookify-rules`, `/automation-audit-ops`), and `/status`. They run on the tool or the
+chain itself, before or outside any product loop.
+
 ## Quick start (any agent)
 
 ### One-liner install (GitHub)

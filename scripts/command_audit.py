@@ -108,6 +108,11 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", default=str(ROOT))
     parser.add_argument("--json", action="store_true")
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="explicit check mode: exit 1 when any command file is missing required sections (the default behavior; flag kept for CI and docs compatibility)",
+    )
     args = parser.parse_args(argv)
     root = Path(args.root).resolve()
     result = audit(root)
