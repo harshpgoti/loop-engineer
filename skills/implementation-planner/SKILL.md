@@ -28,6 +28,8 @@ Prevent sloppy implementation by planning the smallest safe diff.
 - **Which seam does this change sit behind, and which seam do its tests observe from?**
   Prefer an existing seam to a new one, and the highest one that reaches the behaviour. Name
   them before writing a test (`skills/tdd/SKILL.md`).
+- Multi-step task? Decide sequential vs parallel with
+  `skills/parallel-execution-optimizer/SKILL.md` before committing to the plan.
 - If frontend motion/3D signals exist: run `python scripts/frontend_skill_router.py --write` and read `plan/AUTO_SKILLS.md`
 - What data model or API contracts change?
 - What tests must be added or updated?

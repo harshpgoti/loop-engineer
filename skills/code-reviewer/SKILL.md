@@ -104,6 +104,20 @@ single winner across the axes.**
 
 No findings on an axis? Say so, and list the residual risk or test gap that remains anyway.
 
+## Related reviews
+
+A finding often has a sharper follow-up pass. Load the named skill; do not re-derive its
+rules here:
+
+| Signal in the diff | Follow-up |
+|---|---|
+| Complexity, dead branches, or unclear names worth a behavior-preserving pass | `skills/code-simplifier/SKILL.md` |
+| Comments that are inaccurate, stale, or low-value | `skills/comment-analyzer/SKILL.md` |
+| An algorithmic or Web Vitals regression the smell table only hints at | `skills/performance-optimizer/SKILL.md` |
+| Unused exports or dependencies the change left behind | `skills/refactor-cleaner/SKILL.md` |
+| A type that fails to express or enforce its invariant | `skills/type-design-analyzer/SKILL.md` |
+| Test diff present but the assertions look trivial or isolation is missing | `skills/pr-test-analyzer/SKILL.md` |
+
 ## Never
 
 The builder does not approve its own work (`AGENTS.md`). Run this as a separate pass with the

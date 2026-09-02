@@ -38,13 +38,17 @@ loop scope resolve --text "<exactly what the user typed>" --session "<session id
 
 A change this run needs in a *different* sub-product: locate it (`loop scope impact
 <contract-id>`), ask the user with the specific change named, and apply it there on their
-yes. See `skills/scope/SKILL.md`.
+yes. See `skills/scope/SKILL.md`; `skills/product-tree/SKILL.md` renders the whole tree,
+its scopes, and their contracts.
 
 A workspace with no scopes skips this entirely and behaves exactly as before.
 
 ## Required Reads
 
 Plus `skills/scope/SKILL.md` whenever `plan/products/` exists.
+Plus `skills/codebase-onboarding/SKILL.md` - and for hand-written legacy code
+`skills/inherit-legacy-style/SKILL.md` - when planning targets an existing product repo
+that has not been onboarded yet.
 
 Read command/skill files from the tool app (`~/.loop-engineer/app/` or your clone). Read and write product-state files in the **active workspace** (local `.loop-engineer/` auto-detected from cwd, else `~/.loop-engineer/data/`). See `docs/DATA_LAYOUT.md`.
 
@@ -191,7 +195,9 @@ Continue with standard step + deep **feature spec** (steps 15-17 below).
 ### B) `platform` - multiple sub-products / agents
 
 Already bootstrapped: `PRODUCT_MAP.md`, step stubs, and canonical owner folders. **Your job:**
-fully plan the step listed in `PLAN_BOOTSTRAP.md` through compiled tasks - one step per session.
+fully plan the step listed in `PLAN_BOOTSTRAP.md` through compiled tasks - one step per
+session. When several steps or sub-products must advance together, sequence them with
+`skills/plan-orchestrate/SKILL.md`.
 
 13. **Use the initializer when enough product inputs are known** (convenient scale only, or first platform step):
    ```bash

@@ -43,12 +43,13 @@ loop session-end --summary "Built hero section; next: API wiring"
 ## What session-end does
 
 1. Curates memory (dedupe, trim, closeout proposals)
-2. Writes `plan/MEMORY_REVIEW.md`
-3. **Writes** `memories/MEMORY.md` for this workspace - no approval step
-4. Runs `feature converge` for mutating planning/development commands when an active feature exists
-5. Re-syncs the product tree so parent and child generated views include this command's results
-6. Writes `plan/SESSION_CLOSEOUT.md`
-7. Logs closeout to `state.db`
+2. Mines the session transcript for corrections, repeated mistakes, and injection attempts (`skills/conversation-analyzer/SKILL.md`), promoting eligible observations to staged records (`skills/learn-curator/SKILL.md`) when `.loop/learning/` has candidates
+3. Writes `plan/MEMORY_REVIEW.md`
+4. **Writes** `memories/MEMORY.md` for this workspace - no approval step
+5. Runs `feature converge` for mutating planning/development commands when an active feature exists
+6. Re-syncs the product tree so parent and child generated views include this command's results
+7. Writes `plan/SESSION_CLOSEOUT.md`
+8. Logs closeout to `state.db`
 
 Nothing is left for the user to run. `.loop/pending/` collects only writes that
 need a human decision - a parent workspace proposing into a sub-product, and
@@ -71,7 +72,7 @@ Those remain explicit diagnostic commands for a requested mid-session recheck on
 
 1. **First action** when user runs `/plan-loop`, `/develop-product`, `/loop-engine`, or any product work: `loop session-start`
 2. **Read** `plan/SESSION_MANIFEST.md` and every file it lists
-3. **Last action** before ending the turn/session: update `HANDOFF.md` + `memories/MEMORY.md`, then `loop session-end`
+3. **Last action** before ending the turn/session: update `HANDOFF.md` (the discipline is `skills/handoff/SKILL.md`) + `memories/MEMORY.md`, then `loop session-end`
 4. Do not skip because the tool changed - memory lives in the workspace, not the chat
 
 ## What HANDOFF.md has to carry

@@ -14,10 +14,18 @@ Close the production gaps: security, compliance, deployment, CI/CD.
 3. `skills/prod-gap/SKILL.md`
 4. `skills/deployment-plan/SKILL.md`
 5. `skills/cicd-release/SKILL.md`
-6. `plan/PROD-GAP.md`, `DEPLOYMENT_PLAN.md`
+6. `skills/release-check/SKILL.md`
+7. `plan/PROD-GAP.md`, `DEPLOYMENT_PLAN.md`
 
-This is the only phase that loads these four skills - which is why they are not in the
+This is the only phase that loads these release skills - which is why they are not in the
 other phases' read lists.
+
+Load with them when the run needs them:
+
+- `skills/codehealth-mcp/SKILL.md` - health snapshot feeding the gap analysis
+- `skills/config-gc/SKILL.md` - pre-release config audit
+- `skills/gateguard/SKILL.md` - machine-verifiable gate enforcement
+- `skills/dashboard-builder/SKILL.md` - release dashboard when one is wanted
 
 ## Process
 

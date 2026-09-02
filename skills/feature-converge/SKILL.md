@@ -27,6 +27,7 @@ python scripts/feature_converge.py
 1. `skills/feature-workflow/SKILL.md`
 2. Active feature folder artifacts
 3. `TASKS.yml`, `HANDOFF.md`, `CURRENT_STATE.md`
+4. `skills/living-docs-governance/SKILL.md` when product docs exist - documentation drift is convergence too
 
 ## Steps
 

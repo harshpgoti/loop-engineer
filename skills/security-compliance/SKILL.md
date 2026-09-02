@@ -25,6 +25,7 @@ Inherits `docs/SKILL_CONTRACT.md`.
 - Prompt injection
 - Workflow authorization
 - Incident response
+- Network device configuration (SSH versions, SNMP, AAA, NTP, plaintext protocols) via `skills/network-config-reviewer/SKILL.md` when the product includes managed network infrastructure
 
 ## Instructions
 

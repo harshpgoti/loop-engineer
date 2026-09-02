@@ -63,6 +63,11 @@ Read on demand, when the phase you are in actually needs it:
 |------|------|
 | Deployment questions during planning | `templates/plan_deployment_questions.md`, `skills/deployment-plan/SKILL.md` |
 | Sourcing a claim | `skills/research-search/SKILL.md` → cite in `EVIDENCE_LOG.md` |
+| Market sizing, competitor and positioning evidence | `skills/market-research/SKILL.md`, `skills/competitive-platform-analysis/SKILL.md` |
+| A multi-faceted question one retrieval pass cannot answer | `skills/iterative-retrieval/SKILL.md` |
+| Designing or reviewing the API surface | `skills/api-design/SKILL.md` - error contract via `skills/error-handling/SKILL.md` |
+| A cross-boundary contract (module, service, or sub-product) | `skills/contract-first/SKILL.md` |
+| Network topology decisions (subnets, firewall, DNS, ingress) | `skills/network-architect/SKILL.md` |
 | Checking a past decision | `DECISIONS.md` - and `plan/archive/DECISIONS_DETAIL.md` for the rationale |
 | Checking evidence behind a decision | `EVIDENCE_LOG.md`; settled sourcing is in `plan/archive/EVIDENCE_SETTLED.md` (`loop archive --search <term>`) |
 | Session bookkeeping | `skills/session-lifecycle/SKILL.md`, `skills/memory-review/SKILL.md`, `skills/compact-loop/SKILL.md` |

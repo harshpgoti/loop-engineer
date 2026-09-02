@@ -46,6 +46,10 @@ human_gate: <if any, what blocks the chain from continuing automatically>
 If any field cannot be filled, the work is not yet a workflow - it is still a one-shot.
 Keep the work inline until the structure sharpens.
 
+Before locking the design, run the five-failure-mode review in
+`skills/loop-design-check/SKILL.md` - a harness that cannot fail, fall back, or anchor
+itself to something external is not a loop yet.
+
 ## Decision Tree: where the harness lives
 
 ```

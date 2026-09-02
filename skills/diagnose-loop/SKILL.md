@@ -45,6 +45,10 @@ Ways to build one, roughly in order:
 10. A scripted human-in-the-loop last resort, when a person genuinely has to click. Structure
     it so their observations still come back as captured output.
 
+A symptom at the network layer (DNS, connectivity, TLS, firewall, ports) starts with the
+read-only OSI-layer pass in `skills/network-troubleshooter/SKILL.md` - evidence per layer
+before any hypothesis.
+
 ### Tighten it
 
 Treat the loop as the product. Faster (cache setup, narrow scope). Sharper (assert the

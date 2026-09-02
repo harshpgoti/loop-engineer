@@ -45,6 +45,9 @@ loop eval record <file>   # persist a scored run
 loop eval analyse         # write plan/EVAL_ANALYSIS.md
 ```
 
+A regression traced to the harness itself - a model, prompt, or tool configuration change -
+routes to `skills/harness-optimizer/SKILL.md`: pass@k and pass^k, snapshot before and after.
+
 ## Scoring a case
 
 **Deterministic first** (`AGENTS.md` non-negotiable #4). Ask in this order:

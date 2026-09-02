@@ -179,6 +179,8 @@ Run relevant tests before marking done:
 - Frontend: lint, typecheck, unit tests, Playwright smoke
 - Security: gitleaks, dependency audit, Bandit/Semgrep where configured
 - Risk/compliance: no sensitive data in logs, tenant isolation when applicable, audit events where needed
+- Tooling: lint, format, test, and commit run through the workspace config layer - `skills/dev-tooling/SKILL.md`
+- Latency: a change on a user-visible hot path carries its p99 budget and before/after profile - `skills/latency-critical-systems/SKILL.md`
 
 If a command cannot run, record why in `memories/MEMORY.md` and `HANDOFF.md`.
 
