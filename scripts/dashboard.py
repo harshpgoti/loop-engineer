@@ -19,8 +19,6 @@ import sys
 from pathlib import Path
 from typing import Any
 
-import yaml
-
 
 def _run_source(source: str, workspace: Path, timeout: int = 30) -> Any:
     """Run a panel's source command and return the JSON-decoded result.
@@ -92,9 +90,16 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Spec not found: {args.spec}", file=sys.stderr)
         return 1
     try:
-        import yaml  # noqa: F401
+        import yaml
+
         spec = yaml.safe_load(args.spec.read_text(encoding="utf-8"))
-    except (ImportError, yaml.YAMLError) as exc:
+    except ImportError:
+        print(
+            "PyYAML is required for dashboard specs: pip install pyyaml",
+            file=sys.stderr,
+        )
+        return 1
+    except yaml.YAMLError as exc:
         print(f"Failed to load spec: {exc}", file=sys.stderr)
         return 1
     workspace = args.workspace.resolve()
