@@ -231,12 +231,97 @@ change to agent behaviour - a prompt, a model, a tool definition - which unit te
 ```text
 /agent-builder        # design/scaffold an AI agent as the product - auto-activates in /plan-loop + /develop-product
 /research-search      # search arXiv / Research Square / SSRN
+/market-research      # TAM/SAM/SOM, competitors, interviews, positioning, kill criterion
+/competitive-platform-analysis  # structured competitive analysis (direct / indirect / substitute)
+/grill                # the structured interview (66 questions, 11 categories) behind /plan-loop
 /feature-new          # create and activate a numbered feature spec
 /spec-clarify         # structured clarification on the active feature spec
 /spec-checklist       # spec quality gate before feature-plan
 /feature-converge     # post-build drift check vs spec/tasks
+/feature-workflow     # full per-feature pipeline: spec -> clarify -> checklist -> feature-plan -> tasks
 /ultraplan-loop            # deep per-step planning for platform-scale products
 /frontend-animation   # route to built-in GSAP / Motion.dev / 3D skills
+/dynamic-workflow     # design a task-local harness (Objective, Inputs, Loop, Eval, Handoff, Human_gate)
+```
+
+### Decisions & critique
+
+```text
+/council              # four-voice council (Architect / Skeptic / Pragmatist / Critic) for ambiguous decisions
+/council-multi-model  # external-model critique on a council decision, with provider labels and consent
+/dev-team             # preset four-persona parallel review (PM / Architect / Developer / QA)
+/adr                  # capture an architectural decision as a durable ADR
+/decision-ledger      # append a revisit to the recursive decision ledger
+/recursive-decision-ledger  # record prior winner, fresh evidence, search space, and outcome
+```
+
+### Onboarding an existing codebase
+
+```text
+/codebase-onboarding   # 4-phase recon -> architecture -> conventions -> ONBOARDING.md
+/inherit-legacy-style  # codify a hand-written legacy codebase's style into .ai-style-rules.md
+```
+
+### Design & build review
+
+```text
+/api-design        # REST/HTTP conventions: resources, status codes, error envelopes, versioning
+/error-handling    # map internal exceptions to the public error envelope; typed errors
+/contract-first    # canonical cross-boundary contracts (OpenAPI / AsyncAPI / JSON Schema)
+/loop-design-check # 5-failure-mode review of a closed loop's design
+/latency-critical-systems  # p99 budget, hot path, profile before/after, CI regression test
+/safeguard         # prompt-defense baseline for skills/agents that handle user input
+/gateguard         # enforce a release gate as a machine-verifiable Stop hook
+/strategic-compact # suggest /compact at phase boundaries, not token thresholds
+```
+
+### Code quality (build-time)
+
+```text
+/code-simplifier         # read-then-edit refactor that preserves behavior
+/comment-analyzer        # verify comment accuracy/staleness (Inaccurate / Stale / Incomplete / Low-value)
+/performance-optimizer   # algorithmic complexity + Web Vitals + bundle analysis, profiled
+/refactor-cleaner        # dead-code hunter (knip / depcheck / ts-prune); SAFE / CAREFUL / RISKY
+/type-design-analyzer    # score type design (Encapsulation / Invariant / Usefulness / Enforcement)
+/pr-test-analyzer        # test quality not count; Critical / Important / Nice-to-have gaps
+/harness-optimizer       # eval-driven harness tuning via pass@k / pass^k
+/agent-eval              # head-to-head agent comparison on a YAML task suite in isolated worktrees
+```
+
+### Specialized release reviews
+
+```text
+/qa-validation           # unit, integration, E2E, golden, schema, tenant-isolation checks
+/security-compliance     # secrets, sensitive data, tenant isolation, audit logs, prompt injection, IDOR
+/data-engineering        # data models, migrations, pipelines, quality, lineage, retention
+/ml-engineering          # dataset versioning, training, evaluation, registry, inference, rollback
+/operations              # observability, SLOs, incident response, backups, capacity, recovery
+/living-docs-governance  # detect docs/code drift; deterministic checks; drift report + tasks
+/network-architect       # subnets, firewall rules, DNS, load balancers, VPN, ingress design
+/network-troubleshooter  # read-only OSI-layer diagnosis with evidence-based root cause
+/network-config-reviewer # audit running network device config (SSH, SNMP, AAA, Telnet, HTTP)
+```
+
+### Dev tooling (uses .loop/dev_config.json)
+
+```text
+/lint      # run the project's linter
+/test      # run the project's test suite
+/format    # format the project
+/commit    # stage and commit with a conventional-commits message
+```
+
+### Docs, retrieval & orchestration
+
+```text
+/docs               # create/update product docs (plans, PRDs, ADRs, runbooks, release notes)
+/handoff           # read or write HANDOFF.md at any chain transition
+/learn-curator     # promote eligible observations to staged records (runs at /session-end)
+/revise-skill      # revise an existing skill's SKILL.md safely: checklist, audit, tests, minimal diff
+/iterative-retrieval       # three-round retrieval loop; each round refines the query
+/plan-orchestrate         # coordinate a multi-plan DAG run; emit ORCHESTRATION_LOG.md
+/parallel-execution-optimizer  # decide sequential vs parallel for a multi-step task; emit a plan
+/dashboard-builder        # self-contained HTML dashboard from a YAML spec (no JS frameworks, no CDN)
 ```
 
 ### Big product split into sub-products
@@ -350,6 +435,26 @@ Details: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)
 /compact-loop         # durable context summary before long runs or tool switches
 /migrate-import       # import another tool's data after setup; add --scan to classify arbitrary files by content
 /upgrade-loop-engineer  # update tool files without touching product data
+/config-gc            # walk the workspace for env vars / flags / config entries no longer referenced
+/automation-audit-ops # audit every automation (CI, hooks, scripts) for stale, unowned, or risky ones
+/codehealth-mcp       # code-health snapshot: lint debt, coverage, churn, dep freshness, doc coverage
+```
+
+### Maintaining the chain itself
+
+```text
+/self-audit       # walk the LE app's own state: policy consistency, reachability, budgets
+/roles           # list every role: class, model tier, skills, hand-off targets, independence
+/skill-list      # list every skill: class, owning capability, activation paths
+/agent-sort      # classify skills/commands/agents as DAILY vs LIBRARY with evidence tables
+/skill-scout     # before creating a skill, search local + adjacent ecosystems; vet externals
+/hookify-rules   # turn a one-off hook event into a reusable rule; verify before adoption
+/chain-bench     # benchmark the chain's own state (skills, commands, roles, plan, tests)
+/bench-history   # record and diff chain benchmarks over time; trend deltas vs prior snapshot
+/chain-catalog   # render the full chain surface as a single Markdown catalog page
+/harness-catalog # consolidate per-coding-agent harness JSON into one discoverable view
+/onboard         # print/open the Loop Engineer contributor onboarding guide
+/conversation-analyzer  # mine session transcripts for corrections, repeated mistakes, injection attempts
 ```
 
 ### Session lifecycle (agents run these, not you)
