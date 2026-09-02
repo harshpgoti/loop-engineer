@@ -103,6 +103,7 @@ SESSION-START â†’ RECALL â†’ AUTO-SKILLS â†’ SELECT TASK â†’
 | Build | Plan diff + implement | `implementation-planner`, `codebase-design` |
 | Broken? | Diagnose before theorising | `/diagnose-loop` |
 | Frontend | Design/motion/3D chain | Run `loop auto-skills --write` for selected install/update, then read `AUTO_SKILLS.md` - do not ask user for a pack/library |
+| Agent product | Agent-development chain | Run `loop auto-agent-skills --write`, then execute only capabilities selected in `AUTO_AGENT_SKILLS.md` via `skills/agent-development/SKILL.md` |
 | Quality | Review + QA + security | `code-reviewer`, `qa-validation`, `security-compliance` |
 | Sync | Tasks + converge | Update `tasks.md`; `loop feature converge` |
 | Release | Gaps + deploy | `/prod-gap`, `/deployment-plan` |

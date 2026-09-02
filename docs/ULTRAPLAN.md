@@ -69,7 +69,7 @@ The row stays the platform-level contract; the scope owns its PRD, tasks and gat
 code can live anywhere - a folder here, or another repo - but its plan stays in this
 workspace, so one sub-product can depend on another directly.
 
-See [`SCOPES.md`](SCOPES.md).
+See [`docs/SCOPES.md`](docs/SCOPES.md).
 
 ## Agent-only advanced CLI
 

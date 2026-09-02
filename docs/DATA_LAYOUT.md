@@ -67,7 +67,7 @@ Example: set up `H:/POC/QEAutoAI` once with local mode, close the terminal, come
 
 ## Nested products (main product + sub-products)
 
-A sub-product is a **scope** inside this workspace (`plan/products/<slug>/`) - including one whose code lives in another repo. There is no second data dir. See [`SCOPES.md`](SCOPES.md).
+A sub-product is a **scope** inside this workspace (`plan/products/<slug>/`) - including one whose code lives in another repo. There is no second data dir. See [`docs/SCOPES.md`](docs/SCOPES.md).
 
 
 Local workspaces nest. A main product folder can contain sub-product folders that each
@@ -84,7 +84,7 @@ main-product/
 
 The link between them lives in `<workspace>/.loop/workspace.json` and is refreshed at
 every `loop session-start`. No file means `standalone`, the unchanged single-product
-behavior. See [`docs/SCOPES.md`](SCOPES.md).
+behavior. See [`docs/SCOPES.md`](docs/SCOPES.md).
 
 ## Central tool + local product (multiple products)
 

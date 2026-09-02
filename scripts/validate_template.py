@@ -179,7 +179,6 @@ REQUIRED_PATHS = [
     "scripts/migrate_import.py",
     "scripts/import_scanner.py",
     "scripts/frontend_skill_router.py",
-    "scripts/frontend_external_manager.py",
     "scripts/session_lifecycle.py",
     "scripts/feature_paths.py",
     "scripts/new_feature.py",

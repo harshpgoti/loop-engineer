@@ -43,20 +43,12 @@ trusted project-local integration.
 | Claude Code | `~/.claude/skills` | `.claude/skills` |
 | Codex | `~/.codex/skills` | `.agents/skills` |
 | Cursor | `~/.cursor/skills` | `.cursor/skills` |
-| OpenCode | `~/.config/opencode/skills` | `.opencode/skills` |
-| Gemini CLI | `~/.gemini/skills` | `.agents/skills` |
-| Grok Build | `~/.grok/skills` | `.grok/skills` |
-| Pi | `~/.pi/agent/skills` | `.agents/skills` |
-| Cline | `~/.cline/skills` | `.cline/skills` |
-| Factory / Kiro / Slate / Hermes | `~/.<tool>/skills` | `.agents/skills` |
+| (this repo does not name or recommend external agents) | `~/.<adapter>/skills` | `.agents/skills` |
 
-Grok Build also auto-reads Claude Code skills and `CLAUDE.md`, so it is covered a
-second way by the `~/.claude/skills` router and team mode.
+**A second namespace for slash commands may exist on some adapters**, so the install
+step writes the command file as well:
 
-**Three agents keep slash commands in a second namespace**, so routers alone leave
-`/plan-loop` matching nothing and install writes a command file as well:
-
-| Agent | Command namespace | Why |
+| Adapter family | Command namespace | Why |
 |---|---|---|
 | OpenCode | `~/.config/opencode/command/<name>.md` | Skills there are model-invoked only |
 | Pi | `~/.pi/agent/prompts/<name>.md` | Pi answers skills at `/skill:<name>`, never `/<name>` |
@@ -95,7 +87,7 @@ separate plugin is needed.
 ## Auto-update at session-start
 
 `loop session-start` runs in every agent at every session, so it is where Loop
-keeps the app current — gstack's "no version drift, no manual upgrades" property,
+keeps the app current's "no version drift, no manual upgrades" property,
 but Loop has one app to update instead of one clone per tool. The check is
 silent, throttled to once per hour, and failure-safe (any error skips and retries
 next hour). Modes (`LOOP_AUTO_UPDATE` env → `~/.loop-engineer/data/auto_update.txt`

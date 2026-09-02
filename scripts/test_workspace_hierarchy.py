@@ -32,7 +32,7 @@ MAIN_PLAN = """# Main Plan
 | Item | Choice |
 |------|--------|
 | Cloud provider | AWS |
-| LLM provider | Anthropic |
+| LLM provider | provider-a |
 | Primary region(s) | TBD |
 """
 

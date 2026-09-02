@@ -66,7 +66,7 @@ environment:
 | Field | Why it exists |
 |---|---|
 | `Purpose` | The question the file exists to answer. A row without it is a resource nobody can attribute |
-| `Scope` | Which sub-product it serves (see [`SCOPES.md`](SCOPES.md)); blank means platform-wide |
+| `Scope` | Which sub-product it serves (see [`docs/SCOPES.md`](docs/SCOPES.md)); blank means platform-wide |
 | `Env` | Decides whether it is disposable. `dev` is; `prod` and `staging` are not |
 | `Teardown` | The removal command, captured while it is still known |
 | `Status` | `active`, `deleted` or `failed`. Deleted rows **stay** - that a resource existed and was removed is history |
@@ -101,7 +101,7 @@ Three deliberate limits:
 ## Approval
 
 Creating cloud resources is external, costly and not fully reversible, so it stops and
-asks every time (`AGENTS.md` #5, [`CONTINUATION.md`](CONTINUATION.md)). One message with
+asks every time (`AGENTS.md` #5, [`docs/CONTINUATION.md`](docs/CONTINUATION.md)). One message with
 the whole list and rough costs - never a prompt per resource, and never create-first-
 report-after:
 

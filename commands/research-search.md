@@ -1,10 +1,10 @@
 # /research-search
 
-Search arXiv, Research Square, and SSRN for published research to ground a claim in evidence.
+Search arXiv, Research Square, PubMed, and SSRN for published research to ground a claim in evidence.
 
 ## How To Interpret
 
-If the user says `/research-search`, `research search`, `search arxiv`, `search papers`, `find research on`, or asks to look up published research/literature on a topic, execute this file directly.
+If the user says `/research-search`, `research search`, `search arxiv`, `search pubmed`, `search papers`, `find research on`, or asks to look up published research/literature on a topic, execute this file directly.
 
 ## Required Reads
 
@@ -16,6 +16,7 @@ If the user says `/research-search`, `research search`, `search arxiv`, `search 
 loop research "<query>"
 loop research "<query>" --source arxiv
 loop research "<query>" --source researchsquare
+loop research "<query>" --source pubmed
 loop research "<query>" --source ssrn
 loop research "<query>" --limit 20
 ```
@@ -25,6 +26,7 @@ loop research "<query>" --limit 20
 - Cite the returned URL in `EVIDENCE_LOG.md`, not just the search term.
 - SSRN has no public API - `--source ssrn` only prints a search URL (unverified; SSRN blocks automated fetches). Open it yourself; do not report SSRN results you have not actually read.
 - Prefer this over a generic web search when the claim is research-grounded (architecture pattern, eval methodology, benchmark result, safety finding).
+- Healthcare/clinical AI: run PubMed alongside arXiv; preprint-only evidence for diagnosis, triage, or treatment claims is low-confidence until peer-reviewed.
 
 ## Output
 
@@ -33,3 +35,10 @@ Per-source result count and paper list (title, authors, published date, URL). No
 ## Handoff
 
 Add cited sources to `EVIDENCE_LOG.md` when the result informs a product, architecture, or agent-design decision.
+
+## Loop
+
+1. READ the user's claim that needs evidence
+2. SEARCH arXiv / Research Square / PubMed / SSRN via the script
+3. SCAN the abstracts for relevance
+4. EMIT a cited result with the source URLs

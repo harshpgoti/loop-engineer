@@ -66,7 +66,7 @@ Read on demand, when the phase you are in actually needs it:
 | Checking a past decision | `DECISIONS.md` - and `plan/archive/DECISIONS_DETAIL.md` for the rationale |
 | Checking evidence behind a decision | `EVIDENCE_LOG.md`; settled sourcing is in `plan/archive/EVIDENCE_SETTLED.md` (`loop archive --search <term>`) |
 | Session bookkeeping | `skills/session-lifecycle/SKILL.md`, `skills/memory-review/SKILL.md`, `skills/compact-loop/SKILL.md` |
-| The product is/includes an AI agent | `skills/agent-builder/SKILL.md` (the manifest adds it when `plan/AUTO_AGENT_SKILLS.md` exists) |
+| The product is/includes an AI agent | `skills/agent-builder/SKILL.md` then the selected lifecycle capabilities in `skills/agent-development/SKILL.md` (the manifest adds it when `plan/AUTO_AGENT_SKILLS.md` exists) |
 
 ## Needs a decision
 

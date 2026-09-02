@@ -82,3 +82,10 @@ Return:
 3. Dry-run or apply result
 4. Validation result
 5. Next command
+
+## Loop
+
+1. READ the current LE app version
+2. RUN `python scripts/upgrade_loop_engineer.py` (or `loop update`)
+3. VERIFY the upgrade does not touch product-state files
+4. EMIT the post-upgrade audit result

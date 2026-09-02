@@ -1,95 +1,429 @@
 {
   "version": 1,
-  "supported_harnesses": ["codex", "claude", "cursor", "grok", "opencode", "pi"],
+  "supported_harnesses": [
+    "codex",
+    "claude",
+    "cursor",
+    "grok",
+    "opencode",
+    "pi"
+  ],
   "capabilities": [
     {
       "id": "foundation",
       "summary": "Install, inspect, synchronize, and preserve Loop state.",
-      "commands": ["compact-loop", "doctor", "memory-review", "session-end", "session-recall", "session-start", "setup-loop-engine", "status", "sync-loop-state", "upgrade-loop-engineer"],
-      "skills": ["compact-loop", "doctor", "memory-review", "session-lifecycle", "session-recall", "setup-loop-engine", "status", "sync-loop-state", "tool-orchestrator", "upgrade-loop-engineer"],
+      "commands": [
+        "automation-audit-ops",
+        "bench-history",
+        "chain-bench",
+        "chain-catalog",
+        "codebase-onboarding",
+        "codehealth-mcp",
+        "commit",
+        "compact-loop",
+        "competitive-platform-analysis",
+        "config-gc",
+        "dashboard-builder",
+        "doctor",
+        "format",
+        "grill",
+        "handoff",
+        "harness-catalog",
+        "hookify-rules",
+        "inherit-legacy-style",
+        "iterative-retrieval",
+        "learn-curator",
+        "lint",
+        "living-docs-governance",
+        "memory-review",
+        "onboard",
+        "parallel-execution-optimizer",
+        "recursive-decision-ledger",
+        "revise-skill",
+        "roles",
+        "safeguard",
+        "self-audit",
+        "session-end",
+        "session-recall",
+        "session-start",
+        "setup-loop-engine",
+        "skill-list",
+        "skill-scout",
+        "status",
+        "sync-loop-state",
+        "test",
+        "upgrade-loop-engineer"
+      ],
+      "skills": [
+        "automation-audit-ops",
+        "bench-history",
+        "chain-bench",
+        "chain-catalog",
+        "chain-meta",
+        "codebase-onboarding",
+        "codehealth-mcp",
+        "compact-loop",
+        "competitive-platform-analysis",
+        "config-gc",
+        "contributor-onboarding",
+        "dashboard-builder",
+        "dev-tooling",
+        "doctor",
+        "handoff",
+        "harness-catalog",
+        "hookify-rules",
+        "inherit-legacy-style",
+        "iterative-retrieval",
+        "learn-curator",
+        "living-docs-governance",
+        "memory-review",
+        "parallel-execution-optimizer",
+        "safeguard",
+        "session-lifecycle",
+        "session-recall",
+        "setup-loop-engine",
+        "skill-scout",
+        "status",
+        "sync-loop-state",
+        "tool-orchestrator",
+        "upgrade-loop-engineer"
+      ],
       "requires": [],
-      "harnesses": ["codex", "claude", "cursor", "grok", "opencode", "pi"],
-      "context_cost": 10
+      "harnesses": [
+        "codex",
+        "claude",
+        "cursor",
+        "grok",
+        "opencode",
+        "pi"
+      ],
+      "context_cost": 18
     },
     {
       "id": "planning",
       "summary": "Turn product intent and evidence into scoped, decision-ready plans.",
-      "commands": ["ask-loop", "plan-loop", "product-tree", "resolve-doubts", "revise-plan", "scope", "ultraplan-loop"],
-      "skills": ["ask-loop", "plan-loop", "product-tree", "revise-plan", "scope"],
-      "requires": ["foundation"],
-      "harnesses": ["codex", "claude", "cursor", "grok", "opencode", "pi"],
-      "context_cost": 18
+      "commands": [
+        "adr",
+        "api-design",
+        "ask-loop",
+        "contract-first",
+        "decision-ledger",
+        "dev-team",
+        "dynamic-workflow",
+        "loop-design-check",
+        "market-research",
+        "plan-loop",
+        "plan-orchestrate",
+        "product-tree",
+        "resolve-doubts",
+        "revise-plan",
+        "scope",
+        "strategic-compact",
+        "ultraplan-loop"
+      ],
+      "skills": [
+        "api-design",
+        "architecture-decision-records",
+        "ask-loop",
+        "contract-first",
+        "dev-team",
+        "dynamic-workflow-mode",
+        "loop-design-check",
+        "market-research",
+        "plan-loop",
+        "plan-orchestrate",
+        "product-tree",
+        "recursive-decision-ledger",
+        "revise-plan",
+        "scope"
+      ],
+      "requires": [
+        "foundation"
+      ],
+      "harnesses": [
+        "codex",
+        "claude",
+        "cursor",
+        "grok",
+        "opencode",
+        "pi"
+      ],
+      "context_cost": 32
     },
     {
       "id": "feature-workflow",
       "summary": "Specify, clarify, validate, and converge individual features.",
-      "commands": ["feature-converge", "feature-new", "spec-checklist", "spec-clarify"],
-      "skills": ["feature-converge", "feature-workflow"],
-      "requires": ["planning"],
-      "harnesses": ["codex", "claude", "cursor", "grok", "opencode", "pi"],
+      "commands": [
+        "feature-converge",
+        "feature-new",
+        "feature-workflow",
+        "spec-checklist",
+        "spec-clarify"
+      ],
+      "skills": [
+        "feature-converge",
+        "feature-workflow"
+      ],
+      "requires": [
+        "planning"
+      ],
+      "harnesses": [
+        "codex",
+        "claude",
+        "cursor",
+        "grok",
+        "opencode",
+        "pi"
+      ],
       "context_cost": 9
     },
     {
       "id": "quality",
       "summary": "Plan implementation seams, test behavior, review changes, and diagnose failures.",
-      "commands": ["diagnose-loop", "eval-loop", "research-search"],
-      "skills": ["codebase-design", "code-reviewer", "diagnose-loop", "eval-loop", "implementation-planner", "qa-validation", "research-search", "tdd"],
-      "requires": ["foundation"],
-      "harnesses": ["codex", "claude", "cursor", "grok", "opencode", "pi"],
-      "context_cost": 16
+      "commands": [
+        "code-reviewer",
+        "code-simplifier",
+        "comment-analyzer",
+        "conversation-analyzer",
+        "diagnose-loop",
+        "error-handling",
+        "eval-loop",
+        "harness-optimizer",
+        "latency-critical-systems",
+        "performance-optimizer",
+        "pr-test-analyzer",
+        "qa-validation",
+        "refactor-cleaner",
+        "research-search",
+        "tdd",
+        "type-design-analyzer"
+      ],
+      "skills": [
+        "code-reviewer",
+        "code-simplifier",
+        "codebase-design",
+        "comment-analyzer",
+        "conversation-analyzer",
+        "diagnose-loop",
+        "error-handling",
+        "eval-loop",
+        "harness-optimizer",
+        "implementation-planner",
+        "latency-critical-systems",
+        "performance-optimizer",
+        "pr-test-analyzer",
+        "qa-validation",
+        "refactor-cleaner",
+        "research-search",
+        "tdd",
+        "type-design-analyzer"
+      ],
+      "requires": [
+        "foundation"
+      ],
+      "harnesses": [
+        "codex",
+        "claude",
+        "cursor",
+        "grok",
+        "opencode",
+        "pi"
+      ],
+      "context_cost": 19
     },
     {
       "id": "security",
       "summary": "Apply deterministic security and compliance checks with reviewable findings.",
-      "commands": [],
-      "skills": ["security-compliance"],
-      "requires": ["quality"],
-      "harnesses": ["codex", "claude", "cursor", "grok", "opencode", "pi"],
+      "commands": [
+        "security-compliance"
+      ],
+      "skills": [
+        "security-compliance"
+      ],
+      "requires": [
+        "quality"
+      ],
+      "harnesses": [
+        "codex",
+        "claude",
+        "cursor",
+        "grok",
+        "opencode",
+        "pi"
+      ],
       "context_cost": 7
     },
     {
       "id": "data-ml-operations",
       "summary": "Engineer governed data, learned models, and reliable production operations.",
-      "commands": [],
-      "skills": ["data-engineering", "ml-engineering", "operations"],
-      "requires": ["quality", "security"],
-      "harnesses": ["codex", "claude", "cursor", "grok", "opencode", "pi"],
+      "commands": [
+        "data-engineering",
+        "ml-engineering",
+        "operations"
+      ],
+      "skills": [
+        "data-engineering",
+        "ml-engineering",
+        "operations"
+      ],
+      "requires": [
+        "quality",
+        "security"
+      ],
+      "harnesses": [
+        "codex",
+        "claude",
+        "cursor",
+        "grok",
+        "opencode",
+        "pi"
+      ],
       "context_cost": 12
     },
     {
       "id": "delivery",
       "summary": "Build, assess, release, and deploy a planned product.",
-      "commands": ["deploy", "deployment-plan", "develop-product", "loop-engine", "prod-gap", "release-check"],
-      "skills": ["cicd-release", "deploy", "deployment-plan", "develop-product", "docs", "loop-engine", "prod-gap", "release-check"],
-      "requires": ["feature-workflow", "quality", "security", "data-ml-operations"],
-      "harnesses": ["codex", "claude", "cursor", "grok", "opencode", "pi"],
-      "context_cost": 20
+      "commands": [
+        "deploy",
+        "deployment-plan",
+        "develop-product",
+        "docs",
+        "gateguard",
+        "loop-engine",
+        "network-architect",
+        "network-config-reviewer",
+        "network-troubleshooter",
+        "prod-gap",
+        "release-check"
+      ],
+      "skills": [
+        "cicd-release",
+        "deploy",
+        "deployment-plan",
+        "develop-product",
+        "docs",
+        "gateguard",
+        "loop-engine",
+        "network-architect",
+        "network-config-reviewer",
+        "network-troubleshooter",
+        "prod-gap",
+        "release-check"
+      ],
+      "requires": [
+        "feature-workflow",
+        "quality",
+        "security",
+        "data-ml-operations"
+      ],
+      "harnesses": [
+        "codex",
+        "claude",
+        "cursor",
+        "grok",
+        "opencode",
+        "pi"
+      ],
+      "context_cost": 24
     },
     {
       "id": "frontend",
       "summary": "Route and validate frontend design, motion, and 3D work.",
-      "commands": ["frontend-animation"],
-      "skills": ["frontend-animation"],
-      "requires": ["quality"],
-      "harnesses": ["codex", "claude", "cursor", "grok", "opencode", "pi"],
+      "commands": [
+        "frontend-animation"
+      ],
+      "skills": [
+        "frontend-animation"
+      ],
+      "requires": [
+        "quality"
+      ],
+      "harnesses": [
+        "codex",
+        "claude",
+        "cursor",
+        "grok",
+        "opencode",
+        "pi"
+      ],
       "context_cost": 8
     },
     {
       "id": "agent-systems",
       "summary": "Design and scaffold agentic products and workflows.",
-      "commands": ["agent-builder"],
-      "skills": ["agent-builder"],
-      "requires": ["planning", "quality", "security"],
-      "harnesses": ["codex", "claude", "cursor", "grok", "opencode", "pi"],
-      "context_cost": 9
+      "commands": [
+        "agent-builder",
+        "agent-eval",
+        "agent-sort",
+        "council",
+        "council-multi-model"
+      ],
+      "skills": [
+        "agent-architecture-audit",
+        "agent-builder",
+        "agent-development",
+        "agent-eval",
+        "agent-harness-construction",
+        "agent-introspection-debugging",
+        "agent-payment-x402",
+        "agent-self-evaluation",
+        "agent-sort",
+        "agentic-engineering",
+        "agentic-os",
+        "autonomous-agent-harness",
+        "autonomous-loops",
+        "context-budget",
+        "continuous-agent-loop",
+        "continuous-learning",
+        "continuous-learning-v2",
+        "council",
+        "council-multi-model",
+        "enterprise-agent-ops",
+        "eval-harness",
+        "gan-style-harness",
+        "ralphinho-rfc-pipeline",
+        "santa-method",
+        "strategic-compact",
+        "team-agent-orchestration",
+        "team-builder",
+        "token-budget-advisor",
+        "unified-memory"
+      ],
+      "requires": [
+        "planning",
+        "quality",
+        "security"
+      ],
+      "harnesses": [
+        "codex",
+        "claude",
+        "cursor",
+        "grok",
+        "opencode",
+        "pi"
+      ],
+      "context_cost": 11
     },
     {
       "id": "migration",
       "summary": "Import external workspace knowledge into canonical Loop paths.",
-      "commands": ["migrate-import"],
-      "skills": ["migrate-import"],
-      "requires": ["foundation"],
-      "harnesses": ["codex", "claude", "cursor", "grok", "opencode", "pi"],
+      "commands": [
+        "migrate-import"
+      ],
+      "skills": [
+        "migrate-import"
+      ],
+      "requires": [
+        "foundation"
+      ],
+      "harnesses": [
+        "codex",
+        "claude",
+        "cursor",
+        "grok",
+        "opencode",
+        "pi"
+      ],
       "context_cost": 5
     }
   ]

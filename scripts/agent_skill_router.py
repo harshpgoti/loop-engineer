@@ -32,8 +32,59 @@ SHAPE_PATTERNS: dict[str, tuple[str, ...]] = {
 
 ALWAYS_READ = (
     "skills/agent-builder/SKILL.md",
+    "skills/agent-development/SKILL.md",
     "skills/research-search/SKILL.md",
 )
+
+# Ordered by the agent-development lifecycle.  The router emits only capabilities
+# whose signals match; compatibility names are reported separately so old plans
+# keep working without loading obsolete guidance.
+CAPABILITY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("agentic-engineering", AGENT_SIGNALS),
+    ("agent-harness-construction", ("tool-calling", "tool calling", "function calling", "agent tool", "action space", "observation format")),
+    ("agentic-os", ("persistent agent", "agent operating system", "scheduled agent", "long-running agent")),
+    ("dynamic-workflow-mode", ("dynamic workflow", "branching workflow", "adaptive", "state machine")),
+    ("continuous-agent-loop", ("autonomous agent", "continuous agent", "recurring agent", "scheduled agent", "agent loop")),
+    ("team-agent-orchestration", ("multi-agent", "multi agent", "agent team", "agent squad", "kanban")),
+    ("team-builder", ("compose agents", "pick agents", "agent team", "agent squad")),
+    ("dev-team", ("dev team", "development team simulation", "role-based team", "pm architect developer qa")),
+    ("ralphinho-rfc-pipeline", ("rfc", "dag", "merge queue", "worktree")),
+    ("gan-style-harness", ("generator evaluator", "generator-evaluator", "iterate until", "quality threshold")),
+    ("eval-harness", ("eval", "golden case", "pass@k", "pass^k", "regression")),
+    ("agent-eval", ("compare agents", "agent benchmark", "coding agents", "head-to-head")),
+    ("agent-self-evaluation", ("self evaluate", "self-evaluate", "scorecard")),
+    ("santa-method", ("two reviewers", "dual review", "adversarial review", "check twice")),
+    ("agent-architecture-audit", ("audit", "production readiness", "wrapper", "memory pollution")),
+    ("agent-introspection-debugging", ("debug agent", "agent failure", "introspection", "retry loop")),
+    ("enterprise-agent-ops", ("production agent", "enterprise", "observability", "incident", "sla")),
+    ("unified-memory", ("agent memory", "persistent memory", "long-term memory", "agent handoff", "cross-tool memory")),
+    ("continuous-learning-v2", ("continuous learning", "instinct", "learn from sessions", "promote skill")),
+    ("context-budget", ("context budget", "context window", "context bloat")),
+    ("strategic-compact", ("strategic compact", "context limit", "context compaction")),
+    ("token-budget-advisor", ("token budget", "token limit", "response budget")),
+    ("recursive-decision-ledger", ("rollout", "decision ledger", "stochastic", "local optimum", "ensemble")),
+    ("council", ("tradeoff", "go/no-go", "ambiguous decision", "multiple options")),
+    ("council-multi-model", ("external critique", "multi-model", "cross-provider review")),
+    ("agent-payment-x402", ("x402", "agent payment", "agent wallet", "pay autonomously")),
+    ("agent-sort", ("sort skills", "daily skills", "library skills", "trim skills")),
+    ("autonomous-agent-harness", ("computer use", "task queue", "self-directing", "scheduled operations")),
+)
+
+COMPATIBILITY_ALIASES = {
+    "autonomous-loops": "continuous-agent-loop",
+    "continuous-learning": "continuous-learning-v2",
+}
+
+CONSENT_REQUIRED = {"agent-payment-x402", "council-multi-model"}
+
+
+def select_capabilities(text: str) -> list[str]:
+    """Select ordered, deduplicated capability names from normalized context."""
+    selected: list[str] = []
+    for name, signals in CAPABILITY_RULES:
+        if any(signal in text for signal in signals) and name not in selected:
+            selected.append(name)
+    return selected
 
 
 def _read(path: Path, limit: int = 12000) -> str:
@@ -99,6 +150,7 @@ def format_auto_agent_skills_md(
     picks: list[tuple[str, str]],
     shape: dict[str, bool],
     task_hint: str,
+    capabilities: list[str] | None = None,
 ) -> str:
     lines = [
         "# Auto-detected agent-development signals",
@@ -124,6 +176,19 @@ def format_auto_agent_skills_md(
         lines.append(f"{idx}. `{rel}`")
         idx += 1
     lines.append("")
+    capabilities = capabilities if capabilities is not None else select_capabilities(gather_context(workspace))
+    lines.append("## Capability chain")
+    lines.append("")
+    if capabilities:
+        for name in capabilities:
+            suffix = " - explicit consent required before external transfer or spending" if name in CONSENT_REQUIRED else ""
+            lines.append(f"- `{name}` -> `skills/{name}/SKILL.md`{suffix}")
+    else:
+        lines.append("- `agentic-engineering`")
+    lines.append("")
+    lines.append("Compatibility aliases: `autonomous-loops` routes to `continuous-agent-loop`; ")
+    lines.append("`continuous-learning` routes to `continuous-learning-v2`.")
+    lines.append("")
     lines.append("## Scaffold")
     lines.append("")
     lines.append("Run `loop agent scaffold` to create `agent/skills/`, `agent/tools/`, `agent/evals/`,")
@@ -148,7 +213,12 @@ def run_router(workspace: Path, extra: str = "", write: bool = False) -> list[tu
         handoff = _read(workspace / "HANDOFF.md", 500)
         if handoff:
             task_hint = handoff.strip().split("\n")[0][:200]
-        out.write_text(format_auto_agent_skills_md(workspace, picks, shape, task_hint), encoding="utf-8")
+        out.write_text(
+            format_auto_agent_skills_md(
+                workspace, picks, shape, task_hint, select_capabilities(context)
+            ),
+            encoding="utf-8",
+        )
     return picks
 
 

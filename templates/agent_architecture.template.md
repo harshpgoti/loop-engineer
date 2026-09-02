@@ -52,6 +52,19 @@ Location: `agent/skills/<name>/SKILL.md` - see `templates/agent_skill.template.m
 - Eval cadence: (per-PR / nightly / manual)
 - Tie into `skills/qa-validation/SKILL.md` for the product's test suite.
 
+## Capability chain
+
+Selected by `scripts/agent_skill_router.py` and recorded in `plan/AUTO_AGENT_SKILLS.md`.
+
+- Planning and harness capabilities:
+- Orchestration capabilities:
+- Evaluation and independent-review capabilities:
+- Audit and recovery capabilities:
+- Operations, memory, learning, and compaction capabilities:
+
+Detailed contracts live in `agent/HARNESS.md`, `agent/ORCHESTRATION.md`, `agent/MEMORY.md`,
+and `agent/OPERATIONS.md`; keep this file as the architecture index.
+
 ## Evidence
 
 Cite any research (arXiv / Research Square / SSRN via `skills/research-search/SKILL.md`, or vendor docs) that informed a non-obvious architecture choice, in `EVIDENCE_LOG.md`.

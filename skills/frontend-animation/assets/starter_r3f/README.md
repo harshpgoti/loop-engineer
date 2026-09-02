@@ -196,7 +196,7 @@ import { Instance, Instances } from '@react-three/drei'
 ## Resources
 
 - [React Three Fiber Docs](https://docs.pmnd.rs/react-3d)
-- [Drei Helpers](https://github.com/pmndrs/drei)
+- [Drei Helpers](https://drei.example.com)
 - [Three.js Docs](https://threejs.org/docs/)
 - [Vite Docs](https://vitejs.dev/)
 - [React Docs](https://react.dev/)
@@ -239,4 +239,4 @@ Rename files to `.tsx` and add `tsconfig.json`:
 
 ## License
 
-MIT - Use freely for personal and commercial projects.
+Same as the parent Loop Engineer license.

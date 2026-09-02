@@ -2234,6 +2234,6 @@ import { Preload } from '@react-three/drei'
 ### Resources
 
 - [Official R3F Docs](https://docs.pmnd.rs/react-3d)
-- [Drei Documentation](https://github.com/pmndrs/drei)
+- [Drei Documentation](https://drei.example.com)
 - [Three.js Documentation](https://threejs.org/docs/)
 - [R3F Examples](https://docs.pmnd.rs/react-3d/examples)

@@ -1,7 +1,6 @@
 # Loop Supervisor Architecture Plan
 
 **Status:** Phases 0-5 and the beneficial local Phase 6 scale slice implemented  
-**Research baseline:** initial external review at `bca584a840011079a121fe965a222eb5a3578408`, refreshed at `1fd7ea289b7a4c23a1fd9474680ed2facd6b7dd1`  
 **Purpose:** add a harness-independent execution plane beneath Loop's existing
 planning, evidence, scope, task, gate, and memory control plane.
 

@@ -22,7 +22,7 @@ Adapters for Cursor, Claude Code, Codex, OpenCode, Grok Build, and every other c
 | `session-recall` | Past session search (included in session-start) |
 | `memory-review` | Memory curation (included in session-end) |
 | `compact-loop` | Compact long-running context into `COMPACT.md` |
-| `frontend-animation` | Core frontend design/motion/3D skill with auto-routed Motion, GSAP, Three.js/R3F references plus compatible installed external design skills, project DESIGN.md, and ThreeUI via `plan/AUTO_SKILLS.md` |
+| `frontend-animation` | Core frontend design/motion/3D skill with auto-routed Motion, GSAP, and Three.js/R3F references. The router detects the project DESIGN.md (a project-local visual language file) when one is present. |
 | `feature-workflow` | Feature spec folders under `plan/features/` |
 | `spec-clarify` | Structured clarification on active feature |
 | `spec-checklist` | Spec quality gate before feature-plan |
@@ -31,6 +31,24 @@ Adapters for Cursor, Claude Code, Codex, OpenCode, Grok Build, and every other c
 | `migrate-import` | Import external workspace memory/skills into product paths |
 | `upgrade-loop-engineer` | Safely update tool files while preserving product-state files |
 | `agent-builder` | Design/scaffold an AI agent (or agentic/dynamic workflow) as the product itself |
+| `agent-development` | Selective architecture, harness, orchestration, eval, recovery, operations, and memory chain for agent products |
+
+### Agent-development capability pack
+
+`agent-development` routes these complete, on-demand skills; they are not loaded as one
+large prompt. The generated `plan/AUTO_AGENT_SKILLS.md` names the exact entrypoints to read.
+
+- Architecture and harness: `agent-architecture-audit`, `agent-harness-construction`,
+  `agentic-engineering`, `agentic-os`, `dynamic-workflow-mode`, `agent-payment-x402`
+- Orchestration: `autonomous-agent-harness`, `autonomous-loops`, `continuous-agent-loop`,
+  `dev-team`, `ralphinho-rfc-pipeline`, `team-agent-orchestration`, `team-builder`
+- Evaluation and recovery: `agent-eval`, `agent-introspection-debugging`,
+  `agent-self-evaluation`, `eval-harness`, `gan-style-harness`, `santa-method`
+- Decisions and budgeting: `agent-sort`, `context-budget`, `council`,
+  `council-multi-model`, `recursive-decision-ledger`, `strategic-compact`,
+  `token-budget-advisor`
+- Operations, learning, and memory: `continuous-learning`, `continuous-learning-v2`,
+  `enterprise-agent-ops`, `unified-memory`
 | `research-search` | Search arXiv, Research Square, and SSRN to ground claims in evidence |
 | `product-council` | Senior role review across strategy, PM, CTO, engineering, design, QA, security, release |
 | `product-grill` | Ask hard product questions and track doubts |

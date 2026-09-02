@@ -31,3 +31,27 @@ Use `--tool` hint when known: `cursor`, `claude`, `codex`, `opencode`, `grok`, `
 **Bootstrap, then run the command that triggered it.** `session-start` is a bookend,
 never the whole turn: after the manifest is written, execute the active command and
 carry it to its terminus. See `docs/CONTINUATION.md`.
+
+## How To Interpret
+
+If the user says `/session-start`, the user resumes the chain, or a coding agent begins a new session, execute this file directly.
+
+## Required Reads
+
+1. `AGENTS.md`
+2. `commands/session-start.md` (this file)
+3. `skills/session-lifecycle/SKILL.md`
+4. the previous `state.db` and `HANDOFF.md` (from the last session)
+
+## Loop
+
+1. LOAD `state.db` and the most recent `HANDOFF.md`
+2. RECALL any open doubts (`loop doubts ask`)
+3. RECONCILE the in-flight task with `TASKS.yml`
+4. RESUME the next concrete action from `HANDOFF.md`
+
+## Output
+
+1. `plan/SESSION_MANIFEST.md` populated
+2. The next action printed to the user
+3. The active feature pointer verified

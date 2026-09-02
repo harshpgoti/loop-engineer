@@ -108,20 +108,14 @@ TOPICS: list[DeploymentTopic] = [
     DeploymentTopic(
         key="llm_provider",
         label="LLM provider",
-        question="Which LLM provider will the product use (OpenAI, Anthropic, Google, Azure OpenAI, local, other)?",
+        question="Which LLM provider will the product use (provider A, provider B, self-hosted, local)?",
         doubt_id="DQ-DEP-006",
         main_plan_label="LLM provider",
         patterns=[
-            r"\bopenai\b",
-            r"\banthropic\b",
-            r"\bclaude\b",
-            r"\bgemini\b",
-            r"\bgoogle ai\b",
-            r"\bazure openai\b",
-            r"\bollama\b",
+            r"\bprovider a\b",
+            r"\bprovider b\b",
+            r"\bself-hosted\b",
             r"\blocal llm\b",
-            r"\bhugging face\b",
-            r"\bbedrock\b",
         ],
     ),
     DeploymentTopic(
@@ -286,7 +280,7 @@ def find_topic_value(topic: DeploymentTopic, corpus: dict[str, str]) -> tuple[st
                 return "Single-cloud", source
 
         if topic.key == "llm_provider":
-            for provider in ("OpenAI", "Anthropic", "Google", "Azure OpenAI", "Ollama"):
+            for provider in ("Provider A", "Provider B", "Provider C", "Self-hosted", "Local"):
                 if provider.lower() in lower:
                     return provider, source
 

@@ -10,10 +10,11 @@ If the user says `/agent-builder`, `build an agent`, `build an ai agent`, `devel
 
 1. `AGENTS.md`
 2. `skills/agent-builder/SKILL.md`
-3. `skills/research-search/SKILL.md`
-4. `plan/AUTO_AGENT_SKILLS.md` (if present)
-5. `agent/AGENT_ARCHITECTURE.md` (if present)
-6. `DECISIONS.md`
+3. `skills/agent-development/SKILL.md`
+4. `skills/research-search/SKILL.md`
+5. `plan/AUTO_AGENT_SKILLS.md` (if present)
+6. `agent/AGENT_ARCHITECTURE.md` (if present)
+7. `DECISIONS.md`
 
 ## One-shot commands
 
@@ -26,7 +27,7 @@ loop research "<topic>"                 # ground a design choice in published wo
 ## Loop
 
 ```text
-DETECT SIGNALS -> SCAFFOLD (if missing) -> FILL ARCHITECTURE -> PICK MODEL -> AUTHOR SKILLS/TOOLS -> WIRE EVALS -> RECORD DECISIONS
+DETECT -> PLAN -> SCAFFOLD -> DESIGN HARNESS -> ORCHESTRATE -> EVALUATE -> AUDIT/RECOVER -> OPERATE/LEARN -> RECORD
 ```
 
 ## Rules

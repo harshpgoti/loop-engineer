@@ -119,6 +119,155 @@ differentiation · risk and compliance posture · cloud provider and deployment 
 finalization (see above) · LLM provider, model, and cost posture · distribution path · pilot or
 validation path · what to kill or delay
 
+## Grill catalog (technical and non-technical)
+
+The areas above are the topic headlines; this catalog is the working list of questions
+under them. Ask whichever the current frontier exposes. Each entry carries a default so
+the build inherits a stated fallback instead of a silent one. `Why it matters` is the
+sentence you tell the user when a question feels obvious and they ask why you are asking.
+
+Ask a question only when it is on the frontier. If the answer was already settled in
+`DECISIONS.md`, in a prior session, or by a parent sub-product, reuse it (`AGENTS.md` #15)
+and tell the user you are reusing it.
+
+### Product, user, and buyer
+
+| Q | Default if unavailable | Why it matters |
+|---|---|---|
+| Who exactly pays for this, and who signs the cheque? | The named user is also the buyer. | Two different people buy differently: the user buys workflow, the buyer buys outcomes. A plan that names only the user often stalls at approval. |
+| What does the buyer read or hear before saying yes? | A 90-second demo on real data. | Forces the build toward the smallest thing the buyer will see, not the largest thing the team wants to ship. |
+| What does the user do **today** that this replaces? | Spreadsheet or email. | The replacement workflow is the wedge. A new tool with no incumbent workflow is a new habit to teach. |
+| What is the user's frequency? Daily, weekly, monthly? | Daily. | Frequency drives cost-per-use ceiling, latency budget, and whether you can afford a 30-second cold start. |
+| What is the first session meant to do? | One concrete thing the user wanted done. | First-session outcomes predict retention more than feature breadth. |
+| When does the user give up and switch back? | After two failed attempts. | Names the failure budget. |
+| What does "done" look like for one user, on one day? | One saved artifact or one sent message. | A concrete artifact beats a feature list. |
+
+### Distribution, pricing, and commercial
+
+| Q | Default if unavailable | Why it matters |
+|---|---|---|
+| How is this sold: self-serve, sales-led, partner, marketplace? | Self-serve free trial. | Sales-led changes the entire UX (admin roles, seats, SSO). |
+| What is the unit of pricing: seat, usage, transaction, flat? | Per seat, monthly. | Determines every quota, billing-event, and refund path. |
+| What is the **price** the user will pay before they ask the boss? | A number that fits inside their discretionary budget, not procurement. | Procurement buys risk-averse; the buyer buys speed. |
+| Where does revenue land: first purchase, expansion, renewal? | First purchase. | Tells you which motions get product investment now. |
+| What is the kill criterion - the metric below which you shut this down? | A 30-day retention number stated explicitly. | Without this, the project outlasts its evidence. |
+
+### Legal, compliance, and data
+
+| Q | Default if unavailable | Why it matters |
+|---|---|---|
+| Will this handle personal data, financial data, health data, or minors' data? | No to all four. | Triggers GDPR/HIPAA/COPPA/PCI obligations; defaults to "no" mean the design stays simple. |
+| Whose data is on the screen? Whose data is in the logs? | The end user's own data only. | Tenants and PII share one rule: never log it, never display it in someone else's session. |
+| Is the product multi-tenant? | Yes. | Forces server-side scoping on every query from day one. |
+| What jurisdictions does the data live in or move through? | One region; pick the one closest to the user. | Multi-region adds a quiet 6–8 weeks of work. |
+| Does anything leave the user's session into a third party (analytics, LLM, support)? | Anonymised usage analytics only. | Surfaces a hidden "send data to a third-party provider" decision before it ships. |
+| What records must be kept, for how long, and who can read them? | Application logs only, 30 days, engineers only. | Audit posture is a build decision, not a runtime afterthought. |
+| What is the breach-notification path? | The CTO is paged; user is notified within 72 hours. | Has to exist before any sensitive data is collected. |
+
+### Operations, support, and on-call
+
+| Q | Default if unavailable | Why it matters |
+|---|---|---|
+| Who is on call at 03:00? | One named person; rotation weekly. | "We'll figure it out" is a hiring decision the build inherits. |
+| What does the runbook look like for the first three failures? | Three failure modes each with one paragraph. | If the runbook does not exist, the pager is just blame. |
+| How does the user report a problem? | In-app button + email. | The channel shapes how fast you learn what's broken. |
+| How long can the product be down before users churn? | One business day. | Drives SLO and on-call staffing. |
+| What data is restored, and from where, on disaster? | The database, from the last 24h snapshot. | Backup is a product decision. |
+| How are environments separated: dev, staging, prod? | Three named environments with separate credentials. | Cross-environment accidents are the most common production incident. |
+
+### Security and threat model
+
+| Q | Default if unavailable | Why it matters |
+|---|---|---|
+| Who is the attacker? | A bored logged-in user trying to see another tenant's data. | The cheapest threat model beats no threat model. |
+| What is the most damaging single thing a logged-in user can do? | Read one other tenant's record. | If you cannot name it, you cannot test against it. |
+| Are secrets stored in env vars, secret manager, or files? | Secret manager. | Files in git are the most common leak. |
+| What happens if an employee laptop is stolen? | Full-disk encryption, MFA, SSO revoke in 5 minutes. | One sentence per control; gaps become tasks. |
+| What dependencies need a vulnerability scan? | All of them, on every build. | A single unmaintained dep can take the whole app down. |
+
+### Design, UX, and accessibility
+
+| Q | Default if unavailable | Why it matters |
+|---|---|---|
+| Who is excluded from this UI by default, and what would unblock them? | Keyboard-only users. | Names the minimum bar; the rest is improvement. |
+| What is the empty state? What is the error state? What is the "this took too long" state? | A sentence per state. | Three states define whether the screen is finished. |
+| What is the slowest acceptable interaction? | 100ms feedback, 1s save. | Latency is a design decision. |
+| What is the language and tone for error messages? | Short, blame-free, name the next step. | Tone is part of the product. |
+| Will this UI be localized? | English only at launch. | Each locale roughly doubles the surface to maintain. |
+| What user research has actually happened, and what is still assumed? | Five conversations in the last 30 days. | "We should talk to users" is not research. |
+
+### Engineering, architecture, and quality
+
+| Q | Default if unavailable | Why it matters |
+|---|---|---|
+| What is the single thing that, if it fails, takes the product down? | The primary database. | Names the dependency the SLA is built around. |
+| What is the **first** thing to scale: requests, data, users, models? | Users. | Pick one. "All of them" is not an architecture. |
+| What is the migration policy: forward-only, reversible, or expand-contract? | Expand-contract, forward-only. | Migrations are the most expensive silent bug. |
+| What is the testing bar for a task to be marked done? | TDD per `skills/tdd/SKILL.md`. | "Looks done" is not a bar. |
+| What is the rollback path for a deploy that goes wrong? | Revert the deploy. | Without this, a bad deploy is a permanent incident. |
+| What logs are kept, at what level, for how long? | Application info, 30 days. | Logging is a product decision. |
+| What is the on-call signal-to-noise ratio? | One alert per 100 deploys. | A pager that fires for nothing is one that is ignored for everything. |
+| What is the build's forbidden dependency: no internet at build time, no native binaries, no GPL? | No native binaries on the user's machine. | Naming it up front prevents an audit-time panic. |
+
+### Data, ML, and LLM
+
+| Q | Default if unavailable | Why it matters |
+|---|---|---|
+| Where does the training or prompt data come from, and is it licensed? | First-party data only. | Data lineage is the most common audit failure. |
+| What is the unit of cost: token, request, document, model-load? | Per token, per request. | Names the budget guardrail. |
+| What is the model-tier routing: when does this go to the cheapest model that works? | Default cheap, escalate on quality regression. | One routing rule saves 80% of LLM spend. |
+| What is the eval set, and what is the threshold to ship? | One golden case per user-visible behavior, 95% pass. | "We tested it" without a number is not testing. |
+| What happens when the model is unavailable? | Cached fallback + queue. | LLM downtime is the new 503. |
+| What PII goes into prompts, into logs, and into the model provider? | None of the above, ever. | Defaults to "no" stay simple. |
+| Is there a human-in-the-loop path for low-confidence outputs? | Yes, with explicit "AI suggested" labeling. | Hidden AI is a trust killer. |
+
+### Integrations, vendors, and lock-in
+
+| Q | Default if unavailable | Why it matters |
+|---|---|---|
+| Which vendor, if any, is acceptable to be locked into? | Cloud provider and LLM provider. | Lock-in is fine if named; surprise lock-in is the problem. |
+| What is the data-egress plan if we switch vendors in 12 months? | Standard export in CSV or JSON. | Names whether exit is a feature or a project. |
+| What is the SLA we need from this vendor? | 99.9% availability, 4-hour support. | Without an SLA, every outage is a fight. |
+| Are we willing to send data to this vendor? | Only the data they need, anonymised where possible. | Surfaces "send data to a third-party provider" before it ships. |
+| What is the integration's failure mode? | Degrade silently and surface a clear user message. | Vendor outages are guaranteed; the product must behave. |
+
+### People, team, and timing
+
+| Q | Default if unavailable | Why it matters |
+|---|---|---|
+| Who is the decision maker for non-trivial pivots? | One named person, named in `DECISIONS.md`. | "The team" decides slowly; one person decides at all. |
+| Who is the technical owner for the first 90 days? | One named engineer. | The plan inherits an owner, not a committee. |
+| What is the team's prior experience with this stack? | Pick a stack the team has shipped before. | New stack + new product = 2× the timeline. |
+| What is the budget for the first three months: hours, dollars, infra? | Stated in numbers, not ranges. | A range is a guess with plausible deniability. |
+| What is the deadline, and what is the consequence of missing it? | No hard deadline; ship when it's right. | Artificial deadlines bake in shortcuts. |
+| What is the kill criterion for this product line at 90 days? | A single stated metric. | Without it, every quarter is "give it more time." |
+
+### Meta and process
+
+| Q | Default if unavailable | Why it matters |
+|---|---|---|
+| How will we know this is working, before the metrics tell us? | A daily conversation with a real user. | Lagging metrics lie for the first 90 days. |
+| What is the smallest release we can put in front of a real user in the next 14 days? | A clickable prototype, not a deploy. | Names the smallest thing worth testing. |
+| What is the anti-metric - the thing we explicitly do not want to maximise? | Time-on-platform past one hour. | Anti-metrics prevent success-the-villain. |
+| What does "post-launch v0" look like? | A versioned changelog, on-call coverage, weekly review. | Names what stops being optional once shipped. |
+
+### When to stop grilling
+
+The frontier is empty when:
+- every row of the tech-stack table is named or deferred with a stated default;
+- the buyer, the user, the data, the on-call, and the kill criterion are all named;
+- the cheapest defensible answer fits on one screen.
+
+If a question needs a fact from the environment (what the code already does, what a vendor's
+pricing is, what a regulator requires), go get it. Do not block the whole round on a single
+lookup - a lookup in flight is an unsettled prerequisite, so only questions downstream of it
+wait. Ask the rest of the frontier now (`plan-loop/phases/grill.md` - "Finding facts is your
+job, never the user's").
+
+After the user confirms a shared understanding, load `phases/council.md` - pressure-test the
+grilled plan across senior perspectives before locking strategy or architecture. Do not stop
+and ask the user to run council; it is the next thing to execute.
+
 ## After each round
 
 | The answer | Where it goes |

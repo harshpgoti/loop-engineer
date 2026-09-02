@@ -34,3 +34,10 @@ nothing tracking it. See `docs/CONTINUATION.md`.
 
 `converge-report.md`, the drift items fixed or the task IDs created for them, and
 the next task.
+
+## Loop
+
+1. READ the active feature's `spec.md`, `feature-plan.md`, and `tasks.md`
+2. READ the diff since the last converge (or the full source tree if first run)
+3. COMPARE the spec to the implementation
+4. EMIT `converge-report.md` with Spec / Standards axes

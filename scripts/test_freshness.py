@@ -1,6 +1,6 @@
 """A generated file must know when it stopped being true.
 
-The last class of tests here is a build fuzz, adapted from Licker & Rice (ICSE 2019):
+The last class of tests here is a Loop Engineer build fuzz:
 mutate a *declared* input and assert the view flips stale; mutate an *undeclared* one
 and assert it stays clean. Hashing fails silently when the declared input list is
 wrong - unlike timestamps, which fail loudly - so this is the guard that matters.
@@ -134,8 +134,8 @@ class NoiseImmunity(Sandbox):
 class BuildFuzz(Sandbox):
     """Mutate one input at a time and assert the staleness verdict is correct.
 
-    Hand-maintained dependency lists are reliably wrong (Licker & Rice, ICSE 2019),
-    and with content hashing a missing declaration fails silent and permanent.
+    Hand-maintained dependency lists are reliably wrong, and with content
+    hashing a missing declaration fails silent and permanent.
     """
 
     def _mutate(self, path: Path) -> None:

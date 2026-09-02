@@ -1649,7 +1649,7 @@ scene.add(mesh);
 
 **Preconnect** (DNS, TCP, TLS):
 ```html
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.local">
 <link rel="preconnect" href="https://cdn.example.com">
 ```
 

@@ -47,3 +47,10 @@ secrets are never copied). See `skills/migrate-import/SKILL.md`.
 1. Source path
 2. Files copied/skipped
 3. Next: review `memories/` and `skills/imported/`
+
+## Loop
+
+1. READ the external workspace's state
+2. MAP external skills/commands/agents to LE equivalents
+3. WRITE the staged migration plan
+4. APPLY on user approval

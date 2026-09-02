@@ -66,6 +66,10 @@ SCAFFOLD_FILES: dict[str, str] = {
     "agent/tools/README.md": AGENT_TOOLS_README,
     "agent/evals/README.md": AGENT_EVALS_README,
     "agent/AGENT_ARCHITECTURE.md": None,  # rendered from templates/agent_architecture.template.md
+    "agent/HARNESS.md": "# Agent Harness\n\nDocument action space, tool schemas, observation format, budgets, stop conditions, and recovery contract.\n",
+    "agent/ORCHESTRATION.md": "# Agent Orchestration\n\nDocument roles, ownership, dependencies, control-pane state, merge or handoff gates, and reviewer independence.\n",
+    "agent/MEMORY.md": "# Agent Memory\n\nDocument scopes, schema, provenance, retention, correction precedence, admission rules, and prohibited data.\n",
+    "agent/OPERATIONS.md": "# Agent Operations\n\nDocument observability, SLOs, schedules, spend/rate limits, incident response, rollback, and kill switch.\n",
 }
 
 

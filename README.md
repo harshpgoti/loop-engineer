@@ -36,7 +36,7 @@ curl -fsSL https://raw.githubusercontent.com/harshpgoti/loop-engineer/main/insta
 
 Then open your agent in `%USERPROFILE%\.loop-engineer\app` (Windows) or `~/.loop-engineer/app` (macOS/Linux) and run `/plan-loop`.
 
-Full install options: [`INSTALL.md`](INSTALL.md).
+Full install options: [`docs/INSTALL.md`](docs/INSTALL.md).
 
 ### Manual central-tool setup
 
@@ -67,7 +67,7 @@ In central-tool setup, those product files are written to the registered product
 
 Tools that do not auto-read repository instructions use `AGENTS.md` directly.
 
-For install/copy instructions, see [`INSTALL.md`](INSTALL.md).
+For install/copy instructions, see [`docs/INSTALL.md`](docs/INSTALL.md).
 For central-tool vs embedded setup, see [`docs/DATA_LAYOUT.md`](docs/DATA_LAYOUT.md).
 For data layout and auto-detection, see [`docs/DATA_LAYOUT.md`](docs/DATA_LAYOUT.md).
 

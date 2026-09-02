@@ -80,3 +80,17 @@ recommending `/plan-loop` here is correct - see `docs/CONTINUATION.md`.
 3. Next command: `/plan-loop`
 
 See `docs/DATA_LAYOUT.md`.
+
+## Required Reads
+
+1. `AGENTS.md`
+2. `commands/setup-loop-engine.md` (this file)
+3. `skills/setup-loop-engine/SKILL.md`
+4. the current working directory
+
+## Loop
+
+1. DETECT whether the cwd has a `.loop-engineer/` (local) or should use the global default
+2. RUN `python scripts/setup_loop_engine.py` (or `loop setup`)
+3. SEED missing starter files (per the script)
+4. EMIT the next-action at the end of the script's output

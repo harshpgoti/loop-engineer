@@ -159,7 +159,23 @@ RECALL â†’ DETECT INIT â†’ ASK/INFER (PRODUCT + DEPLOYMENT) â†’ G
    - tech stack finalization (runtime, frameworks, datastore, migrations, auth, background work, test runners) - no layer left to a build-time default
    - LLM vendor lock-in and cost
 9. **Run `skills/plan-loop/phases/council.md`** before major product or architecture decisions.
-10. **Fact-check claims** before decisions. Add sources to `EVIDENCE_LOG.md`.
+9a. **For non-trivial architectural choices** (framework, library, database, deployment shape,
+    auth provider, model tier routing), capture the decision as an ADR via
+    `skills/architecture-decision-records/SKILL.md` after council locks it. The ADR is the
+    canonical place for the rationale that future sessions and tasks must cite.
+9b. **For decisions that benefit from constructive role-based feedback** (rather than
+    adversarial council), run `/dev-team` as the four-persona parallel review. Useful
+    when designing a feature, onboarding an initiative, or reframing a decision after
+    council has run once.
+9a. **Agent products:** run `loop auto-agent-skills --write`, read
+    `skills/agent-development/SKILL.md`, and carry its selected architecture, harness,
+    orchestration, evaluation, memory, and operations requirements into the PRD, ADRs,
+    feature spec, tasks, and gates.
+10. **Fact-check claims** before decisions. Add sources to `EVIDENCE_LOG.md`. For research-grounded
+    claims run `skills/research-search/SKILL.md` (`loop research "<query>"`): arXiv for methods and
+    benchmarks, PubMed for clinical/biomedical evidence (healthcare AI: run both), SSRN URL for
+    economics/policy. Preprint-only evidence behind a diagnosis, triage, or treatment claim is
+    recorded as low-confidence until peer-reviewed.
 11. **Update `plan/main_plan.md`** with product-level strategy and the **Deployment & Infrastructure** table. Use `templates/main_plan.template.md` on first initialization.
 12. **Follow `plan/PLAN_BOOTSTRAP.md`** for scale branch (already auto-detected):
     - **`convenient`:** one step file + feature spec (steps 15-17).

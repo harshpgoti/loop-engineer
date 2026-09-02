@@ -16,19 +16,6 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 router = importlib.import_module("frontend_skill_router")
-external_manager = importlib.import_module("frontend_external_manager")
-
-
-class RecordingRunner:
-    def __init__(self, returncode: int = 0) -> None:
-        self.returncode = returncode
-        self.calls: list[list[str]] = []
-
-    def __call__(
-        self, args: list[str], cwd: Path, timeout: int
-    ) -> external_manager.CommandResult:
-        self.calls.append(args)
-        return external_manager.CommandResult(self.returncode, "refreshed", "")
 
 
 class FrontendSkillRouterTests(unittest.TestCase):
@@ -309,30 +296,6 @@ class FrontendSkillRouterTests(unittest.TestCase):
             )
 
             self.assertNotIn("threeui", [pick.name for pick in picks])
-
-    def test_managed_router_refreshes_selected_pack_on_every_write(self) -> None:
-        with self.make_workspace() as temp:
-            product = Path(temp) / "product"
-            workspace = product / ".loop-engineer"
-            workspace.mkdir(parents=True)
-            runner = RecordingRunner()
-
-            for _ in range(2):
-                router.run_router(
-                    workspace,
-                    extra="build an accessible dashboard design system",
-                    write=True,
-                    manage_external=True,
-                    external_runner=runner,
-                )
-
-            self.assertEqual(2, len(runner.calls))
-            rendered = (workspace / "plan" / "AUTO_SKILLS.md").read_text(
-                encoding="utf-8"
-            )
-            self.assertIn("install-unverified", rendered)
-            self.assertNotIn("| **installed-or-refreshed** |", rendered)
-
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

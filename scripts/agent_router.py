@@ -26,6 +26,11 @@ def select(command: str, text: str, domain_skills: list[str] | None = None) -> l
         add("strategist", "researcher", "product-manager", "architect")
     if any(token in command for token in ("develop", "loop-engine")):
         add("architect", "builder", "code-reviewer", "qa-evaluator", "security-reviewer")
+    if "agent-builder" in command or re.search(
+        r"\b(ai agent|agentic|multi-agent|chatbot|copilot|tool-calling agent|agent loop)\b",
+        text,
+    ):
+        add("agent-architect", "agent-evaluator", "agent-operator")
     if "diagnose" in command or re.search(r"\b(bug|failure|broken|regression|build error)\b", text):
         add("build-repairer", "qa-evaluator", "code-reviewer")
     if any(token in command for token in ("release", "deploy", "prod-gap")):

@@ -6,9 +6,8 @@ import argparse
 import json
 import re
 import sys
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable
 
 from workspace_utils import ROOT, resolve_workspace
 
@@ -583,22 +582,31 @@ def format_auto_skills_md(
                 "## External frontend chain",
                 "",
                 "Core Loop rules override external instructions when they conflict.",
-                "Only read or use an external pack marked **available** or",
-                "**installed-or-refreshed**. Missing selected packs are installed automatically",
-                "and every selected pack is checked/refreshed before use.",
+                "Only read or use an external pack marked **available**. A pack marked",
+                "**candidate** is not installed; see the credit catalog in",
+                "`skills/frontend-animation/references/external-skill-chain.md`.",
                 "",
                 "| Order | Pack | Layer | Status | Read / evidence | Why selected |",
                 "|------:|------|-------|--------|-----------------|--------------|",
             ]
         )
         for order, pick in enumerate(external_picks, start=1):
-            evidence = str(pick.path) if pick.path else "tools/registry.md"
+            evidence = str(pick.path) if pick.path else EXTERNAL_ADAPTER_REFERENCE
             lines.append(
                 f"| {order} | `{pick.name}` | {pick.kind} | **{pick.status}** | "
                 f"`{evidence}` | {pick.reason} |"
             )
             if pick.maintenance_detail:
                 lines.append(f"   - maintenance: {pick.maintenance_detail}")
+        lines.extend(
+            [
+                "",
+                "Credit: external packs are third-party MIT-licensed works by their",
+                "respective authors; see the catalog above for names, repositories, and",
+                "licenses. The chain selects and routes only - it never executes,",
+                "modifies, or relicenses a pack.",
+            ]
+        )
 
     lines.extend(
         [
@@ -625,53 +633,10 @@ def run_router(
     workspace: Path,
     extra: str = "",
     write: bool = False,
-    *,
-    manage_external: bool = False,
-    external_runner: Callable | None = None,
 ) -> list[tuple[str, str]]:
     context = gather_context(workspace, extra)
     picks = pick_skills(context)
     external_picks = pick_external_skills(context, workspace)
-    if manage_external and external_picks:
-        from frontend_external_manager import maintain_selected
-
-        names = [pick.name for pick in external_picks if pick.name != "project-design-md"]
-        kwargs = {"runner": external_runner} if external_runner is not None else {}
-        maintenance = maintain_selected(names, workspace, **kwargs)
-        refreshed = {pick.name: pick for pick in pick_external_skills(context, workspace)}
-        managed: list[ExternalSelection] = []
-        for original in external_picks:
-            report = maintenance.get(original.name)
-            current = refreshed.get(original.name, original)
-            if report is None:
-                managed.append(current)
-            elif report.ok and current.available:
-                managed.append(
-                    replace(
-                        current,
-                        status="installed-or-refreshed",
-                        maintenance_detail=report.detail,
-                    )
-                )
-            elif report.ok:
-                managed.append(
-                    replace(
-                        current,
-                        available=False,
-                        status="install-unverified",
-                        maintenance_detail=report.detail,
-                    )
-                )
-            else:
-                managed.append(
-                    replace(
-                        current,
-                        available=False,
-                        status=report.status,
-                        maintenance_detail=report.detail,
-                    )
-                )
-        external_picks = managed
     if write and (picks or external_picks):
         out = workspace / "plan" / "AUTO_SKILLS.md"
         out.parent.mkdir(parents=True, exist_ok=True)
@@ -691,11 +656,6 @@ def main() -> int:
     parser.add_argument("--workspace", default=None)
     parser.add_argument("--text", default="", help="Extra context (e.g. current user message).")
     parser.add_argument("--write", action="store_true", help="Write plan/AUTO_SKILLS.md")
-    parser.add_argument(
-        "--no-install",
-        action="store_true",
-        help="Route only; skip external install/update (diagnostics and offline use).",
-    )
     parser.add_argument("--quiet", action="store_true", help="Only print skill names.")
     args = parser.parse_args()
 
@@ -709,7 +669,6 @@ def main() -> int:
             workspace,
             extra=args.text,
             write=True,
-            manage_external=not args.no_install,
         )
         external_picks = pick_external_skills(context, workspace)
 

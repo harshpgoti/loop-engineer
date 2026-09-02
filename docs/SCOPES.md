@@ -37,7 +37,7 @@ main-product/
 └── apps/portal/       └── .loop-scope
 ```
 
-The scope folder **is** the ultraplan pack from [`ULTRAPLAN.md`](ULTRAPLAN.md), moved under
+The scope folder **is** the ultraplan pack from [`docs/ULTRAPLAN.md`](docs/ULTRAPLAN.md), moved under
 `plan/products/` and given the build state it never had. This is not a second hierarchy
 beside ultraplan - it is the same one, finished.
 
@@ -253,8 +253,8 @@ lines existed only to keep two workspaces agreeing. All of it is gone:
 | `parent_watermark.py`, `.loop/parent-sync.json` | Nothing to have "last seen" |
 | `parent_inbox.py`, `finding_log.py`, `loop findings` | A scope has no parent to disagree with |
 | `subproducts_report.py`, `plan/SUBPRODUCTS.md` | The plans are already in one tree - `loop scope list` reads them directly |
-| `hierarchy_sync.py`, `tree_sync.py`, `/product-tree-sync` | No boundary to sync |
-| `subproduct_new.py`, `/subproduct-new` | Carving a workspace out re-creates the boundary; `/scope new` creates the plan folder instead |
+| `hierarchy_sync.py`, `tree_sync.py` (legacy names) | No boundary to sync in single-workspace mode |
+| `subproduct_new.py` (legacy name) | Carving a workspace out re-creates the boundary; `/scope new` creates the plan folder instead |
 | `hierarchy_drift.check_children` and 8 drift kinds | `parent-added/changed/removed`, `decision-conflict`, `deployment-conflict`, `unmapped-sub`, `missing-link`, `stale-sub` are all impossible when there is one plan |
 | `loop scope eject` (removed) | There is no second layout to go back to |
 

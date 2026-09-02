@@ -1,10 +1,12 @@
-"""Search public research-paper sources: arXiv, Research Square, SSRN.
+"""Search public research-paper sources: arXiv, Research Square, PubMed, SSRN.
 
 Stdlib only, no vendoring, no scraping of sites that block automated access.
 
 - arXiv: official Atom API (export.arxiv.org) - no key needed.
 - Research Square: Crossref REST API filtered to Research Square's DOI prefix
   (10.21203, confirmed live: publisher field returns "Research Square Platform LLC").
+- PubMed: NCBI E-utilities (eutils.ncbi.nlm.nih.gov) - esearch + esummary, no key
+  needed. Primary source for clinical and biomedical literature.
 - SSRN: no public search API, and papers.ssrn.com returns HTTP 403 to automated
   fetches on every endpoint tried. `ssrn_search_url()` only builds a best-effort
   browser URL (unverified) - open it yourself or fetch it with a tool that has
@@ -26,8 +28,10 @@ ARXIV_API = "http://export.arxiv.org/api/query"
 RESEARCH_SQUARE_DOI_PREFIX = "10.21203"
 CROSSREF_PREFIX_API = f"https://api.crossref.org/prefixes/{RESEARCH_SQUARE_DOI_PREFIX}/works"
 SSRN_SEARCH_URL = "https://papers.ssrn.com/sol3/results.cfm"
-USER_AGENT = "loop-engineer-research-search/1.0 (https://github.com/; mailto:none@example.com)"
-ALLOWED_HTTP_HOSTS = {"export.arxiv.org", "api.crossref.org"}
+PUBMED_ESEARCH = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+PUBMED_ESUMMARY = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
+USER_AGENT = "loop-engineer-research-search/1.0 (https://loop-engineer.example.com; mailto:research@loop-engineer.example.com)"
+ALLOWED_HTTP_HOSTS = {"export.arxiv.org", "api.crossref.org", "eutils.ncbi.nlm.nih.gov"}
 MAX_RESPONSE_BYTES = 5 * 1024 * 1024
 
 ATOM_NS = {"atom": "http://www.w3.org/2005/Atom"}
@@ -163,6 +167,66 @@ def search_research_square(query: str, limit: int = 10) -> tuple[bool, list[Pape
     return True, papers, f"{len(papers)} results"
 
 
+def parse_pubmed_summary(payload: dict) -> list[Paper]:
+    """Parse an esummary JSON payload into Paper entries."""
+    result = (payload.get("result") or {}) if isinstance(payload, dict) else {}
+    uids = result.get("uids") or []
+    papers: list[Paper] = []
+    for uid in uids:
+        item = result.get(uid) or {}
+        title = (item.get("title") or "").strip() or "(untitled)"
+        authors = ", ".join(
+            (a.get("name") or "").strip()
+            for a in (item.get("authors") or [])
+            if (a.get("name") or "").strip()
+        )
+        published = (item.get("pubdate") or "").strip()
+        journal = (item.get("fulljournalname") or item.get("source") or "").strip()
+        url = f"https://pubmed.ncbi.nlm.nih.gov/{uid}/"
+        summary = journal
+        papers.append(Paper("pubmed", title, authors, url, published[:10], summary[:400]))
+    return papers
+
+
+def search_pubmed(query: str, limit: int = 10) -> tuple[bool, list[Paper], str]:
+    """Search PubMed via NCBI E-utilities (esearch -> esummary). No API key.
+
+    Two sequential calls, each host-allowlisted and size-limited. A UID list
+    that fails to summarize returns the failure - partial results are not
+    silently invented.
+    """
+    search_params = {
+        "db": "pubmed",
+        "retmode": "json",
+        "retmax": str(max(1, min(limit, 100))),
+        "term": query,
+    }
+    try:
+        body = _http_get(PUBMED_ESEARCH + "?" + urllib.parse.urlencode(search_params))
+        payload = json.loads(body)
+    except (urllib.error.URLError, urllib.error.HTTPError) as e:
+        return False, [], str(e)
+    except json.JSONDecodeError as e:
+        return False, [], f"invalid JSON: {e}"
+    uids = ((payload.get("esearchresult") or {}).get("idlist")) or []
+    if not uids:
+        return True, [], "0 results"
+    summary_params = {
+        "db": "pubmed",
+        "retmode": "json",
+        "id": ",".join(uids[:limit]),
+    }
+    try:
+        body = _http_get(PUBMED_ESUMMARY + "?" + urllib.parse.urlencode(summary_params))
+        payload = json.loads(body)
+    except (urllib.error.URLError, urllib.error.HTTPError) as e:
+        return False, [], str(e)
+    except json.JSONDecodeError as e:
+        return False, [], f"invalid JSON: {e}"
+    papers = parse_pubmed_summary(payload)
+    return True, papers, f"{len(papers)} results"
+
+
 def ssrn_search_url(query: str) -> str:
     """Best-effort SSRN search URL - NOT programmatically verified.
 
@@ -174,7 +238,7 @@ def ssrn_search_url(query: str) -> str:
     return SSRN_SEARCH_URL + "?" + urllib.parse.urlencode({"npage": "1", "term": query})
 
 
-SOURCES = ("arxiv", "researchsquare", "ssrn")
+SOURCES = ("arxiv", "researchsquare", "pubmed", "ssrn")
 
 
 def search(
@@ -186,13 +250,15 @@ def search(
         results["arxiv"] = search_arxiv(query, limit)
     if "researchsquare" in sources:
         results["researchsquare"] = search_research_square(query, limit)
+    if "pubmed" in sources:
+        results["pubmed"] = search_pubmed(query, limit)
     if "ssrn" in sources:
         results["ssrn"] = (True, [], f"no public API - open manually: {ssrn_search_url(query)}")
     return results
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Search arXiv, Research Square, and SSRN.")
+    parser = argparse.ArgumentParser(description="Search arXiv, Research Square, PubMed, and SSRN.")
     parser.add_argument("query", help="Search terms")
     parser.add_argument(
         "--source",

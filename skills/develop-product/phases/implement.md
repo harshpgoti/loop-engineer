@@ -26,10 +26,12 @@ in the `release` phase.
 1. **Check the blockers first.** `plan/BUILD_CONTEXT.md` lists blocking doubts and
    non-empty - each comes with a recommended answer. Do not build past an unanswered
    blocking question.
-2. **Maintain the frontend chain when applicable.** Run `loop auto-skills --write` after
-   selecting a frontend task. This installs missing selected external layers, refreshes
-   installed selected layers for every use, and rewrites `plan/AUTO_SKILLS.md`. Read only
-   layers marked `available` or `installed-or-refreshed`.
+2. **Run the frontend router when applicable.** Run `loop auto-skills --write` after
+   selecting a frontend task. This rewrites `plan/AUTO_SKILLS.md` with the core
+   references plus detected external layers (third-party MIT packs credited in
+   `skills/frontend-animation/references/external-skill-chain.md`). Read only
+   layers marked `available`; surface `candidate` packs' catalog entries in the
+   handoff instead of inventing their guidance.
 3. **Plan the diff** with `skills/implementation-planner/SKILL.md` before editing.
 4. **Implement the smallest change** that satisfies the task's `acceptance` list.
    Match surrounding conventions; no drive-by refactors (`AGENTS.md` #9).

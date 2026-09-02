@@ -53,12 +53,13 @@ Read command/skill files from the tool app. Product-state files come from the **
 31. `.loop/active-feature.json` and active feature folder when present
 32. `plan/SESSION_RECALL.md`
 33. `plan/AUTO_SKILLS.md` (if present)
-34. `CURRENT_STATE.md`
-35. `TASKS.yml`
-36. `GATES.yml`
-37. `EVIDENCE_LOG.md`
-38. `DECISIONS.md`
-39. `HANDOFF.md`
+34. `plan/AUTO_AGENT_SKILLS.md` and `skills/agent-development/SKILL.md` (when agent signals match)
+35. `CURRENT_STATE.md`
+36. `TASKS.yml`
+37. `GATES.yml`
+38. `EVIDENCE_LOG.md`
+39. `DECISIONS.md`
+40. `HANDOFF.md`
 
 Product-state files must come from the product workspace, not from the reusable `loop-engineer/` repo.
 
@@ -85,9 +86,12 @@ SESSION-END
 | Hierarchy | Sync + assimilate | Automatic at lifecycle; accepted parent findings become local plan/spec/tasks before routing |
 | Bootstrap | Manifest + recall | `SESSION_MANIFEST.md`, `SESSION_RECALL.md` |
 | Bootstrap | Auto frontend skills | `AUTO_SKILLS.md` when motion/3D signals |
+| Bootstrap | Auto agent capabilities | `AUTO_AGENT_SKILLS.md` -> `skills/agent-development/SKILL.md` when agent signals match |
 | Route | Pick branch | See routing table below |
 | Plan branch | Scale + ultraplan | `loop plan-loop scale`, `ultraplan`, `PRODUCT_MAP.md` |
 | Plan branch | Full `/plan-loop` cycle | `commands/plan-loop.md` |
+| Plan branch | Assurance cohort | `/council` after grill, before PRD lock; `/dev-team` for constructive role-based feedback (PM/Arch/Dev/QA in parallel) |
+| Plan branch | Architecture decisions | `/adr` when locking a non-trivial choice; the ADR becomes the citation source for subsequent plans and tasks |
 | Plan branch | Feature spec | `feature new` → `spec-clarify` → `spec-checklist` → `task-compiler` |
 | Develop branch | Full `/develop-product` cycle | `commands/develop-product.md` |
 | Develop branch | Build + review | `implementation-planner`, `codebase-design`, `tdd`, `code-reviewer`, `qa-validation`, `security-compliance` |
@@ -135,6 +139,7 @@ the user to run the next branch yourself.
 | Build gates pass, tasks ready | Execute **`/develop-product` flow** (`commands/develop-product.md`) |
 | Requirements blocked mid-build | **`/spec-clarify`** then resume develop |
 | Frontend design/motion/3D in task | Run `loop auto-skills --write`, then read verified `plan/AUTO_SKILLS.md` + matched skills |
+| Product is or includes an agent | Run `loop auto-agent-skills --write`, then execute the selected capability chain through planning, build, eval, audit, and operations |
 | After dev slice or before session-end on develop | **`loop feature converge`** + **`/prod-gap`** |
 | P0/P1 technical blockers from prod-gap | Route back to **`/develop-product`** |
 | Human-required blockers | `DOUBTS.md` + `HANDOFF.md` - ask user |
@@ -229,3 +234,10 @@ Return:
 10. Deployment plan status
 11. Human-required blockers
 12. Next action: `/loop-engine`, `/plan-loop`, or `/develop-product`
+
+## Loop
+
+1. READ `plan/SESSION_MANIFEST.md`
+2. ROUTE per the routing table (plan branch | develop branch | both)
+3. RUN the chosen branch's commands end-to-end
+4. EMIT the next-action at terminus

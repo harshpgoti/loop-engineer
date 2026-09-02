@@ -237,4 +237,4 @@ For structured output validation, see:
 **Motion.dev**: v11+
 **Frameworks**: React 19+, Next.js 15+, Svelte 5+, Astro 4+, Vue 3+
 **Research**: arXiv 2402.07927v1, 2211.01910, 2310.14735v5, PubMed 40334089
-**License**: MIT
+**License**: Same as the parent Loop Engineer license.

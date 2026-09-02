@@ -50,3 +50,17 @@ One fully detailed pack under its canonical owner (`plan/products/<slug>/` for a
 sub-product, otherwise `plan/steps/NN-slug/`), with sub-product steps/features nested
 inside that scope, a ready feature spec,
 compiled tasks, a go/no-go, and `plan/ULTRAPLAN_STATUS.md` showing what remains.
+
+## Required Reads
+
+1. `AGENTS.md`
+2. `commands/ultraplan-loop.md` (this file)
+3. `skills/plan-loop/phases/ultraplan.md`
+4. `plan/PRODUCT_MAP.md` (when present)
+
+## Loop
+
+1. READ the current product step from `plan/PRODUCT_MAP.md`
+2. RUN the ultraplan harness on that step
+3. WRITE the per-step plan, sub-product, and feature structure
+4. EMIT the next plan to run

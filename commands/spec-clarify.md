@@ -35,3 +35,10 @@ automatically into `spec-checklist` → `resolve-doubts` (if open doubts) →
 Updated `clarifications.md` and resolved open questions in `spec.md`, plus the
 downstream results (checklist verdict, doubts cleared, tasks compiled) - or the
 Stop Condition that halted the cascade and what it needs.
+
+## Loop
+
+1. READ the active feature's `spec.md`
+2. RUN each clarifier from `phases/spec-clarify.md`
+3. WRITE the answers into the spec
+4. EMIT a `## Clarifications` block in the spec

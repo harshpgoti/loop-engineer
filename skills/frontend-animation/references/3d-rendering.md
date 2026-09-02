@@ -1045,7 +1045,7 @@ function Robot() {
 
 ### Integration with Drei Helpers
 
-[Drei](https://github.com/pmndrs/drei) is the essential helper library for R3F, providing ready-to-use components:
+[Drei helper library for R3F] is the essential helper library for R3F, providing ready-to-use components:
 
 #### OrbitControls
 
@@ -1644,7 +1644,7 @@ Monitor re-renders and optimize components causing performance issues.
 
 #### External Resources
 - [Official Docs](https://docs.pmnd.rs/react-3d)
-- [Drei Docs](https://github.com/pmndrs/drei)
+- [Drei Docs](https://drei.example.com)
 - [Three.js Docs](https://threejs.org/docs/)
 - [R3F Discord](https://discord.gg/ZZjjNvJ)
 - [Poimandres (pmnd.rs)](https://pmnd.rs/) - Ecosystem overview

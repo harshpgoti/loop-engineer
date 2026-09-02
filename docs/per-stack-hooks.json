@@ -1,0 +1,53 @@
+{
+  "_comment": "Per-stack hook configuration samples for the LE app. Rename to the per-stack filename (e.g. .claude/settings.json for Claude, .cursor/hooks.json for Cursor) and adjust paths.",
+  "claude": {
+    "_filename": ".claude/settings.json",
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$(git rev-parse --show-toplevel)/scripts/safeguard_hook.py\"",
+            "description": "E7 Prompt Defense Baseline (skills/safeguard/SKILL.md)"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$(git rev-parse --show-toplevel)/scripts/living_docs_audit.py\" --workspace \"$(git rev-parse --show-toplevel)\" --json",
+            "description": "Living-docs drift detection on docs/*.md edits (skills/living-docs-governance/SKILL.md)"
+          }
+        ]
+      }
+    ]
+  },
+  "cursor": {
+    "_filename": ".cursor/hooks.json",
+    "_note": "Cursor uses a different hooks schema. See https://harness.example.com/hooks for the current shape; map PreToolUse and PostToolUse to the equivalent Cursor event names.",
+    "PreToolUse": "python <repo>/scripts/safeguard_hook.py",
+    "PostToolUse": "python <repo>/scripts/living_docs_audit.py --workspace <repo> --json"
+  },
+  "codex": {
+    "_filename": "AGENTS.md-hook",
+    "_note": "Codex reads AGENTS.md as a system prompt; the equivalent of hooks is a 'system' block that calls the same scripts. Add a fenced code block at the top of AGENTS.md that documents the E7 baseline and the post-edit drift check.",
+    "system_prompt_excerpt": "Before every tool call, run python scripts/safeguard_hook.py. After every Edit on docs/**, run python scripts/living_docs_audit.py --workspace . --json."
+  },
+  "generic": {
+    "_filename": "hooks.example.json",
+    "_note": "Generic shape; the harness should map PreToolUse and PostToolUse to its own event names.",
+    "PreToolUse": {
+      "matcher": "*",
+      "command": "python <repo>/scripts/safeguard_hook.py"
+    },
+    "PostToolUse": {
+      "matcher": "Edit|Write",
+      "command": "python <repo>/scripts/living_docs_audit.py --workspace <repo> --json"
+    }
+  }
+}

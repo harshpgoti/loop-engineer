@@ -36,3 +36,10 @@ Do not compile tasks while the verdict is Needs clarify. See `docs/CONTINUATION.
 
 Updated `spec-checklist.md` with ready/blocked verdict, plus the downstream results
 (doubts cleared, tasks compiled) - or the Stop Condition and what it needs.
+
+## Loop
+
+1. READ the active feature's `spec.md`
+2. RUN each checklist item from `phases/spec-checklist.md`
+3. RECORD pass/fail per item
+4. EMIT the pass/fail decision; halt if any HIGH or CRITICAL item fails

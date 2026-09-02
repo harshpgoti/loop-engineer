@@ -23,6 +23,10 @@ class AgentRouterTests(unittest.TestCase):
         self.assertIn("build-repairer", roles)
         self.assertNotIn("builder", roles)
 
+    def test_agent_work_adds_architecture_evaluation_and_operations_roles(self) -> None:
+        roles = select("/plan-loop", "build a multi-agent copilot", [])
+        self.assertTrue({"agent-architect", "agent-evaluator", "agent-operator"} <= set(roles))
+
     def test_write_records_authority_boundary(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             run_router(Path(tmp), command="/plan-loop", write=True)

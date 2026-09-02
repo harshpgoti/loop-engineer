@@ -1,6 +1,6 @@
 # Tool Adapters
 
-This repo is designed to work across Cursor, Claude Code, Codex, OpenCode, Grok Build, Pi, Cline, and any other coding agent without duplicating logic.
+This repo is designed to work across any coding agent that can read Markdown files and run shell commands. The chain exposes itself as a portable set of commands and skills; the agent reads the canonical files and routes to them.
 
 ## Source of Truth
 
@@ -14,16 +14,15 @@ This repo is designed to work across Cursor, Claude Code, Codex, OpenCode, Grok 
 ## Adapter Strategy
 
 | Tool | Adapter | How it connects |
-|------|---------|-----------------|
-| Cursor | `CURSOR.md`, `AGENTS.md` | Reads universal instructions and skill map |
-| Claude Code | `CLAUDE.md`, `AGENTS.md` | Reads universal instructions and skill map |
-| Codex | `AGENTS.md`, `CODEX.md` | Reads universal instructions and skill map |
-| OpenCode | `AGENTS.md`, `OPENCODE.md` | Reads universal instructions and skill map |
-| Grok Build | `GROK.md` | Reads command + skill map |
-| Pi | `PI.md`, `AGENTS.md` | Reads universal instructions and skill map |
-| Cline | `CLINE.md`, `AGENTS.md` | Reads universal instructions and skill map |
+|---|---|---|
+| <adapter> | `CURSOR.md`, `AGENTS.md` | Reads universal instructions and skill map |
+| <adapter> | `CLAUDE.md`, `AGENTS.md` | Reads universal instructions and skill map |
+| <adapter> | `AGENTS.md`, `CODEX.md` | Reads universal instructions and skill map |
+| <adapter> | `AGENTS.md`, `OPENCODE.md` | Reads universal instructions and skill map |
+| <adapter> | `GROK.md` | Reads command + skill map |
+| <adapter> | `PI.md`, `AGENTS.md` | Reads universal instructions and skill map |
+| <adapter> | `CLINE.md`, `AGENTS.md` | Reads universal instructions and skill map |
 | Any other agent | `AGENTS.md` | Portable interpretation of commands |
-
 ## Use
 
 In any agent, type any command from **`AGENTS.md`'s Portable Commands table** - not
@@ -39,12 +38,11 @@ the single installed app** — no copies, one runtime to update. Loop distribute
 **thin routers**, not content, through two channels. Full detail:
 `docs/DISTRIBUTION.md`.
 
-**1. Router skills in every agent's skills dir** (universal `.agents/skills` plus
-`~/.claude/skills`, `~/.codex/skills`, `~/.cursor/skills`, `~/.cline/skills`, OpenCode,
-Gemini, Grok, Pi, Factory, Kiro, ...). One generated ~15-line router SKILL.md per command, pointing
-the agent at the installed app. Installed to **all** agents at once so switching
-mid-task needs no setup. Canonical command/skill edits need no reinstall.
-`loop setup` / `loop update` run this automatically.
+**1. Router skills in every agent's skills dir** (the chain writes a ~15-line
+router SKILL.md per command into whatever skills directory the agent reads).
+The router points the agent at the installed app. Installed to **all** agents
+at once so switching mid-task needs no setup. Canonical command/skill edits
+need no reinstall. `loop setup` / `loop update` run this automatically.
 
 ```bash
 loop skills install            # global: every agent (default)
@@ -58,7 +56,7 @@ Loop tracks ownership per destination (`.loop-engineer-manifest.json` + a marker
 in each router) and never overwrites a directory it didn't create. Adding a new
 agent is one row in the `HOSTS` table in `scripts/install_skills.py`.
 
-**Claude Code** needs no plugin: its skills and slash commands are unified, so the
+**<adapter>** needs no plugin: its skills and slash commands are unified, so the
 router Loop installs into `~/.claude/skills` is directly invokable as `/plan-loop`
 and auto-activates by description.
 
@@ -71,7 +69,7 @@ commits a path-free bootstrap so teammates auto-get Loop on first session. Detai
 `/command` file inside each tool's private command dir. Every supported tool reads
 SKILL.md now, so the generator, `loop commands install`, and the
 `--legacy-commands` flags are gone. `loop skills install` prunes leftover wrappers,
-which otherwise listed every command twice in Claude Code.
+which otherwise listed every command twice in <adapter>.
 
 Portable interpretation still works everywhere: type any command from **`AGENTS.md`'s
 Portable Commands table** and the agent routes it via `commands/<name>.md`, even

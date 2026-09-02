@@ -63,6 +63,54 @@ class TestPickSkills(unittest.TestCase):
         self.assertEqual(picks, [("agent-builder", "agent-development signals matched")])
 
 
+class TestCapabilitySelection(unittest.TestCase):
+    def test_baseline_agentic_engineering_is_selected_for_agent_work(self) -> None:
+        selected = router.select_capabilities("build an ai agent")
+        self.assertIn("agentic-engineering", selected)
+
+    def test_multi_agent_eval_chain_is_ordered_and_deduplicated(self) -> None:
+        selected = router.select_capabilities("multi-agent workflow with golden case evals and dual review")
+        self.assertEqual(len(selected), len(set(selected)))
+        self.assertLess(selected.index("team-agent-orchestration"), selected.index("eval-harness"))
+        self.assertIn("santa-method", selected)
+
+    def test_high_risk_capabilities_are_not_selected_by_generic_agent_signal(self) -> None:
+        selected = router.select_capabilities("build an ai agent")
+        self.assertNotIn("agent-payment-x402", selected)
+        self.assertNotIn("council-multi-model", selected)
+
+    def test_generic_repository_words_do_not_overload_the_chain(self) -> None:
+        selected = router.select_capabilities(
+            "build an ai agent; the repository has tools, memory files, a developer, and a loop command"
+        )
+        self.assertNotIn("agent-harness-construction", selected)
+        self.assertNotIn("unified-memory", selected)
+        self.assertNotIn("dev-team", selected)
+        self.assertNotIn("continuous-agent-loop", selected)
+
+    def test_legacy_names_have_canonical_targets(self) -> None:
+        self.assertEqual(router.COMPATIBILITY_ALIASES["autonomous-loops"], "continuous-agent-loop")
+        self.assertEqual(router.COMPATIBILITY_ALIASES["continuous-learning"], "continuous-learning-v2")
+
+    def test_catalog_exposes_all_requested_capability_names(self) -> None:
+        names = {name for name, _signals in router.CAPABILITY_RULES}
+        names.update(router.COMPATIBILITY_ALIASES)
+        self.assertEqual(30, len(names))
+
+    def test_every_capability_has_a_complete_skill_entrypoint(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        names = {name for name, _signals in router.CAPABILITY_RULES}
+        names.update(router.COMPATIBILITY_ALIASES)
+        for name in names:
+            skill = root / "skills" / name / "SKILL.md"
+            self.assertTrue(skill.is_file(), f"missing capability entrypoint: {name}")
+            text = skill.read_text(encoding="utf-8")
+            self.assertIn("Inherits `docs/SKILL_CONTRACT.md`", text)
+            self.assertGreater(len(text.splitlines()), 40, f"capability is only a stub: {name}")
+            retired_brand = "".join(chr(codepoint) for codepoint in (69, 67, 67))
+            self.assertNotIn(retired_brand, text)
+
+
 class TestFormatAutoAgentSkillsMd(unittest.TestCase):
     def test_includes_always_read_paths(self) -> None:
         from pathlib import Path
@@ -73,6 +121,19 @@ class TestFormatAutoAgentSkillsMd(unittest.TestCase):
         for rel in router.ALWAYS_READ:
             self.assertIn(rel, md)
         self.assertIn("loop agent scaffold", md)
+        self.assertIn("Capability chain", md)
+
+    def test_explicit_context_capabilities_are_rendered(self) -> None:
+        md = router.format_auto_agent_skills_md(
+            Path("."),
+            [("agent-builder", "agent-development signals matched")],
+            {},
+            "",
+            ["agent-payment-x402"],
+        )
+        self.assertIn("agent-payment-x402", md)
+        self.assertIn("skills/agent-payment-x402/SKILL.md", md)
+        self.assertIn("explicit consent required", md)
 
 
 

@@ -33,6 +33,8 @@ class TestScaffold(unittest.TestCase):
         self.assertIn("Agent Architecture", arch)
         skill = (self.tmp / "agent/skills/_template/SKILL.md").read_text(encoding="utf-8")
         self.assertIn("name: <skill-name>", skill)
+        for rel in ("agent/HARNESS.md", "agent/ORCHESTRATION.md", "agent/MEMORY.md", "agent/OPERATIONS.md"):
+            self.assertTrue((self.tmp / rel).is_file())
 
     def test_second_run_skips_without_force(self) -> None:
         agent_scaffold.scaffold(self.tmp)

@@ -53,8 +53,8 @@ TOOL_PATHS = [
     "ADAPTERS.md",
     "LOOP_SCHEDULE.md",
     "README.md",
-    "INSTALL.md",
-    "CONTRIBUTING.md",
+    "docs/INSTALL.md",
+    "docs/CONTRIBUTING.md",
 ]
 
 

@@ -36,6 +36,9 @@ READ FULL PLAN CONTEXT -> ASSIMILATE PARENT CONTEXT/FINDINGS
 -> LOG DECISIONS.md -> UPDATE TASKS.yml IF NEEDED -> CONVERGE -> UPDATE HANDOFF/MEMORY
 ```
 
+When a revision adds or changes an agent, refresh `AUTO_AGENT_SKILLS.md` and reconcile the
+selected capability chain from `skills/agent-development/SKILL.md` before convergence.
+
 ## Continuation
 
 Terminus: **plan consistent again.** The edit isn't done until everything it

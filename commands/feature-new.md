@@ -47,3 +47,10 @@ resolve-doubts → task-compiler. See `docs/CONTINUATION.md`.
 - `.loop/active-feature.json`
 - Downstream results of the cascade (clarifications, checklist verdict, tasks) -
   or the Stop Condition that halted it
+
+## Loop
+
+1. READ the step plan the new feature belongs to
+2. CREATE `plan/features/NNN-<slug>/` with `spec.md`, `feature-plan.md`, `tasks.md`
+3. POPULATE the spec from the step plan
+4. WRITE the active-feature pointer `.loop/active-feature.json`

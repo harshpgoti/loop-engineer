@@ -23,17 +23,16 @@ the wrong one here, for reasons that are specific rather than theoretical:
 - **No early cutoff.** Rewording one decision marks every downstream view stale even
   when the regenerated output would be byte-identical.
 
-This is the "verifying traces" rebuilder of Mokhov, Mitchell & Peyton Jones,
-*Build Systems à la Carte* (ICFP 2018) - record the hashes of the inputs actually used,
+This is the Loop Engineer's "verifying traces" rebuilder - record the hashes of the inputs actually used,
 rebuild iff one differs. Deliberately not "constructive traces" (needs a shared output
 cache we do not have) nor Nix-style deep hashing (assumes a deterministic generator,
 which an LLM is not).
 
-Three failure modes this design has, all named in the literature and all guarded:
+Three failure modes this design has, all guarded:
 
 1. **Undeclared inputs.** Hashing fails *silently and permanently* when a generator
    reads something it did not declare - unlike mtime, which fails loud. `test_freshness`
-   build-fuzzes this (Licker & Rice, ICSE 2019).
+   build-fuzzes this.
 2. **Forgetting to hash the generator.** Make's most famous defect: edit the template
    and every existing view is wrong-but-clean. `generator.version` covers it.
 3. **Line endings.** `core.autocrlf` on a fresh Windows clone would otherwise mark

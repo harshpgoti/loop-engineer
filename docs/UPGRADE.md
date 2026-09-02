@@ -122,7 +122,7 @@ orchestrator (progressive disclosure). The harness emits a `PHASE:` line in
 `plan/PLAN_BOOTSTRAP.md` / `plan/SESSION_MANIFEST.md` (see `scripts/plan_phase.py`)
 so the agent loads only the active phase.
 
-- The `/spec-clarify` and `/spec-checklist` commands are unchanged; `/ultraplan`
+- The `/spec-clarify` and `/spec-checklist` commands are unchanged; `/ultraplan-loop`
   was renamed to **`/ultraplan-loop`**. `product-grill`, `product-council`, and
   `task-compiler` had no slash command and are reached via `/plan-loop`.
 - The `loop plan-loop ultraplan next|status` CLI subcommand is unchanged.

@@ -268,7 +268,6 @@ def cmd_auto_skills(args: argparse.Namespace) -> int:
         workspace,
         extra=getattr(args, "text", "") or "",
         write=args.write,
-        manage_external=args.write and not getattr(args, "no_install", False),
     )
     if not picks:
         print("No frontend motion/3D signals detected.")
@@ -724,14 +723,9 @@ def build_parser() -> argparse.ArgumentParser:
     bootstrap_p.add_argument("--workspace", default=argparse.SUPPRESS)
     bootstrap_p.set_defaults(func=cmd_bootstrap)
 
-    auto_skills = sub.add_parser("auto-skills", help="Auto-select and maintain frontend design/motion/3D skills.")
+    auto_skills = sub.add_parser("auto-skills", help="Auto-select frontend design/motion/3D skills and write plan/AUTO_SKILLS.md.")
     auto_skills.add_argument("--text", default="", help="Extra context (e.g. user message).")
     auto_skills.add_argument("--write", action="store_true", help="Write plan/AUTO_SKILLS.md.")
-    auto_skills.add_argument(
-        "--no-install",
-        action="store_true",
-        help="Route only; skip external install/update for diagnostics or offline use.",
-    )
     auto_skills.set_defaults(func=cmd_auto_skills)
 
     compact_p = sub.add_parser("compact", help="Write COMPACT.md summary.")
@@ -1135,10 +1129,10 @@ def build_parser() -> argparse.ArgumentParser:
     plan.set_defaults(func=cmd_plan)
 
 
-    research = sub.add_parser("research", help="Search arXiv, Research Square, and SSRN.")
+    research = sub.add_parser("research", help="Search arXiv, Research Square, PubMed, and SSRN.")
     research.add_argument("query", help="Search terms")
     research.add_argument(
-        "--source", action="append", dest="sources", choices=("arxiv", "researchsquare", "ssrn")
+        "--source", action="append", dest="sources", choices=("arxiv", "researchsquare", "pubmed", "ssrn")
     )
     research.add_argument("--limit", type=int, default=None)
     research.set_defaults(func=cmd_research)

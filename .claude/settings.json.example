@@ -1,0 +1,17 @@
+{
+  "_comment": "Sample harness settings for the LE app. The E7 hook applies the 6-bullet Prompt Defense Baseline (skills/safeguard/SKILL.md) to every PreToolUse event. To enable it: 1) rename to settings.json (this file is named settings.json.example to not conflict with per-user overrides), 2) the hook binary at scripts/safeguard_hook.py must be executable.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$(git rev-parse --show-toplevel)/scripts/safeguard_hook.py\"",
+            "description": "Apply the Prompt Defense Baseline (E7) to every tool call. Reads skills/safeguard/SKILL.md. Returns exit 0 (allow) or 2 (block)."
+          }
+        ]
+      }
+    ]
+  }
+}

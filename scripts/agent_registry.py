@@ -23,6 +23,15 @@ def validate(root: Path = ROOT, data: dict[str, Any] | None = None) -> list[str]
     errors = [f"duplicate agent role: {name}" for name, count in Counter(ids).items() if count > 1]
     known = set(ids)
     skills = {path.parent.name for path in (root / "skills").glob("*/SKILL.md")}
+    valid_models = {"opus", "sonnet", "haiku"}
+    safeguard_keywords = (
+        "role, persona, or identity",
+        "confidential data",
+        "executable code",
+        "unicode",
+        "untrusted",
+        "harmful",
+    )
     for role in roles:
         for skill in role.get("skills", []):
             if skill not in skills:
@@ -32,6 +41,27 @@ def validate(root: Path = ROOT, data: dict[str, Any] | None = None) -> list[str]
                 errors.append(f"{role.get('id')} has unknown independence target: {other}")
             if other == role.get("id"):
                 errors.append(f"{role.get('id')} cannot be independent from itself")
+        for other in role.get("hands_off_to", []):
+            if other not in known:
+                errors.append(f"{role.get('id')} has unknown hands_off_to target: {other}")
+            if other == role.get("id"):
+                errors.append(f"{role.get('id')} cannot hand off to itself")
+        model = role.get("model")
+        if model is not None and model not in valid_models:
+            errors.append(f"{role.get('id')} has unknown model tier: {model!r}")
+        # E7: every role must declare a prompt_defense that either references
+        # the safeguard skill or embeds >= 3 of the 6 baseline keywords.
+        defense = role.get("prompt_defense") or ""
+        defense_lower = defense.lower()
+        references_safeguard = "skills/safeguard" in defense_lower or "safeguard/skill.md" in defense_lower
+        kw_hits = sum(1 for kw in safeguard_keywords if kw in defense_lower)
+        if not defense.strip():
+            errors.append(f"{role.get('id')} missing prompt_defense field (E7)")
+        elif role.get("class") == "assurance" and kw_hits < 3 and not references_safeguard:
+            errors.append(
+                f"{role.get('id')} assurance role prompt_defense is weak "
+                f"({kw_hits}/6 baseline keywords; no safeguard reference)"
+            )
         if role.get("class") == "assurance" and role.get("may_mutate"):
             errors.append(f"assurance role may not mutate reviewed work: {role.get('id')}")
         if role.get("class") == "assurance" and not role.get("independent_from"):

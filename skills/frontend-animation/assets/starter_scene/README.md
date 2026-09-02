@@ -128,6 +128,4 @@ The starter scene includes:
 - [Three.js Examples](https://threejs.org/examples/)
 - [Three.js Fundamentals](https://threejsfundamentals.org/)
 
-## License
-
-This starter template is provided as-is for use in any project.
+## License - Same as the parent Loop Engineer license.
