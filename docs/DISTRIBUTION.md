@@ -43,6 +43,7 @@ trusted project-local integration.
 | Claude Code | `~/.claude/skills` | `.claude/skills` |
 | Codex | `~/.codex/skills` | `.agents/skills` |
 | Cursor | `~/.cursor/skills` | `.cursor/skills` |
+| ZCode | `~/.zcode/skills` | `.zcode/skills` |
 | (this repo does not name or recommend external agents) | `~/.<adapter>/skills` | `.agents/skills` |
 
 **A second namespace for slash commands may exist on some adapters**, so the install
@@ -53,6 +54,7 @@ step writes the command file as well:
 | OpenCode | `~/.config/opencode/command/<name>.md` | Skills there are model-invoked only |
 | Pi | `~/.pi/agent/prompts/<name>.md` | Pi answers skills at `/skill:<name>`, never `/<name>` |
 | Cline | `~/Documents/Cline/Workflows/<name>.md` | Cline answers skills at `/loop-<name>`; `/<name>.md` is a workflow |
+| ZCode | `~/.zcode/commands/<name>.md` | `.zcode/commands/<name>.md` |
 
 Pi also scans `~/.agents/skills` and `.agents/skills`, and gates every project-scope
 path behind its own project trust - see `PI.md`. Cline reads `.claude/skills` as well as

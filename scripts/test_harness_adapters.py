@@ -12,7 +12,7 @@ import harness_adapters
 
 class HarnessAdapterRegistry(unittest.TestCase):
     def test_every_supported_harness_has_behavior_metadata(self) -> None:
-        expected = {"universal", "claude", "cline", "codex", "cursor", "opencode", "gemini", "grok", "pi", "kimi", "factory", "kiro", "slate", "hermes"}
+        expected = {"universal", "claude", "cline", "codex", "cursor", "opencode", "gemini", "grok", "pi", "kimi", "factory", "kiro", "slate", "hermes", "zcode"}
         self.assertEqual(expected, set(harness_adapters.ADAPTERS))
         for adapter in harness_adapters.ADAPTERS.values():
             self.assertTrue(adapter["invocation"])
@@ -20,12 +20,21 @@ class HarnessAdapterRegistry(unittest.TestCase):
             self.assertTrue(adapter["hooks"])
 
     def test_behavior_specific_paths_are_derived_from_one_registry(self) -> None:
-        self.assertEqual({"cline", "opencode", "pi"}, set(harness_adapters.path_table("command_paths")))
+        self.assertEqual({"cline", "opencode", "pi", "zcode"}, set(harness_adapters.path_table("command_paths")))
         self.assertEqual({"opencode"}, set(harness_adapters.path_table("permission_paths")))
 
     def test_codex_and_pi_record_different_invocation_contracts(self) -> None:
         self.assertIn("$skill-name", harness_adapters.ADAPTERS["codex"]["invocation"])
         self.assertIn("/skill:name", harness_adapters.ADAPTERS["pi"]["invocation"])
+
+    def test_zcode_uses_its_documented_skill_and_command_namespaces(self) -> None:
+        zcode = harness_adapters.ADAPTERS["zcode"]
+        self.assertEqual("~/.zcode/skills", zcode["skill_paths"]["user"])
+        self.assertEqual(".zcode/skills", zcode["skill_paths"]["project"])
+        self.assertEqual("~/.zcode/commands", zcode["command_paths"]["user"])
+        self.assertEqual(".zcode/commands", zcode["command_paths"]["project"])
+        self.assertIn("$skill-name", zcode["invocation"])
+        self.assertIn("/command", zcode["invocation"])
 
     def test_cline_reaches_slash_commands_through_its_workflow_namespace(self) -> None:
         cline = harness_adapters.ADAPTERS["cline"]

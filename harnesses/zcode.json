@@ -1,0 +1,1 @@
+{"name":"zcode","skill_paths":{"user":"~/.zcode/skills","project":".zcode/skills"},"command_paths":{"user":"~/.zcode/commands","project":".zcode/commands"},"invocation":"$skill-name or /command","trust":"project-trust","hooks":"host-defined"}

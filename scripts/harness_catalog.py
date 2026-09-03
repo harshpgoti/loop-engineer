@@ -35,13 +35,13 @@ def _classify(row: dict[str, Any], root: Path) -> str:
             target = (root / path).expanduser()
             if not target.exists():
                 return f"skill_paths.{key} = {path!r} does not exist"
-    cmd_paths = row.get("commands_paths", row.get("legacy_command_paths", {}))
+    cmd_paths = row.get("command_paths", row.get("commands_paths", row.get("legacy_command_paths", {})))
     for key in ("user", "project"):
         path = cmd_paths.get(key)
         if path:
             target = (root / path).expanduser()
             if not target.exists():
-                return f"commands_paths.{key} = {path!r} does not exist"
+                return f"command_paths.{key} = {path!r} does not exist"
     return "OK"
 
 
@@ -59,7 +59,7 @@ def build(root: Path) -> dict[str, Any]:
             "trust": data.get("trust", "?"),
             "invocation": data.get("invocation", ""),
             "skill_paths": data.get("skill_paths", {}),
-            "commands_paths": data.get("commands_paths", data.get("legacy_command_paths", {})),
+            "commands_paths": data.get("command_paths", data.get("commands_paths", data.get("legacy_command_paths", {}))),
             "status": _classify(data, root),
         })
     return {"version": 1, "root": str(root), "harnesses": rows}

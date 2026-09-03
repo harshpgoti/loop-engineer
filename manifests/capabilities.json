@@ -6,7 +6,8 @@
     "cursor",
     "grok",
     "opencode",
-    "pi"
+    "pi",
+    "zcode"
   ],
   "capabilities": [
     {
@@ -95,7 +96,8 @@
         "cursor",
         "grok",
         "opencode",
-        "pi"
+        "pi",
+        "zcode"
       ],
       "context_cost": 18
     },
@@ -147,7 +149,8 @@
         "cursor",
         "grok",
         "opencode",
-        "pi"
+        "pi",
+        "zcode"
       ],
       "context_cost": 32
     },
@@ -174,7 +177,8 @@
         "cursor",
         "grok",
         "opencode",
-        "pi"
+        "pi",
+        "zcode"
       ],
       "context_cost": 9
     },
@@ -228,7 +232,8 @@
         "cursor",
         "grok",
         "opencode",
-        "pi"
+        "pi",
+        "zcode"
       ],
       "context_cost": 19
     },
@@ -250,7 +255,8 @@
         "cursor",
         "grok",
         "opencode",
-        "pi"
+        "pi",
+        "zcode"
       ],
       "context_cost": 7
     },
@@ -277,7 +283,8 @@
         "cursor",
         "grok",
         "opencode",
-        "pi"
+        "pi",
+        "zcode"
       ],
       "context_cost": 12
     },
@@ -323,7 +330,8 @@
         "cursor",
         "grok",
         "opencode",
-        "pi"
+        "pi",
+        "zcode"
       ],
       "context_cost": 24
     },
@@ -345,7 +353,8 @@
         "cursor",
         "grok",
         "opencode",
-        "pi"
+        "pi",
+        "zcode"
       ],
       "context_cost": 8
     },
@@ -401,7 +410,8 @@
         "cursor",
         "grok",
         "opencode",
-        "pi"
+        "pi",
+        "zcode"
       ],
       "context_cost": 11
     },
