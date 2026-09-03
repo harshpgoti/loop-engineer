@@ -104,7 +104,7 @@ The user should be able to type these commands in Cursor, Codex, Claude Code, Gr
 | `/deployment-plan` | Write or refresh deployment targets in `DEPLOYMENT_PLAN.md` | `commands/deployment-plan.md` + `skills/deployment-plan/SKILL.md` |
 | `/compact-loop` | Compact long-running context into `COMPACT.md` before continuing or switching tools | `commands/compact-loop.md` + `skills/compact-loop/SKILL.md` |
 | `/session-start` | Always-on bootstrap: recall, manifest, auto-skills | `commands/session-start.md` + `skills/session-lifecycle/SKILL.md` |
-| `/session-end` | Always-on closeout: memory review, staged writes, state.db log | `commands/session-end.md` + `skills/session-lifecycle/SKILL.md` |
+| `/session-end` | Always-on closeout: memory review, state.db log | `commands/session-end.md` + `skills/session-lifecycle/SKILL.md` |
 | `/session-recall` | Recall only (usually via session-start) | `commands/session-recall.md` + `skills/session-recall/SKILL.md` |
 | `/memory-review` | Curate memory only (usually via session-end) | `commands/memory-review.md` + `skills/memory-review/SKILL.md` |
 | `/upgrade-loop-engineer` | Safely update tool files without overwriting product-state files | `commands/upgrade-loop-engineer.md` + `skills/upgrade-loop-engineer/SKILL.md` |
@@ -113,6 +113,7 @@ The user should be able to type these commands in Cursor, Codex, Claude Code, Gr
 | `/spec-clarify` | Structured clarification on active feature spec | `commands/spec-clarify.md` + `skills/plan-loop/phases/spec-clarify.md` |
 | `/spec-checklist` | Spec quality gate before feature-plan | `commands/spec-checklist.md` + `skills/plan-loop/phases/spec-checklist.md` |
 | `/resolve-doubts` | Interactively clear all open doubts/blockers plan-wide, then give a go/no-go for development | `commands/resolve-doubts.md` + `skills/plan-loop/phases/resolve-doubts.md` |
+| `/plan-reconcile` | Reconcile a planning reform across every file it touches; retire dead planning to `plan/RETIRED.md` | `commands/plan-reconcile.md` + `scripts/plan_reconcile.py` |
 | `/feature-converge` | Post-build drift check vs spec/tasks | `commands/feature-converge.md` + `skills/feature-converge/SKILL.md` |
 | `/eval-loop` | Score the product's golden cases, record the run, find regressions, and let the failure pattern decide what to build next | `commands/eval-loop.md` + `skills/eval-loop/SKILL.md` |
 | `/product-tree` | Show main product ⇄ sub-product workspaces, their roll-up, and where a sub-product's plan contradicts the master plan | `commands/product-tree.md` + `skills/product-tree/SKILL.md` |

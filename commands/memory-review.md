@@ -47,8 +47,8 @@ python scripts/memory_curator.py --review-only
 Stage for approval instead of writing (opt-in):
 
 ```bash
-python scripts/memory_curator.py --stage
-loop memory review --stage
+python scripts/memory_curator.py
+loop memory review
 ```
 
 ## When To Run

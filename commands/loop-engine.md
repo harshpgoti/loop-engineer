@@ -100,7 +100,7 @@ SESSION-END
 | Either | Deployment | `/deployment-plan` |
 | Either | Release (if in scope) | `cicd-release` |
 | Long session | Compact | `/compact-loop` |
-| End | Memory review | via `loop session-end` (staged) |
+| End | Memory review | via `loop session-end` (applies directly) |
 | End | Session lifecycle | `loop session-end --command /loop-engine` |
 
 The lifecycle performs tree sync at both ends and feature convergence at closeout. These
@@ -135,6 +135,7 @@ the user to run the next branch yourself.
 | No active feature folder | `loop feature new "<title>" --step plan/step_XX.md` |
 | Open spec questions / ambiguous requirements | **`/spec-clarify`** |
 | Spec not checklist-passed | **`/spec-checklist`** - do not compile tasks until ready |
+| Plan branch complete but `loop plan-reconcile check` reports blockers | **Reconcile first** - fanout, update every listed file, retire dead items - then task-compiler; never carry plan contradictions into the develop branch |
 | No `tasks.md` or `TASKS.yml` empty | **`task-compiler`** |
 | Build gates pass, tasks ready | Execute **`/develop-product` flow** (`commands/develop-product.md`) |
 | Requirements blocked mid-build | **`/spec-clarify`** then resume develop |
@@ -147,7 +148,7 @@ the user to run the next branch yourself.
 | Launch blockers reported in the manifest | **`/release-check`** - read it during build, not at the end |
 | Meaningful work unit complete | **`/deployment-plan`** |
 | Long session / tool switch | **`/compact-loop`** |
-| Every closeout | **`loop session-end`** (includes memory-review staging; converge on develop) |
+| Every closeout | **`loop session-end`** (includes memory-review, which applies directly; converge on develop) |
 
 ## Execute planning branch
 

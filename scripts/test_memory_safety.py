@@ -119,6 +119,30 @@ class MarkdownDiaryPreservation(unittest.TestCase):
         self.assertTrue(any("withheld" in a for a in actions))
         self.assertGreater(len(memory_file(ws).read_text(encoding="utf-8")), len(big) // 2)
 
+    def test_inline_header_mentions_do_not_count(self):
+        from memory_curator import _header_lines, validate_memory_output
+
+        quoted = "# Memory\n\n> banner noting the `# Memory` header rule\n\nBody here.\n"
+        self.assertEqual(1, _header_lines(quoted))
+        self.assertEqual([], validate_memory_output(quoted, quoted + "\n- new entry with enough detail to be kept\n"))
+
+    def test_over_budget_diary_is_preserved_with_suggestion(self):
+        bullets = "".join(
+            f"- 2026-01-{i:02d} diary entry with enough substance to count as real memory content here and a little more detail to fill the budget.\n"
+            for i in range(1, 61)
+        )
+        big = "# Memory\n\nIntro.\n\n## Recent\n\n" + bullets
+        self.assertGreater(len(big), 2200 * 2)
+        ws = make_workspace({"memories/MEMORY.md": big, "DECISIONS.md": "# D\n", "HANDOFF.md": "# H\n"})
+        report = propose_updates(ws)
+        self.assertTrue(report["memory_trim_suggestion"], "over budget must come with a trim suggestion")
+        out = closeout(ws, 1)
+        self.assertIn("## Recent", out)
+        # Nothing auto-deleted: oldest and newest entries both survive.
+        self.assertIn("2026-01-01", out)
+        self.assertIn("2026-01-60", out)
+        self.assertGreater(len(out), len(big) * 0.95)
+
 
 class HeaderIdempotency(unittest.TestCase):
     def test_stacked_headers_collapse(self):
@@ -167,6 +191,27 @@ class ProposerQuality(unittest.TestCase):
             }
         )
         self.assertEqual([], propose_closeout_entries(ws, "some memory"))
+
+    def test_triplicated_log_lines_propose_nothing(self):
+        ws = make_workspace(
+            {
+                "DECISIONS.md": "# D\n",
+                "HANDOFF.md": "# H\n\n- plan/PROD-GAP.md was updated. Ask the user to resolve human-required blockers listed there. Agent may continue with safe P0/P1 technical blockers.\n\n- plan/PROD-GAP.md was updated. Ask the user to resolve human-required blockers listed there. Agent may continue with safe P0/P1 technical blockers.\n",
+            }
+        )
+        self.assertEqual([], propose_closeout_entries(ws, "some memory"))
+
+    def test_adjacent_bullets_stay_grouped(self):
+        ws = make_workspace(
+            {
+                "DECISIONS.md": "# D\n\n- **Scope:** company-level shared platform with enough detail to pass the length bar here.\n- **Decision:** unify the console shell now, with enough supporting detail to pass the length bar here.\n",
+                "HANDOFF.md": "# H\n",
+            }
+        )
+        proposals = propose_closeout_entries(ws, "some memory")
+        self.assertEqual(1, len(proposals))
+        self.assertIn("Scope:", proposals[0])
+        self.assertIn("Decision:", proposals[0])
 
 
 class PendingSafety(unittest.TestCase):

@@ -26,6 +26,9 @@ In central-tool setup, read command/skill files from `loop-engineer/`, but read 
 READ STATE FILES -> DETECT DRIFT -> APPLY SAFE FIXES -> WRITE SYNC_REPORT.md -> UPDATE MEMORY/HANDOFF
 ```
 
+Also run `loop plan-reconcile check` and carry any blockers into the report (owned
+by `/revise-plan`, not fixed here).
+
 ## Rules
 
 - Do not overwrite product decisions or task content.

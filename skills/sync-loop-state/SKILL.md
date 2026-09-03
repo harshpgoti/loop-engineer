@@ -33,6 +33,9 @@ Keep durable loop state aligned so the next agent does not follow stale handoff 
 - Do not overwrite product decisions or task content.
 - Record ambiguous drift instead of guessing.
 - Prefer pointers and sync notes over destructive edits.
+- Plan-surface drift is reported, not fixed here: run `loop plan-reconcile check`
+  and carry its blockers into the report with the owning command (`/revise-plan`
+  for plan edits). Sync never rewrites planning narrative to match memory.
 
 ## Optional Script
 

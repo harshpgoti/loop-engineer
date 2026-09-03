@@ -74,6 +74,20 @@ python scripts/deployment_plan.py --workspace ../product
 
 Then refine the draft with product-specific infrastructure details.
 
+## Reconcile-first, verify-after (mandatory)
+
+The generator scrapes keywords - it once filled every field with random
+mid-sentence fragments from other files. So:
+
+1. Before writing, run `loop plan-reconcile check` and reconcile what it
+   reports. A deployment plan drafted on top of dead planning bakes the old
+   story into the file every other chain reads.
+2. After writing, verify every field traces to a **live** decision id in
+   `DECISIONS.md` (no `Status: superseded`, no `plan/RETIRED.md` entry).
+3. Never blind-overwrite a hand-maintained `DEPLOYMENT_PLAN.md`: diff first,
+   carry its warnings and corrections forward, and keep its `Updated:` stamp
+   truthful to the day you reconciled it.
+
 ## Closeout Behavior
 
 1. Write or refresh `DEPLOYMENT_PLAN.md`

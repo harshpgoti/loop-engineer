@@ -113,7 +113,7 @@ say, and report what changed (`docs/CONTINUATION.md`).
 10. Long session → `compact-loop`.
 10a. If `HANDOFF.md`/`TASKS.yml`/`GATES.yml`/`memories/MEMORY.md` look mutually inconsistent → `loop sync` (`skills/sync-loop-state/SKILL.md`) before trusting them further.
 10b. If a script import fails or the workspace doesn't resolve as expected → `loop doctor` (`skills/doctor/SKILL.md`) before continuing.
-11. Closeout → `loop session-end` (memory-review staged; converge on develop).
+11. Closeout → `loop session-end` (memory-review applies directly; converge on develop).
 
 ## Continuation
 

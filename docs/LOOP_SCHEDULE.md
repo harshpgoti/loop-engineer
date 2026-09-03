@@ -35,4 +35,4 @@ For long isolated build loops, use your team's approved sandbox or CI runner. Ap
 
 ## Optional overnight consolidation
 
-Schedule a job to refresh `COMPACT.md`, run `/memory-review --stage`, and reconcile `DOUBTS.md` against `DECISIONS.md` - only if your workflow needs it.
+Schedule a job to refresh `COMPACT.md`, run `/memory-review`, and reconcile `DOUBTS.md` against `DECISIONS.md` - only if your workflow needs it. Do not schedule it with `--stage`: staged writes pile up unapproved and go stale.

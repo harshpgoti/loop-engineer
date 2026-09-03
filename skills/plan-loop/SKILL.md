@@ -118,9 +118,14 @@ the active feature. Never return `loop scope check` or `/feature-converge` as us
    Read `plan/AUTO_DOMAIN_SKILLS.md` and load only the selected data, ML, or operations
    skill when deterministic product signals require it.
 7. Update `plan/main_plan.md`, `plan/step_XX_<name>.md`, `GATES.yml`, `DECISIONS.md`, and `EVIDENCE_LOG.md` as phases produce them.
+7a. When a phase reverses, withdraws, or reframes earlier planning, reconcile
+    before advancing: `loop plan-reconcile fanout --decision <id>`, update every
+    listed file, `loop plan-reconcile retire --id <old> --by <new> --reason "<why>"`,
+    then `loop plan-reconcile check` to 0 blockers. A reform is not done until no
+    live file still tells the old story (see `commands/plan-reconcile.md`).
 8. Draft `DEPLOYMENT_PLAN.md` with `python scripts/deployment_plan.py --source plan`.
 9. Update `memories/MEMORY.md`, `DOUBTS.md`, `HANDOFF.md`, and `.ai/SESSION_LOG.md`.
-10. Run `memory-review` at closeout with `--stage` by default (`loop memory review`).
+10. Run `memory-review` at closeout (applies directly; `--stage` only when the user asks for approval-gated writes).
 11. Run `compact-loop` when planning is long, many files changed, the user may switch tools, or the context is getting heavy.
 12. Run `loop session-end --command /plan-loop` (mandatory closeout).
 

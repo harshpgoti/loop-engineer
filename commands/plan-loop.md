@@ -216,6 +216,21 @@ session. When several steps or sub-products must advance together, sequence them
    Fill `plan/features/NNN-slug/spec.md` from the step plan - link, do not duplicate entire step file.
    Run `/spec-clarify` then `/spec-checklist` before locking `feature-plan.md`.
 17. **Run `skills/plan-loop/phases/task-compiler.md`** to convert plan into tasks, gates, acceptance criteria, test plan, and sync active feature `tasks.md` with `TASKS.yml`.
+17a. **Reconcile the reform across every file it touches** (a reform always spans
+    more files than the phase that produced it). When a decision reverses,
+    withdraws, or reframes earlier planning:
+    ```bash
+    loop plan-reconcile fanout --decision <id> --scope <slug>
+    ```
+    then update every listed file - `PRODUCT_MAP.md` rows **and** its `Updated:`
+    header, sibling step files, scope `TASKS.yml`/`GATES.yml` mirrors,
+    `DEPLOYMENT_PLAN.md` (by hand), `plan/PROD-GAP.md` - and record the dead
+    item so it stops haunting live files:
+    ```bash
+    loop plan-reconcile retire --id <old> --by <new> --reason "<why>"
+    loop plan-reconcile check
+    ```
+    Blockers must read 0 before task-compiler closes. See `commands/plan-reconcile.md`.
 18. **Record deployment decisions** in `DECISIONS.md` and unresolved items in `DOUBTS.md`.
 19. **Draft `DEPLOYMENT_PLAN.md`** from captured planning decisions:
    ```bash
@@ -227,11 +242,12 @@ session. When several steps or sub-products must advance together, sequence them
    ```
 21. **Update `DECISIONS.md`** for any strategy or architecture decision.
 22. **Update `memories/MEMORY.md`, `DOUBTS.md`, `CURRENT_STATE.md`, `HANDOFF.md`, and `.ai/SESSION_LOG.md`.**
-23. **Run `/memory-review` at closeout** (default `--stage` for production workspaces):
-   ```bash
-   python scripts/memory_curator.py --stage
-   loop memory review
-   ```
+23. **Run `/memory-review` at closeout** (applies directly to this workspace's
+    memory; `--stage` only when the user explicitly asks for approval-gated writes):
+    ```bash
+    python scripts/memory_curator.py
+    loop memory review
+    ```
 24. **Run `/compact-loop` when planning is long, many files changed, the user may switch tools, or the context is getting heavy.** At minimum, ensure `COMPACT.md` is current before ending a large `/plan-loop` session.
 25. **Session end** (mandatory - runs memory-review staging):
     ```bash

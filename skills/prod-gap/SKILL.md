@@ -86,6 +86,13 @@ Write or update:
 
 ## Output Format
 
+`plan/PROD-GAP.md` is re-derived from current plan state on every run - it is a
+report, not a ledger:
+
+- Drop gaps a reform already resolved; never accumulate resolved blockers beside live ones.
+- Cite only live decisions (no superseded `Status:`, nothing in `plan/RETIRED.md`).
+  Run `loop plan-reconcile check` first when the plan recently changed.
+
 `plan/PROD-GAP.md` must include:
 
 - Executive summary

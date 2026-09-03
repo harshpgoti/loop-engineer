@@ -458,6 +458,26 @@ def cmd_archive(args: argparse.Namespace) -> int:
     return run_script("state_archive.py", extra)
 
 
+def cmd_plan_reconcile(args: argparse.Namespace) -> int:
+    cmd = getattr(args, "reconcile_cmd", None) or "check"
+    extra = _workspace_args(args)
+    tail: list[str] = [cmd]
+    if cmd == "fanout":
+        tail += ["--decision", args.decision]
+        if getattr(args, "scope", None):
+            tail += ["--scope", args.scope]
+    elif cmd == "check":
+        if getattr(args, "scope", None):
+            tail += ["--scope", args.scope]
+        if getattr(args, "write", False):
+            tail.append("--write")
+    elif cmd == "retire":
+        tail += ["--id", args.rid, "--by", args.by, "--reason", args.reason, "--type", args.rtype]
+    # `--workspace` lives on plan_reconcile's main parser, so it must precede
+    # the subcommand (same ordering rule as `loop graph` / `loop doubts`).
+    return run_script("plan_reconcile.py", extra + tail)
+
+
 def cmd_doubts(args: argparse.Namespace) -> int:
     cmd = getattr(args, "doubts_cmd", None) or "list"
     # `--workspace` is a top-level option on doubts.py, so it has to precede the
@@ -1048,6 +1068,28 @@ def build_parser() -> argparse.ArgumentParser:
     archive.add_argument("--dry-run", action="store_true", help="Report what would compact.")
     archive.add_argument("--search", default=None, help="Find an archived answer without loading the file.")
     archive.set_defaults(func=cmd_archive)
+
+    reconcile = sub.add_parser(
+        "plan-reconcile", help="Reconcile a planning reform across every file it touches."
+    )
+    rec_sub = reconcile.add_subparsers(dest="reconcile_cmd")
+    r_fanout = rec_sub.add_parser("fanout", help="Files a reform of one decision can affect.")
+    r_fanout.add_argument("--decision", required=True)
+    r_fanout.add_argument("--scope", default=None)
+    r_fanout.add_argument("--workspace", default=argparse.SUPPRESS)
+    r_fanout.set_defaults(func=cmd_plan_reconcile)
+    r_check = rec_sub.add_parser("check", help="Deterministic drift across the plan surface.")
+    r_check.add_argument("--scope", default=None)
+    r_check.add_argument("--write", action="store_true", help="Also write plan/RECONCILE_REPORT.md.")
+    r_check.add_argument("--workspace", default=argparse.SUPPRESS)
+    r_check.set_defaults(func=cmd_plan_reconcile)
+    r_retire = rec_sub.add_parser("retire", help="Record a dead planning item in plan/RETIRED.md.")
+    r_retire.add_argument("--id", dest="rid", required=True)
+    r_retire.add_argument("--by", required=True)
+    r_retire.add_argument("--reason", required=True)
+    r_retire.add_argument("--type", dest="rtype", default="decision")
+    r_retire.add_argument("--workspace", default=argparse.SUPPRESS)
+    r_retire.set_defaults(func=cmd_plan_reconcile)
 
     doubts_p = sub.add_parser("doubts", help="Read and update DOUBTS.md deterministically.")
     doubts_sub = doubts_p.add_subparsers(dest="doubts_cmd")

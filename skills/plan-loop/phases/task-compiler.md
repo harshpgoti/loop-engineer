@@ -51,6 +51,11 @@ block a final integrate-and-verify task - green is promised there, and only ther
 - Every task must map to a user-visible outcome, platform capability, risk reduction, or validation need.
 - Every development task needs acceptance criteria, and each one is independently checkable.
 - Risky tasks need a gate in `GATES.yml`.
+- **Reconcile before compiling.** Run `loop plan-reconcile check`: superseded or
+  retired ids cited as live, scope/root mirror divergence, and map-vs-tracker
+  mismatches must be fixed or retired (`loop plan-reconcile retire`) first -
+  compiling tasks on top of a contradicted plan bakes the old story into the
+  build. Blockers must read 0.
 - **Sized for one fresh context window.** A task an agent cannot hold in a single session gets
   split, or it gets abandoned halfway and picked up wrong.
 - Name the **seam** the task's tests will observe from (`skills/codebase-design/SKILL.md`).

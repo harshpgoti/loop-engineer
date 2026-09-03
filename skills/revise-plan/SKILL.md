@@ -54,6 +54,8 @@ context is exactly the failure mode this command exists to avoid.
 | Reversal of a prior committed decision | `DECISIONS.md` (mark prior entry superseded) + wherever that decision is materialized |
 | Answer to an existing open question | `DOUBTS.md` (mark resolved) + `DECISIONS.md` + destination file above |
 | Gate criteria itself changing (not just what satisfies it) | `GATES.yml` |
+| Reform spanning steps, scopes, or deployment (a decision reversing another) | `loop plan-reconcile fanout --decision <id>` first, then every listed file: `PRODUCT_MAP.md` rows **and** its `Updated:` header, sibling step files, scope `TASKS.yml`/`GATES.yml` mirrors, `DEPLOYMENT_PLAN.md` by hand, `plan/PROD-GAP.md`; then `loop plan-reconcile retire` + `check` to 0 blockers |
+| Dead planning the reform replaces (superseded decision, withdrawn row, deprecated pack) | `plan/RETIRED.md` via `loop plan-reconcile retire --id <old> --by <new> --reason "<why>"` - never leave it sitting live beside its replacement |
 
 A single user statement may fan out to more than one file (e.g. changing the target user
 touches `plan/main_plan.md` AND may resolve a `DOUBTS.md` entry AND invalidate a
@@ -100,7 +102,7 @@ touches `plan/main_plan.md` AND may resolve a `DOUBTS.md` entry AND invalidate a
    loop doubts resolve DQ-007 "<the answer this fact gives>" --decision D-014
    ```
 11. Update `memories/MEMORY.md` and `HANDOFF.md` with what changed and any new outstanding
-    tasks.
+    tasks. Run `loop plan-reconcile check`: blockers must read 0 before the run is done.
 12. `loop session-end --command /revise-plan --summary "<what changed>"`. Closeout
     automatically runs feature convergence when active and re-syncs the product tree.
 

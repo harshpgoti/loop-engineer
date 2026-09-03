@@ -53,6 +53,14 @@ Update:
 - Next command
 - Do-not-do warnings
 
+## Cite Live Decisions Only
+
+`COMPACT.md` is read at the start of every session, so a dead decision cited
+here misleads every chain. Summarize the **live** position and name the live
+decision id behind each claim; never carry a superseded `Status:` or a
+`plan/RETIRED.md` entry forward as current. When the plan recently changed,
+run `loop plan-reconcile check` before writing.
+
 ## Native Tool Compaction
 
 If the current tool has native context compaction, run it only after `COMPACT.md` is current. The repo summary is the source of truth across tools.

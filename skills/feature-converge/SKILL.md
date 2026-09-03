@@ -33,7 +33,7 @@ python scripts/feature_converge.py
 
 1. Run `loop feature converge` to write `converge-report.md`.
 2. Review gaps: missing artifacts, unchecked tasks, TASK id mismatch.
-3. Fix real drift via `task-compiler` or update spec if scope changed (with user approval).
+3. Fix real drift via `task-compiler` or update spec if scope changed (with user approval). When the drift traces to a revised plan rather than the build - the spec matches code that the plan no longer wants - run `loop plan-reconcile check` and fix the plan side there instead of reshaping the spec around a stale build.
 4. Update `HANDOFF.md` with next task from active feature `tasks.md`.
 
 ## Output

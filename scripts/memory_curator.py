@@ -41,26 +41,33 @@ def uses_section_sign(text: str) -> bool:
     return SECTION_SIGN in text
 
 
+def _header_lines(text: str, header: str = "# Memory") -> int:
+    """Standalone header lines only - inline `code` mentions do not count."""
+    return sum(1 for line in text.splitlines() if line.strip() == header)
+
+
 def normalize_header(text: str, header: str = "# Memory") -> str:
     """Collapse stacked duplicate headers to exactly one leading header.
 
     Repeated closeouts used to prepend "# Memory\\n\\n" without stripping the
-    existing one, so headers accumulated (7x observed). This is idempotent:
-    running it twice yields the same text.
+    existing one, so headers accumulated (7x observed). Any standalone header
+    line beyond the first is residue - inline mentions (e.g. `` `# Memory` ``
+    in a warning banner) are left alone. Idempotent.
     """
     lines = text.splitlines()
-    idx = 0
-    while idx < len(lines) and not lines[idx].strip():
-        idx += 1
-    stripped = 0
-    while idx < len(lines) and lines[idx].strip() == header:
-        idx += 1
-        stripped += 1
-        while idx < len(lines) and not lines[idx].strip():
-            idx += 1
-    rest = "\n".join(lines[idx:]).strip()
+    kept: list[str] = []
+    seen_header = False
+    for line in lines:
+        if line.strip() == header:
+            if seen_header:
+                continue
+            seen_header = True
+        kept.append(line)
+    rest = "\n".join(kept).strip()
     if not rest:
         return header + "\n\n"
+    if rest.startswith(header):
+        return rest + "\n"
     return header + "\n\n" + rest + "\n"
 
 
@@ -179,16 +186,20 @@ def trim_to_limit(entries: list[str], limit: int, header: str = "# Memory\n\n") 
     return kept, dropped
 
 
-def trim_markdown_recent(text: str, limit: int) -> tuple[str, list[str]]:
+def trim_markdown_recent(text: str, limit: int, *, max_drop_fraction: float = 0.30) -> tuple[str, list[str]]:
     """Trim only the oldest top-level bullets under `## Recent` until fit.
 
     Everything before `## Recent` (warning banners, intro, standing context)
     is never touched. If there is no `## Recent` section, nothing is trimmed -
     the caller reports over-budget and leaves the file to a human rather than
-    reformatting it. Returns (new_text, dropped_bullets).
+    reformatting it. Trimming is also capped: at most `max_drop_fraction` of
+    the file's chars go in one run, so a diary that grew 4x over budget is
+    reported over-budget (human compacts it) rather than mass-deleted by a
+    closeout. Returns (new_text, dropped_bullets).
     """
     if char_count(text) <= limit:
         return text, []
+    original_chars = char_count(text)
     lines = text.splitlines()
     head_idx = next(
         (i for i, l in enumerate(lines) if l.strip().lower() == "## recent"), None
@@ -201,12 +212,15 @@ def trim_markdown_recent(text: str, limit: int) -> tuple[str, list[str]]:
         return text, []
     dropped: list[str] = []
     current = list(lines)
+    removed_chars = 0
     for bi in bullet_idx:
         # Recompute bullet positions after each removal.
         cur_bullets = [i for i, l in enumerate(current) if l.startswith("- ") and i > head_idx]
         if len(cur_bullets) <= 1:
             break
         if char_count("\n".join(current)) <= limit:
+            break
+        if removed_chars / max(original_chars, 1) >= max_drop_fraction:
             break
         first = cur_bullets[0]
         # Remove the bullet line plus its indented continuation lines.
@@ -216,6 +230,7 @@ def trim_markdown_recent(text: str, limit: int) -> tuple[str, list[str]]:
                 end += 1
             else:
                 break
+        removed_chars += char_count("\n".join(current[first:end]))
         dropped.append(current[first][:120])
         del current[first:end]
     return "\n".join(current).rstrip() + "\n", dropped
@@ -249,6 +264,13 @@ CLOSEOUT_BOILERPLATE = (
     "added adapters",
     "created `plan/main_plan.md` as an uninitialized",
     "created `plan/` for future step plans",
+    "compact.md",
+    "read `compact",
+    "sync note",
+    "loop state files were reconciled",
+    "was updated.",
+    "may continue with safe",
+    "ask the user to resolve human-required",
 )
 
 
@@ -283,15 +305,42 @@ def propose_closeout_entries(workspace: Path, memory_text: str) -> list[str]:
         path = workspace / rel
         if not path.exists():
             continue
-        lines = [line.strip() for line in path.read_text(encoding="utf-8", errors="ignore").splitlines()]
-        for line in lines[-30:]:
-            if not line.startswith("- "):
+        raw = path.read_text(encoding="utf-8", errors="ignore").splitlines()[-30:]
+        # Group consecutive bullets: one decision's fields (`- **Decision:**`,
+        # `- **Scope:**`, ...) arrive as adjacent lines and only make sense
+        # together. A lone line is its own group.
+        runs: list[list[str]] = []
+        current: list[str] = []
+        for line in raw + [""]:
+            stripped = line.strip()
+            if stripped.startswith("- "):
+                current.append(stripped[2:].strip())
+            elif current:
+                runs.append(current)
+                current = []
+        for parts in runs:
+            # Drop the parts memory (or the queue) already holds, so a group
+            # never re-adds known text beside one new line. Drop repeats
+            # inside the group too (triplicated log lines propose once).
+            seen_parts: set[str] = set()
+            unique: list[str] = []
+            for p in parts:
+                key = re.sub(r"\s+", " ", p.lower())
+                if key in seen_parts:
+                    continue
+                seen_parts.add(key)
+                unique.append(p)
+            fresh = [
+                p for p in unique
+                if re.sub(r"\s+", " ", p.lower()) not in memory_lower
+                and re.sub(r"\s+", " ", p.lower()) not in queued
+            ]
+            if not fresh:
                 continue
-            body = line[2:].strip()
+            body = " ".join(fresh)
+            if len(body) > 600:
+                body = body[:600].rsplit(" ", 1)[0]
             if not _closeout_candidate_ok(body):
-                continue
-            key = re.sub(r"\s+", " ", body.lower())
-            if key in memory_lower or key in queued:
                 continue
             proposals.append(body)
     return proposals[:5]
@@ -320,8 +369,8 @@ def backup_memory_file(path: Path, workspace: Path) -> Path | None:
 def validate_memory_output(before: str, after: str, header: str = "# Memory") -> list[str]:
     """Refuse conditions that previously destroyed MEMORY.md. Returns errors."""
     errors: list[str] = []
-    if after.count(header) > 1:
-        errors.append(f"refused: output stacks {after.count(header)}x `{header}` headers")
+    if _header_lines(after, header) > 1:
+        errors.append(f"refused: output stacks {_header_lines(after, header)}x `{header}` headers")
     if SECTION_SIGN not in before and SECTION_SIGN in after:
         errors.append("refused: output injects § into a file that never used it")
     if len(before.strip()) > 500 and len(after.strip()) < len(before.strip()) // 2:
@@ -358,16 +407,18 @@ def propose_updates(workspace: Path) -> dict:
         mem_kept, mem_dropped = trim_to_limit(mem_entries, MEMORY_CHAR_LIMIT)
         memory_output = join_entries(mem_kept)
         memory_text = strip_leading_header(memory_output).strip()
+        trim_suggestion: list[str] = []
     else:
         # Plain markdown: analyze only. The file is preserved verbatim;
         # reformatting it through split/join is what destroyed diaries.
+        # Hand-written diaries are append-only: over budget is reported with
+        # a trim suggestion for a human, never auto-deleted by a closeout.
         mem_entries = dedupe_entries(split_entries(mem_text))
         base = normalize_header(mem_text) if mem_text.strip() else "# Memory\n\n_No curated entries yet._\n"
-        trimmed, recent_dropped = trim_markdown_recent(base, MEMORY_CHAR_LIMIT)
-        memory_output = trimmed
+        _, suggested = trim_markdown_recent(base, MEMORY_CHAR_LIMIT)
+        memory_output = base
         mem_kept, mem_dropped = mem_entries, []
-        # Report Recent-trims through the same dropped channel.
-        mem_dropped = [f"## Recent trim: {d}" for d in recent_dropped]
+        trim_suggestion = [f"## Recent trim suggestion: {d}" for d in suggested]
         memory_text = strip_leading_header(memory_output).strip()
 
     user_sectioned = uses_section_sign(user_text)
@@ -389,6 +440,7 @@ def propose_updates(workspace: Path) -> dict:
         "memory_entries_before": len(mem_entries),
         "memory_entries_after": len(mem_kept),
         "memory_dropped": mem_dropped,
+        "memory_trim_suggestion": trim_suggestion,
         "user_dropped": user_dropped,
         "memory_text": memory_text,
         "memory_output": memory_output,
@@ -420,6 +472,13 @@ def render_report(workspace: Path, report: dict) -> str:
         lines.append(f"- Deduped/trimmed memory entries: {report['memory_entries_before']} -> {report['memory_entries_after']}")
     if report["memory_dropped"]:
         lines.append(f"- Dropped {len(report['memory_dropped'])} memory entry(ies) over limit.")
+    if report.get("memory_trim_suggestion"):
+        lines.append(
+            f"- Memory is over budget and hand-written, so nothing was auto-deleted. "
+            f"Oldest-first candidates to trim by hand: {len(report['memory_trim_suggestion'])}."
+        )
+        for suggestion in report["memory_trim_suggestion"][:5]:
+            lines.append(f"  - {suggestion[:140]}")
     if report["user_dropped"]:
         lines.append(f"- Dropped {len(report['user_dropped'])} user entry(ies) over limit.")
     if not report["memory_dropped"] and not report["user_dropped"] and not report["drift"]:
@@ -498,16 +557,19 @@ def apply_report(workspace: Path, report: dict, stage_only: bool = False) -> lis
             memory_output = body + "\n"
         else:
             memory_output = append_markdown_entries(memory_output, closeout)
-        # Enforce the budget AFTER appending: §-files re-trim newest-kept,
-        # markdown files trim oldest ## Recent bullets, never reformat.
-        if char_count(memory_output) > MEMORY_CHAR_LIMIT:
-            if uses_section_sign(memory_output):
-                kept, _ = trim_to_limit(
-                    dedupe_entries(split_entries(memory_output)), MEMORY_CHAR_LIMIT
-                )
-                memory_output = join_entries(kept)
-            else:
-                memory_output, _ = trim_markdown_recent(memory_output, MEMORY_CHAR_LIMIT)
+        if uses_section_sign(memory_output) and char_count(memory_output) > MEMORY_CHAR_LIMIT:
+            # §-files are the curator's own format: re-trim newest-kept.
+            kept, _ = trim_to_limit(
+                dedupe_entries(split_entries(memory_output)), MEMORY_CHAR_LIMIT
+            )
+            memory_output = join_entries(kept)
+        elif char_count(memory_output) > MEMORY_CHAR_LIMIT:
+            # Hand-written diaries stay over budget rather than lose history:
+            # no auto-trim. The review report carries the trim suggestion.
+            actions.append(
+                f"note: `memories/MEMORY.md` is {char_count(memory_output)}/{MEMORY_CHAR_LIMIT} chars "
+                f"(over budget; see trim suggestions in `plan/MEMORY_REVIEW.md`)"
+            )
     before = mem_path.read_text(encoding="utf-8") if mem_path.exists() else ""
     errors = validate_memory_output(before, memory_output)
     if errors:

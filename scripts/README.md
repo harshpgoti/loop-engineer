@@ -73,6 +73,7 @@
 | `plan_idea.py` | One-shot plan bootstrap from a user's product idea (auto scale + ultraplan route) |
 | `plan_paths.py` | Paths and constants for plan scale and ultraplan harness |
 | `plan_phase.py` | Deterministic planning-phase router for the plan-loop orchestrator |
+| `plan_reconcile.py` | Reconcile a planning reform across every file it touches; retire dead planning to `plan/RETIRED.md` |
 | `plan_scale.py` | Detect whether a product idea is convenient (single wedge) or platform-scale |
 | `prod_gap.py` | Create a structured product gap analysis draft in plan/PROD-GAP.md |
 | `release_check.py` | Run a focused pre-production release readiness check |

@@ -136,7 +136,7 @@ Run `loop session-start --command /develop-product` first and `loop session-end`
 - Run `prod-gap` after meaningful development work.
 - Run `loop release-check` when the manifest reports launch blockers - it reports what
   remains, which is worth knowing while there is still time to act on it.
-- Run `deployment-plan` at loop closeout to write `DEPLOYMENT_PLAN.md`.
+- Run `deployment-plan` at loop closeout to write `DEPLOYMENT_PLAN.md`, following its reconcile-first, verify-after rules (never blind-regenerate over a hand-maintained file).
 - Reuse cloud, LLM, and deployment answers already in `DECISIONS.md`, resolved `DOUBTS.md`, or `plan/main_plan.md`.
 - Ask the user only for unresolved deployment questions.
 - Fix safe P0/P1 technical blockers found by `prod-gap` when in scope.
@@ -144,7 +144,7 @@ Run `loop session-start --command /develop-product` first and `loop session-end`
   prose, which leaves an entry no command can count or close.
 - Update `memories/MEMORY.md`, `DOUBTS.md`, `CURRENT_STATE.md`, `HANDOFF.md`, `DEPLOYMENT_PLAN.md`, and `.ai/SESSION_LOG.md`.
 - Run `compact-loop` when development is long, many files changed, the user may switch tools, or the context is getting heavy.
-- Run `loop session-end --command /develop-product` (mandatory; includes converge + memory-review staging).
+- Run `loop session-end --command /develop-product` (mandatory; includes converge + memory-review, which applies directly).
 
 ## Output
 

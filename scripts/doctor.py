@@ -193,6 +193,33 @@ def check_memory_health(workspace: Path, errors: list[str], warnings: list[str],
 
     check_hierarchy_health(workspace, errors, warnings, passes)
     check_scope_health(workspace, errors, warnings, passes)
+    check_plan_reconcile(workspace, errors, warnings, passes)
+
+
+def check_plan_reconcile(workspace: Path, errors: list[str], warnings: list[str], passes: list[str]) -> None:
+    """Live plan files must not still tell a story the plan has retired."""
+    try:
+        from plan_reconcile import check as reconcile_check
+    except ImportError as exc:  # pragma: no cover - defensive
+        errors.append(f"plan-reconcile check: cannot import plan_reconcile ({exc})")
+        return
+    try:
+        findings = reconcile_check(workspace)
+    except Exception as exc:  # noqa: BLE001 - doctor must never fail on a validator
+        warnings.append(f"plan-reconcile check skipped: {exc}")
+        return
+    blockers = [f for f in findings if f.get("level") == "blocker"]
+    reviews = [f for f in findings if f.get("level") == "review"]
+    if blockers:
+        warnings.append(
+            f"{len(blockers)} plan-reconcile blocker(s): live files cite dead planning - `loop plan-reconcile check`."
+        )
+    elif not findings:
+        passes.append("Plan surface consistent: no live citations of retired planning.")
+    if reviews:
+        warnings.append(
+            f"{len(reviews)} plan-reconcile review item(s) (e.g. DEPLOYMENT_PLAN.md behind latest decisions)."
+        )
 
 
 def check_hierarchy_health(workspace: Path, errors: list[str], warnings: list[str], passes: list[str]) -> None:

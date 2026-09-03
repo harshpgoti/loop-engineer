@@ -82,8 +82,17 @@ so an unrelated sibling cannot stop the current build.
    - **Supersedes:** DQ-007, DQ-020
    ```
 
-   A main product's decision retires questions inside its sub-products this way.
-   Prefer it over answering a question that no longer applies.
+    A main product's decision retires questions inside its sub-products this way.
+    Prefer it over answering a question that no longer applies.
+
+    When the decision also kills live planning (not just a question) - a reversed
+    architecture, a withdrawn row, a deprecated pack - record it in the retirement
+    ledger so no file keeps citing it as current:
+
+    ```bash
+    loop plan-reconcile retire --id <old> --by <new> --reason "<why>"
+    loop plan-reconcile check
+    ```
 4. **Walk the blocking items one at a time**, each as a question with its
    recommended answer:
 

@@ -212,8 +212,9 @@ def _backup_target(path: Path, workspace: Path) -> None:
 
 def _memory_replace_poison(before: str, content: str) -> str | None:
     """Refuse corrupted curator snapshots. Returns the reason, or None if safe."""
-    if content.count("# Memory") > 1:
-        return f"stacks {content.count('# Memory')}x `# Memory` headers"
+    headers = sum(1 for line in content.splitlines() if line.strip() == "# Memory")
+    if headers > 1:
+        return f"stacks {headers}x `# Memory` headers"
     if "§" not in before and "§" in content:
         return "injects § into a file that never used it"
     if len(before.strip()) > 500 and len(content.strip()) < len(before.strip()) // 2:

@@ -1,6 +1,6 @@
 ---
 name: session-lifecycle
-description: Always-on session start/end for any tool. Run loop session-start before work and loop session-end before stopping. Regenerates plan/SESSION_MANIFEST.md and stages memory review.
+description: Always-on session start/end for any tool. Run loop session-start before work and loop session-end before stopping. Regenerates plan/SESSION_MANIFEST.md and runs memory review.
 ---
 
 # Session Lifecycle (Always-on)

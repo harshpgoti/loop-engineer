@@ -161,12 +161,12 @@ For each task:
     loop feature converge
     ```
 12. At loop closeout, run `/deployment-plan` (or `scripts/deployment_plan.py`) to write `DEPLOYMENT_PLAN.md`. Reuse cloud, LLM, and deployment answers already recorded in `DECISIONS.md`, resolved `DOUBTS.md`, or `plan/main_plan.md`. Ask the user only for unresolved deployment questions.
-13. Run `/memory-review` at closeout (default `--stage`):
+13. Run `/memory-review` at closeout (applies directly; `--stage` only when the user explicitly asks for approval-gated writes):
     ```bash
     loop memory review
     ```
 14. Run `/compact-loop` when development is long, many files changed, tests generated substantial context, the user may switch tools, or the context is getting heavy. At minimum, ensure `COMPACT.md` is current before ending a large `/develop-product` session.
-15. **Session end** (mandatory - runs memory-review staging + feature converge):
+15. **Session end** (mandatory - runs memory-review + feature converge):
     ```bash
     loop session-end --command /develop-product --summary "<progress>"
     ```

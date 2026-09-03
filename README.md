@@ -421,6 +421,7 @@ The primary entry point: routes between planning and development based on gates 
 ```text
 /ask-loop             # answer a question about the plan or the build from full context - read-only, cites sources
 /revise-plan          # correct or extend an existing plan; routes the edit to the right file
+/plan-reconcile       # reconcile a reform across every file it touches; retire dead planning
 /resolve-doubts       # clear every open blocker plan-wide, then give a go/no-go for development
 /diagnose-loop        # something is broken: build a loop that goes red on it, then hypothesise
 /eval-loop            # score the product's golden cases, catch regressions, let the failures pick the next task

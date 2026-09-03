@@ -33,6 +33,7 @@ CHECK TOOL FILES -> CHECK WORKSPACE -> IMPORT SCRIPTS -> RUN VALIDATORS -> WRITE
 - `state.db` FTS5 health
 - Missing `memories/USER.md` / `memories/SOUL.md`
 - Pending staged writes under `.loop/pending/`
+- Plan-surface drift (`loop plan-reconcile check`: dead planning cited as live)
 - User skill frontmatter validation
 
 ## Optional Script

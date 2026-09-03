@@ -184,6 +184,18 @@ def attention_block(workspace: Path) -> list[str]:
     except Exception:
         pass
 
+    try:  # a reform updated some plan files but not the others it touches
+        from plan_reconcile import check as reconcile_check
+
+        reconcile_blockers = [f for f in reconcile_check(workspace) if f.get("level") == "blocker"]
+        if reconcile_blockers:
+            head = reconcile_blockers[0]["message"][:100]
+            items.append(
+                (f"{len(reconcile_blockers)} plan-reconcile blocker(s) - live files still cite dead planning ({head}...)",
+                 "`loop plan-reconcile check` - fix or retire each one in the same run"))
+    except Exception:
+        pass
+
     try:  # what still stands between this build and a release
         from release_check import assess
         from source_tree_scan import find_source_root
