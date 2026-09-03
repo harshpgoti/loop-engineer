@@ -38,7 +38,7 @@ Keep `memories/MEMORY.md` and `memories/USER.md` within bounded char limits, ded
 ## Script
 
 ```bash
-python scripts/memory_curator.py --stage
+python scripts/memory_curator.py
 loop memory review
 ```
 
@@ -47,7 +47,7 @@ loop memory review
 1. Product facts belong in `plan/main_plan.md` and step plans - not duplicated in memory diary entries.
 2. User preferences belong in `memories/USER.md`.
 3. Session progress diary belongs in `memories/MEMORY.md`.
-4. Default to `--stage` for production workspaces; use `--apply` only when the user approves direct writes.
+4. Default is direct apply for this workspace's own memory; use `--stage` only when the user explicitly asks for approval-gated writes. Staged `replace` payloads go stale fast - approving one after the file moved on re-applies an old snapshot.
 5. Log the review in `state.db` via the script.
 
 ## Output

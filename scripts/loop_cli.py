@@ -309,6 +309,8 @@ def cmd_session_lifecycle(args: argparse.Namespace) -> int:
         extra.append("--skip-recall")
     if getattr(args, "apply", False):
         extra.append("--apply")
+    if getattr(args, "stage", False):
+        extra.append("--stage")
     if getattr(args, "summary", None):
         extra.extend(["--summary", args.summary])
     return run_script("session_lifecycle.py", extra)
@@ -770,7 +772,8 @@ def build_parser() -> argparse.ArgumentParser:
         if phase == "session-start":
             p.add_argument("--skip-recall", action="store_true")
         if phase == "session-end":
-            p.add_argument("--apply", action="store_true", help="Apply memory directly (default: stage).")
+            p.add_argument("--apply", action="store_true", help="Apply memory directly (default).")
+            p.add_argument("--stage", action="store_true", help="Stage this workspace's memory writes for approval instead of applying.")
             p.add_argument("--summary", default="", help="Closeout summary for state.db")
         p.set_defaults(func=cmd_session_lifecycle, phase="start" if phase == "session-start" else "end")
 

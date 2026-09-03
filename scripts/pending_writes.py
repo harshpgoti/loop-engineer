@@ -192,6 +192,35 @@ def _memory_target_path(workspace: Path, target: str) -> Path:
     return memory_file(workspace)
 
 
+def _backup_target(path: Path, workspace: Path) -> None:
+    """Pre-overwrite copy under `.loop/backups/`, pruned to 10 per file."""
+    try:
+        if not path.exists():
+            return
+        from datetime import datetime, timezone
+
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        dest_dir = workspace / ".loop" / "backups" / "pending-apply"
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        dest = dest_dir / f"{path.stem}-{stamp}.md"
+        dest.write_text(path.read_text(encoding="utf-8", errors="ignore"), encoding="utf-8")
+        for old in sorted(dest_dir.glob(f"{path.stem}-*.md"))[:-10]:
+            old.unlink(missing_ok=True)
+    except Exception:
+        pass
+
+
+def _memory_replace_poison(before: str, content: str) -> str | None:
+    """Refuse corrupted curator snapshots. Returns the reason, or None if safe."""
+    if content.count("# Memory") > 1:
+        return f"stacks {content.count('# Memory')}x `# Memory` headers"
+    if "§" not in before and "§" in content:
+        return "injects § into a file that never used it"
+    if len(before.strip()) > 500 and len(content.strip()) < len(before.strip()) // 2:
+        return f"collapses {len(before.strip())} -> {len(content.strip())} chars (>50% loss)"
+    return None
+
+
 def approve_pending(
     workspace: Path,
     write_id: str | None = None,
@@ -210,13 +239,34 @@ def approve_pending(
             target_path = _memory_target_path(workspace, str(item.get("target", "memory")))
             target_path.parent.mkdir(parents=True, exist_ok=True)
             if item.get("action") == "replace":
+                before = target_path.read_text(encoding="utf-8", errors="ignore") if target_path.exists() else ""
+                poison = _memory_replace_poison(before, str(item.get("content", "")))
+                if poison is not None:
+                    results.append(f"rejected poisoned memory write {item['id']}: {poison}")
+                    Path(item["_path"]).unlink(missing_ok=True)
+                    if not approve_all:
+                        break
+                    continue
+                _backup_target(target_path, workspace)
                 target_path.write_text(item["content"], encoding="utf-8")
+                results.append(f"approved memory write {item['id']}")
             else:
                 existing = target_path.read_text(encoding="utf-8") if target_path.exists() else ""
                 entry = item["content"].strip()
-                sep = "\n§\n" if existing.strip() else ""
-                target_path.write_text(existing.rstrip() + sep + entry + "\n", encoding="utf-8")
-            results.append(f"approved memory write {item['id']}")
+                if entry and entry in existing:
+                    results.append(f"skipped memory write {item['id']} (already present)")
+                else:
+                    _backup_target(target_path, workspace)
+                    if "§" in existing:
+                        sep = "\n§\n" if existing.strip() else ""
+                        target_path.write_text(existing.rstrip() + sep + entry + "\n", encoding="utf-8")
+                    else:
+                        # Plain-markdown files stay plain-markdown: never leak
+                        # the § separator into them (it fragments on next run).
+                        bullet = entry if entry.startswith(("-", "*", "#")) or (entry and entry[0].isdigit()) else "- " + entry
+                        sep = "\n" if existing.strip() else ""
+                        target_path.write_text(existing.rstrip() + sep + bullet + "\n", encoding="utf-8")
+                    results.append(f"approved memory write {item['id']}")
         elif item["kind"] == "file":
             try:
                 target = normalize_file_target(str(item.get("relative_path", "")))

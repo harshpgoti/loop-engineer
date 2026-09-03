@@ -44,7 +44,8 @@ If the user says `/session-end`, the user invokes the chain's closeout, or a cod
 
 ## Loop
 
-1. RUN `memory-review` (default staged mode for production workspaces)
+1. RUN `memory-review` (default applies directly to this workspace's memory;
+   `--stage` only when the user explicitly asks for approval-gated writes)
 2. RUN `compact-loop` if the session was long or the context is heavy
 3. APPEND a one-line entry to `state.db` summarising the session
 4. UPDATE `HANDOFF.md` with the next concrete action

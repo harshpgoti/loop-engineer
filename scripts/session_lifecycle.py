@@ -904,7 +904,7 @@ def main() -> int:
     parser.add_argument("--tool", default=None, help="Tool hint e.g. cursor, claude, codex, cline")
     parser.add_argument("--text", default="", help="Extra context for routers (user message).")
     parser.add_argument("--skip-recall", action="store_true")
-    parser.add_argument("--apply", action="store_true", help="Apply memory directly on end (default).")
+    parser.add_argument("--apply", action="store_true", help="Apply memory directly (default behavior; accepted for compatibility).")
     parser.add_argument("--stage", action="store_true", help="Stage this workspace's memory writes for approval instead of applying.")
     parser.add_argument("--summary", default="", help="Optional closeout summary for state.db")
     args = parser.parse_args()

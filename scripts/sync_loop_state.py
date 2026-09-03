@@ -53,17 +53,16 @@ def ensure_handoff_pointer(handoff_text: str) -> tuple[str, list[str]]:
 
 
 def ensure_memory_timestamp(memory_text: str) -> tuple[str, list[str]]:
-    fixes: list[str] = []
-    marker = f"## {date.today().isoformat()} - State sync"
-    if marker not in memory_text:
-        updated = memory_text.rstrip() + (
-            "\n\n"
-            f"{marker}\n\n"
-            "- Loop state files were reconciled by `/sync-loop-state`.\n"
-        )
-        fixes.append("Appended sync note to MEMORY.md.")
-        return updated, fixes
-    return memory_text, fixes
+    """Retired daily MEMORY.md stamp (kept for API compatibility).
+
+    Every `session-end` used to append a `## <date> - State sync` section to
+    MEMORY.md, even when nothing drifted. Those stamps grew the file one
+    section per day and interleaved with the curator's output, which the next
+    curator run then fragmented on the §-splitter. Sync runs are already
+    recorded in `SYNC_REPORT.md` and `.ai/SESSION_LOG.md`; MEMORY.md diary
+    updates belong to the curator and the agent, not to this reconciler.
+    """
+    return memory_text, []
 
 
 def detect_drift(workspace: Path) -> tuple[list[str], list[str]]:
